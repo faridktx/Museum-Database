@@ -1,16 +1,19 @@
-// In your Express.js server (e.g., app.js)
 const express = require('express');
 const mysql = require('mysql2');
+const cors = require('cors'); // Import the cors package
 
 const app = express();
 const port = 3000;
+
+// Enable CORS for all routes
+app.use(cors());
 
 // Create a connection to the database
 const connection = mysql.createConnection({
   host: 'localhost',      // Replace with your database host
   user: 'root',           // Replace with your database username
-  password: 'password',   // Replace with your database password
-  database: 'mydatabase'  // Replace with your database name
+  password: 'Sponge12368!',   // Replace with your database password
+  database: 'mydb'  // Replace with your database name
 });
 
 // Connect to the database
@@ -22,19 +25,20 @@ connection.connect((err) => {
   console.log('Connected to the database with ID:', connection.threadId);
 });
 
+// Endpoint to generate a report
 app.get('/api/report', (req, res) => {
   const { type } = req.query; // Get the report type from the query parameter
 
   let query;
   switch (type) {
     case 'collection':
-      query = 'SELECT * FROM collection_table'; // Replace with your collection table query
+      query = 'SELECT * FROM artifacts'; // Replace with your collection table query
       break;
     case 'conservation':
-      query = 'SELECT * FROM conservation_table'; // Replace with your conservation table query
+      query = 'SELECT * FROM exhibits'; // Replace with your conservation table query
       break;
     case 'loan':
-      query = 'SELECT * FROM loan_table'; // Replace with your loan table query
+      query = 'SELECT * FROM employees'; // Replace with your loan table query
       break;
     default:
       return res.status(400).send('Invalid report type');
@@ -55,6 +59,7 @@ app.get('/api/report', (req, res) => {
   });
 });
 
+// Function to generate HTML report
 function generateHTMLReport(data, type) {
   let title;
   switch (type) {

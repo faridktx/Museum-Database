@@ -1,19 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../components/components.css';
 
 export function Dashboard() {
-  const [report, setReport] = useState('');
-
   const handleGenerateReport = async (reportType) => {
     try {
       // Fetch the report from the backend based on the report type
       const response = await fetch(`http://localhost:3000/api/report?type=${reportType}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch report');
+      }
       const html = await response.text();
 
-      // Set the report HTML in the state
-      setReport(html);
+      // Open a new tab and write the HTML content to it
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(html);
+      newWindow.document.close(); // Close the document to finish rendering
     } catch (error) {
       console.error('Error generating report:', error);
+      alert('Error generating report. Please try again.');
     }
   };
 
@@ -73,14 +77,6 @@ export function Dashboard() {
             </div>
           </div>
         </section>
-
-        {/* Display the report */}
-        {report && (
-          <section className="dashboard-section">
-            <h2>Generated Report</h2>
-            <div dangerouslySetInnerHTML={{ __html: report }} />
-          </section>
-        )}
       </div>
     </div>
   );
