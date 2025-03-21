@@ -9,7 +9,62 @@ export function Dashboard() {
       if (!response.ok) {
         throw new Error('Failed to fetch report');
       }
-      const html = await response.text();
+      const { columns, data } = await response.json();
+
+      // Generate the HTML report dynamically
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>${reportType} Report</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 20px;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-top: 20px;
+            }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f4f4f4;
+            }
+            tr:nth-child(even) {
+              background-color: #f9f9f9;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${reportType} Report</h1>
+          <table>
+            <thead>
+              <tr>
+                ${columns.map((column) => `<th>${column}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${data
+                .map(
+                  (row) => `
+                <tr>
+                  ${columns.map((column) => `<td>${row[column]}</td>`).join('')}
+                </tr>
+              `
+                )
+                .join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
 
       // Open a new tab and write the HTML content to it
       const newWindow = window.open('', '_blank');
@@ -31,21 +86,21 @@ export function Dashboard() {
             <div className="dashboard-card">
               <h3>Collection Overview</h3>
               <p>View comprehensive reports about your museum's collection.</p>
-              <button className="button" onClick={() => handleGenerateReport('collection')}>
+              <button className="button" onClick={() => handleGenerateReport('Collection')}>
                 Generate Report
               </button>
             </div>
             <div className="dashboard-card">
-              <h3>Conservation Status</h3>
-              <p>Track the condition and maintenance of artifacts.</p>
-              <button className="button" onClick={() => handleGenerateReport('conservation')}>
+              <h3>Exhibit Status</h3>
+              <p>Track the current and past exhibits.</p>
+              <button className="button" onClick={() => handleGenerateReport('Exhibits')}>
                 View Status
               </button>
             </div>
             <div className="dashboard-card">
-              <h3>Loan History</h3>
-              <p>Review artifact loan records and current locations.</p>
-              <button className="button" onClick={() => handleGenerateReport('loan')}>
+              <h3>Employees</h3>
+              <p>Review employee history.</p>
+              <button className="button" onClick={() => handleGenerateReport('Employee')}>
                 Access History
               </button>
             </div>

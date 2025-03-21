@@ -1,11 +1,11 @@
 const express = require('express');
 const mysql = require('mysql2');
-const cors = require('cors'); // Import the cors package
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
 
-// Enable CORS for all routes
+// Enable CORS
 app.use(cors());
 
 // Create a connection to the database
@@ -30,15 +30,19 @@ app.get('/api/report', (req, res) => {
   const { type } = req.query; // Get the report type from the query parameter
 
   let query;
+  let columns;
   switch (type) {
-    case 'collection':
+    case 'Collection':
       query = 'SELECT * FROM artifacts'; // Replace with your collection table query
+      columns = ['Artifact_ID', 'Artifact_Name', 'Artifact_Description', 'Artist_ID']; // Replace with your collection table columns
       break;
-    case 'conservation':
+    case 'Exhibits':
       query = 'SELECT * FROM exhibits'; // Replace with your conservation table query
+      columns = ['Exhibit_ID', 'Exhibit_Name', 'Description', 'Start_Date', 'End_Date']; // Replace with your conservation table columns
       break;
-    case 'loan':
+    case 'Employee':
       query = 'SELECT * FROM employees'; // Replace with your loan table query
+      columns = ['Employee_ID', 'Employee_Name', 'Work_Email', 'SSN', 'Hiring_Date', 'Address']; // Replace with your loan table columns
       break;
     default:
       return res.status(400).send('Invalid report type');
@@ -51,97 +55,10 @@ app.get('/api/report', (req, res) => {
       return;
     }
 
-    // Generate HTML report
-    const htmlReport = generateHTMLReport(results, type);
-
-    // Send the HTML report as a response
-    res.send(htmlReport);
+    // Send the data and columns as a JSON response
+    res.json({ columns, data: results });
   });
 });
-
-// Function to generate HTML report
-function generateHTMLReport(data, type) {
-  let title;
-  switch (type) {
-    case 'collection':
-      title = 'Collection Overview Report';
-      break;
-    case 'conservation':
-      title = 'Conservation Status Report';
-      break;
-    case 'loan':
-      title = 'Loan History Report';
-      break;
-    default:
-      title = 'Database Report';
-  }
-
-  let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title}</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        th {
-          background-color: #f4f4f4;
-        }
-        tr:nth-child(even) {
-          background-color: #f9f9f9;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>${title}</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Details</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-  `;
-
-  // Loop through the data and add rows to the table
-  data.forEach((row) => {
-    html += `
-      <tr>
-        <td>${row.id}</td>
-        <td>${row.name}</td>
-        <td>${row.details}</td>
-        <td>${row.date}</td>
-      </tr>
-    `;
-  });
-
-  // Close the HTML
-  html += `
-        </tbody>
-      </table>
-    </body>
-    </html>
-  `;
-
-  return html;
-}
 
 // Start the server
 app.listen(port, () => {
