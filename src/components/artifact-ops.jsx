@@ -1,21 +1,44 @@
-import { useState } from 'react';
-import './components.css';
+import { useEffect, useState } from "react";
+import {
+  showToastSuccessNotification,
+  showToastFailNotification,
+  apiFetch,
+} from "./utils";
+import "./components.css";
 
 export function DeleteArtifact() {
+  useEffect(() => {
+    if (localStorage.getItem("modification") === "true") {
+      showToastSuccessNotification("Artifact", "removed");
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
-    artifactID: ''
+    artifactID: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+
+    const response = await apiFetch(
+      "/api/artifact/delete/",
+      "DELETE",
+      formData,
+    );
+
+    if (response.success) {
+      localStorage.setItem("modification", "true");
+      location.reload();
+    } else {
+      showToastFailNotification("Artifact", "removal");
+    }
   };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [id]: value
+      [id]: value,
     }));
   };
 
@@ -27,21 +50,27 @@ export function DeleteArtifact() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="artifactID">Artifact ID</label>
-                <input 
-                  type="number" 
+                <label className="required" htmlFor="artifactID">
+                  Artifact ID
+                </label>
+                <input
+                  type="number"
                   id="artifactID"
                   value={formData.artifactID}
                   onChange={handleChange}
                   placeholder="Enter the ID of the artifact"
-                  required 
+                  required
                 />
               </div>
               <div className="form-group"></div>
             </div>
 
             <div className="form-actions">
-              <button type="button" className="button button-secondary" onClick={() => window.history.back()}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => (location.href = "/login/artifact")}
+              >
                 Cancel
               </button>
               <button type="submit" className="button">
@@ -57,26 +86,26 @@ export function DeleteArtifact() {
 
 export function ModifyArtifact() {
   const [formData, setFormData] = useState({
-    artifactID: '',
-    artifactName: '',
-    artist: '',
-    acquisitionDate: '',
-    acquisitionValue: '',
-    acquisitionType: '',
-    creationDate: '',
-    description: ''
+    artifactID: "",
+    artifactName: "",
+    artist: "",
+    acquisitionDate: "",
+    acquisitionValue: "",
+    acquisitionType: "",
+    creationDate: "",
+    description: "",
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
   };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [id]: value
+      [id]: value,
     }));
   };
 
@@ -88,14 +117,16 @@ export function ModifyArtifact() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="artifactID">Artifact ID</label>
-                <input 
-                  type="number" 
+                <label className="required" htmlFor="artifactID">
+                  Artifact ID
+                </label>
+                <input
+                  type="number"
                   id="artifactID"
                   value={formData.artifactID}
                   onChange={handleChange}
                   placeholder="Enter the ID of the artifact"
-                  required 
+                  required
                 />
               </div>
               <div className="form-group"></div>
@@ -104,8 +135,8 @@ export function ModifyArtifact() {
             <div className="input-group">
               <div className="form-group">
                 <label htmlFor="artifactName">Artifact Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   id="artifactName"
                   value={formData.artifactName}
                   onChange={handleChange}
@@ -115,8 +146,8 @@ export function ModifyArtifact() {
 
               <div className="form-group">
                 <label htmlFor="artist">Artist Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   id="artist"
                   value={formData.artist}
                   onChange={handleChange}
@@ -127,8 +158,8 @@ export function ModifyArtifact() {
             <div className="input-group">
               <div className="form-group">
                 <label htmlFor="acquisitionDate">Acquisition Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   id="acquisitionDate"
                   value={formData.acquisitionDate}
                   onChange={handleChange}
@@ -137,8 +168,8 @@ export function ModifyArtifact() {
 
               <div className="form-group">
                 <label htmlFor="acquisitionValue">Acquisition Value</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   id="acquisitionValue"
                   value={formData.acquisitionValue}
                   onChange={handleChange}
@@ -149,12 +180,14 @@ export function ModifyArtifact() {
             <div className="input-group">
               <div className="form-group">
                 <label htmlFor="acquisitionType">Acquisition Type</label>
-                <select 
+                <select
                   id="acquisitionType"
                   value={formData.acquisitionType}
                   onChange={handleChange}
                 >
-                  <option value="" disabled>Select your option</option>
+                  <option value="" disabled>
+                    Select your option
+                  </option>
                   <option value="purchase">Purchase</option>
                   <option value="gift">Gift</option>
                   <option value="bequest">Bequest</option>
@@ -163,8 +196,8 @@ export function ModifyArtifact() {
 
               <div className="form-group">
                 <label htmlFor="creationDate">Creation Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   id="creationDate"
                   value={formData.creationDate}
                   onChange={handleChange}
@@ -174,7 +207,7 @@ export function ModifyArtifact() {
 
             <div className="form-group">
               <label htmlFor="description">Description</label>
-              <textarea 
+              <textarea
                 id="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -184,7 +217,11 @@ export function ModifyArtifact() {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="button button-secondary" onClick={() => window.history.back()}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => window.history.back()}
+              >
                 Cancel
               </button>
               <button type="submit" className="button">
@@ -198,28 +235,27 @@ export function ModifyArtifact() {
   );
 }
 
-
 export function AddArtifact() {
   const [formData, setFormData] = useState({
-    artifactName: '',
-    artist: '',
-    acquisitionDate: '',
-    acquisitionValue: '',
-    acquisitionType: '',
-    creationDate: '',
-    description: ''
+    artifactName: "",
+    artist: "",
+    acquisitionDate: "",
+    acquisitionValue: "",
+    acquisitionType: "",
+    creationDate: "",
+    description: "",
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
   };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [id]: value
+      [id]: value,
     }));
   };
 
@@ -231,63 +267,75 @@ export function AddArtifact() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="artifactName">Artifact Name</label>
-                <input 
-                  type="text" 
+                <label className="required" htmlFor="artifactName">
+                  Artifact Name
+                </label>
+                <input
+                  type="text"
                   id="artifactName"
                   value={formData.artifactName}
                   onChange={handleChange}
                   placeholder="Enter the name of the artifact"
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
-                <label className="required" htmlFor="artist">Artist Name</label>
-                <input 
-                  type="text" 
+                <label className="required" htmlFor="artist">
+                  Artist Name
+                </label>
+                <input
+                  type="text"
                   id="artist"
                   value={formData.artist}
                   onChange={handleChange}
-                  required 
+                  required
                 />
               </div>
             </div>
 
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="acquisitionDate">Acquisition Date</label>
-                <input 
-                  type="date" 
+                <label className="required" htmlFor="acquisitionDate">
+                  Acquisition Date
+                </label>
+                <input
+                  type="date"
                   id="acquisitionDate"
                   value={formData.acquisitionDate}
                   onChange={handleChange}
-                  required 
+                  required
                 />
               </div>
 
               <div className="form-group">
-                <label className="required" htmlFor="acquisitionValue">Acquisition Value</label>
-                <input 
-                  type="number" 
+                <label className="required" htmlFor="acquisitionValue">
+                  Acquisition Value
+                </label>
+                <input
+                  type="number"
                   id="acquisitionValue"
                   value={formData.acquisitionValue}
                   onChange={handleChange}
-                  required 
+                  required
                 />
               </div>
             </div>
 
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="acquisitionType">Acquisition Type</label>
-                <select 
+                <label className="required" htmlFor="acquisitionType">
+                  Acquisition Type
+                </label>
+                <select
                   id="acquisitionType"
                   value={formData.acquisitionType}
                   onChange={handleChange}
                   required
                 >
-                  <option value="" disabled>Select your option</option>
+                  <option value="" disabled>
+                    Select your option
+                  </option>
                   <option value="purchase">Purchase</option>
                   <option value="gift">Gift</option>
                   <option value="bequest">Bequest</option>
@@ -296,8 +344,8 @@ export function AddArtifact() {
 
               <div className="form-group">
                 <label htmlFor="creationDate">Creation Date</label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   id="creationDate"
                   value={formData.creationDate}
                   onChange={handleChange}
@@ -307,7 +355,7 @@ export function AddArtifact() {
 
             <div className="form-group">
               <label htmlFor="description">Description</label>
-              <textarea 
+              <textarea
                 id="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -317,7 +365,11 @@ export function AddArtifact() {
             </div>
 
             <div className="form-actions">
-              <button type="button" className="button button-secondary" onClick={() => window.history.back()}>
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => window.history.back()}
+              >
                 Cancel
               </button>
               <button type="submit" className="button">

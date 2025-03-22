@@ -1,23 +1,27 @@
-import '../components.css';
+import "../components.css";
 
 export function Features() {
   const features = [
     {
       title: "Digital Cataloging",
-      description: "Efficiently catalog and organize your entire collection with our intuitive digital system."
+      description:
+        "Efficiently catalog and organize your entire collection with our intuitive digital system.",
     },
     {
       title: "Asset Tracking",
-      description: "Real-time tracking of artifacts, loans, and exhibitions with comprehensive audit trails."
+      description:
+        "Real-time tracking of artifacts, loans, and exhibitions with comprehensive audit trails.",
     },
     {
       title: "Conservation Management",
-      description: "Monitor and schedule conservation tasks while maintaining detailed condition reports."
+      description:
+        "Monitor and schedule conservation tasks while maintaining detailed condition reports.",
     },
     {
       title: "Research Access",
-      description: "Facilitate research with easy access to collection data and high-resolution imagery."
-    }
+      description:
+        "Facilitate research with easy access to collection data and high-resolution imagery.",
+    },
   ];
 
   return (

@@ -1,4 +1,4 @@
-import '../components.css';
+import "../components.css";
 
 export function Contact() {
   const handleSubmit = (e) => {
@@ -13,10 +13,10 @@ export function Contact() {
           <div className="contact-info">
             <h3>Transform Your Collection Management</h3>
             <p>
-              Ready to elevate your museum's collection management? 
-              Contact us today to schedule a personalized demo of MuseoCore's capabilities.
+              Ready to elevate your museum's collection management? Contact us
+              today to schedule a personalized demo of MuseoCore's capabilities.
             </p>
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1507679799987-c73779587ccf"
               alt="Professional Museum Environment"
               loading="lazy"
@@ -39,7 +39,9 @@ export function Contact() {
               <label htmlFor="message">Message</label>
               <textarea id="message" rows="4" required></textarea>
             </div>
-            <button type="submit" className="button" style={{ width: '100%' }}>Request Demo</button>
+            <button type="submit" className="button" style={{ width: "100%" }}>
+              Request Demo
+            </button>
           </form>
         </div>
       </div>

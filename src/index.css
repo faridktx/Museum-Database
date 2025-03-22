@@ -1,73 +1,81 @@
 :root {
-    --color-primary: #1A1A1A;
-    --color-secondary: #4A6FA5;
-    --color-background: #f8f9fa;
-    --color-text: #333333;
-    --color-accent: #9B8579;
-    --spacing: 24px;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, sans-serif;
-    background-color: var(--color-background);
-    color: var(--color-text);
-    line-height: 1.6;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    font-family: "Playfair Display", serif;
-    color: var(--color-primary);
-  }
-  
+  --color-primary: #1a1a1a;
+  --color-secondary: #4a6fa5;
+  --color-background: #f8f9fa;
+  --color-text: #333333;
+  --color-accent: #9b8579;
+  --spacing: 24px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    "Helvetica Neue",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Playfair Display", serif;
+  color: var(--color-primary);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing);
+}
+
+.grid {
+  display: grid;
+  gap: var(--spacing);
+}
+
+.button {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--color-secondary);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #3d5d8a;
+}
+
+.section {
+  padding: calc(var(--spacing) * 3) 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+@media (max-width: 768px) {
   .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 var(--spacing);
+    padding: 0 calc(var(--spacing) / 2);
   }
-  
-  .grid {
-    display: grid;
-    gap: var(--spacing);
-  }
-  
-  .button {
-    display: inline-block;
-    padding: 12px 24px;
-    background-color: var(--color-secondary);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .button:hover {
-    background-color: #3d5d8a;
-  }
-  
+
   .section {
-    padding: calc(var(--spacing) * 3) 0;
+    padding: calc(var(--spacing) * 2) 0;
   }
-  
-  .text-center {
-    text-align: center;
-  }
-  
-  @media (max-width: 768px) {
-    .container {
-      padding: 0 calc(var(--spacing) / 2);
-    }
-    
-    .section {
-      padding: calc(var(--spacing) * 2) 0;
-    }
-  }
-  
+}

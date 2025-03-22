@@ -1,7 +1,7 @@
-import { Hero } from '../components/home/hero';
-import { Features } from '../components/home/features';
-import { Overview } from '../components/home/overview';
-import { Contact } from '../components/home/contact';
+import { Hero } from "../components/home/hero";
+import { Features } from "../components/home/features";
+import { Overview } from "../components/home/overview";
+import { Contact } from "../components/home/contact";
 
 export function Home() {
   return (

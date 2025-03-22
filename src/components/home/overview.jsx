@@ -1,4 +1,4 @@
-import '../components.css';
+import "../components.css";
 
 export function Overview() {
   return (
@@ -8,9 +8,10 @@ export function Overview() {
           <div className="overview-content">
             <h2>Advanced Collection Tracking</h2>
             <p>
-              MuseoCore provides comprehensive tracking capabilities for museums of all sizes. 
-              Our system helps you maintain detailed records of acquisitions, loans, 
-              conservation treatments, and exhibition histories.
+              MuseoCore provides comprehensive tracking capabilities for museums
+              of all sizes. Our system helps you maintain detailed records of
+              acquisitions, loans, conservation treatments, and exhibition
+              histories.
             </p>
             <ul className="overview-list">
               <li>Detailed artifact documentation</li>
@@ -21,7 +22,7 @@ export function Overview() {
             </ul>
           </div>
           <div className="overview-image">
-            <img 
+            <img
               src="https://images.unsplash.com/photo-1620928572438-075c466c48da"
               alt="Collection Management Interface"
               loading="lazy"
