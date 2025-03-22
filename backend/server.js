@@ -62,22 +62,44 @@ app.get("/api/report", async (req, res) => {
   switch (type) {
     case "collection":
       query = `
-        SELECT Artifact_ID, Artifact_Name, Artifact_Description, Value
-        FROM artifacts
+        SELECT 
+        a.Artifact_ID, 
+        a.Artifact_Name, 
+        a.Artifact_Description, 
+        a.Value, 
+        ar.Artist_Name, 
+        ar.Nationality
+        FROM artifacts a
+        JOIN artists ar ON a.Artist_ID = ar.Artist_ID;
       `; // Replace with your collection table query
       title = "Collection Overview Report";
       break;
     case "exhibits":
       query = `
-        SELECT Exhibit_ID, Exhibit_Name, Description, Start_Date, Exhibit_Type
-        FROM exhibits
+        SELECT 
+        e.Exhibit_ID, 
+        e.Exhibit_Name, 
+        e.Description, 
+        e.Start_Date, 
+        e.Exhibit_Type, 
+        ev.Event_Name, 
+        ev.Start_Date
+        FROM exhibits e
+        JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits;
       `; // Replace with your exhibits table query
       title = "Exhibit Status Report";
       break;
     case "employee":
       query = `
-        SELECT Employee_ID, Employee_Name, Address, Salary, Work_Email
-        FROM employees
+        SELECT 
+        emp.Employee_ID, 
+        emp.Employee_Name, 
+        emp.Address, 
+        emp.Salary, 
+        emp.Work_Email, 
+        e.Exhibit_Name
+        FROM employees emp
+        JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID;
       `; // Replace with your employee table query
       title = "Employee History Report";
       break;
