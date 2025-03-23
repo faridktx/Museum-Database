@@ -5,7 +5,7 @@ const target = path.resolve(__dirname, "./shared");
 const linkPath = path.resolve(__dirname, "node_modules", "shared");
 
 // for this to work permissions need to be set manually on the computer
-// need to run reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v AllowDevelopmentWithoutDevLicense /d 1
+// need to run --> reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock" /t REG_DWORD /f /v AllowDevelopmentWithoutDevLicense /d 1
 // from a powershell terminal started in adminstrator mode
 
 try {

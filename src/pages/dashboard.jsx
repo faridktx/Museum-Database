@@ -4,9 +4,7 @@ import "../components/components.css";
 export function Dashboard() {
   const handleGenerateReport = async (reportType) => {
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/report?type=${reportType}`,
-      );
+      const response = await fetch(`/api/report?type=${reportType}`);
       if (!response.ok) {
         throw new Error("Failed to fetch report");
       }

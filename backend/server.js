@@ -1,9 +1,12 @@
 import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
+import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES } from "shared/constants.js";
 
+dotenv.config({ path: "./backend/.env" });
+console.log(process.env);
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -15,10 +18,10 @@ app.listen(PORT, () => {
 });
 
 const pool = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Sponge12368!",
-  database: "mydb",
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 30,
   queueLimit: 0,
@@ -387,7 +390,6 @@ app.get("/api/report", async (req, res) => {
 
   try {
     const [results] = await promisePool.query(query);
-
     const htmlReport = generateHTMLReport(results, title);
 
     res.send(htmlReport);
@@ -397,115 +399,6 @@ app.get("/api/report", async (req, res) => {
   }
 });
 
-function generateHTMLReport(data, title) {
-  let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title}</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        th {
-          background-color: #f4f4f4;
-        }
-        tr:nth-child(even) {
-          background-color: #f9f9f9;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>${title}</h1>
-      <table>
-        <thead>
-          <tr>
-  `;
-}
-
-// Endpoint to generate a report
-app.get("/api/report", async (req, res) => {
-  const { type } = req.query; // Get the report type from the query parameter
-
-  let query;
-  let title;
-  switch (type) {
-    case "collection":
-      query = `
-        SELECT 
-        a.Artifact_ID, 
-        a.Artifact_Name, 
-        a.Artifact_Description, 
-        a.Value, 
-        ar.Artist_Name, 
-        ar.Nationality
-        FROM artifacts a
-        JOIN artists ar ON a.Artist_ID = ar.Artist_ID;
-      `; // Replace with your collection table query
-      title = "Collection Overview Report";
-      break;
-    case "exhibits":
-      query = `
-        SELECT 
-        e.Exhibit_ID, 
-        e.Exhibit_Name, 
-        e.Description, 
-        e.Start_Date, 
-        e.Exhibit_Type, 
-        ev.Event_Name, 
-        ev.Start_Date
-        FROM exhibits e
-        JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits;
-      `; // Replace with your exhibits table query
-      title = "Exhibit Status Report";
-      break;
-    case "employee":
-      query = `
-        SELECT 
-        emp.Employee_ID, 
-        emp.Employee_Name, 
-        emp.Address, 
-        emp.Salary, 
-        emp.Work_Email, 
-        e.Exhibit_Name
-        FROM employees emp
-        JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID;
-      `; // Replace with your employee table query
-      title = "Employee History Report";
-      break;
-    default:
-      return res.status(400).send("Invalid report type");
-  }
-
-  try {
-    // Execute the SQL query
-    const [results] = await promisePool.query(query);
-
-    // Generate the HTML report
-    const htmlReport = generateHTMLReport(results, title);
-
-    // Send the HTML report as a response
-    res.send(htmlReport);
-  } catch (err) {
-    console.error("Error executing query:", err);
-    res.status(500).send("Error executing query");
-  }
-});
-
-// Function to generate HTML report
 function generateHTMLReport(data, title) {
   let html = `
     <!DOCTYPE html>
@@ -565,7 +458,6 @@ function generateHTMLReport(data, title) {
     `;
   });
 
-  // Generate table rows dynamically
   data.forEach((row) => {
     html += `
       <tr>
