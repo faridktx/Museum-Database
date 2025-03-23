@@ -10,6 +10,8 @@ import {
 } from "./utils";
 import "./components.css";
 import { ROLES } from "shared/constants.js";
+import { ExhibitsOptional, ExhibitsRequired } from "./common/exhibits";
+import { exhibitSetter } from "./common/setters";
 
 export function DeleteEmployee() {
   useEffect(() => toastSuccessDelete("Employee"), []);
@@ -81,8 +83,11 @@ export function DeleteEmployee() {
 }
 
 export function ModifyEmployee() {
+  useEffect(() => exhibitSetter(setExhibits), []);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     employeeID: "",
+    exhibitID: "",
     employeeName: "",
     ssn: "",
     phoneNumber: "",
@@ -142,6 +147,12 @@ export function ModifyEmployee() {
                   placeholder="Enter the name of the employee"
                 />
               </div>
+
+              <ExhibitsOptional
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
                 <label htmlFor="ssn">Social Security Number</label>
@@ -265,10 +276,13 @@ export function ModifyEmployee() {
 }
 
 export function AddEmployee() {
+  useEffect(() => exhibitSetter(setExhibits), []);
   useEffect(() => toastSuccessInsert("Employee"));
 
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: "",
+    exhibitID: "",
     ssn: "",
     phoneNumber: "",
     address: "",
@@ -315,6 +329,15 @@ export function AddEmployee() {
                   required
                 />
               </div>
+              <div className="form-group"></div>
+            </div>
+
+            <div className="input-group">
+              <ExhibitsRequired
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
                 <label className="required" htmlFor="ssn">

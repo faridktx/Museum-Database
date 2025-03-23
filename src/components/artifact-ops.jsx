@@ -7,23 +7,11 @@ import {
   toastProcessModify,
   toastProcessInsert,
   apiModifyFetch,
-  apiGetFetch,
 } from "./utils";
 import "./components.css";
+import { ExhibitsRequired, ExhibitsOptional } from "./common/exhibits";
 import { ACQUISITIONTYPES } from "shared/constants.js";
-
-const optionSetter = async (path, setter) => {
-  const response = await apiGetFetch(path);
-  setter(response.data);
-};
-
-const exhibitSetter = async (setter) => {
-  await optionSetter("/api/getexhibits/", setter);
-};
-
-const artistSetter = async (setter) => {
-  await optionSetter("/api/getartists/", setter);
-};
+import { artistSetter, exhibitSetter } from "./common/setters";
 
 export function DeleteArtifact() {
   useEffect(() => toastSuccessDelete("Aritifact"), []);
@@ -105,9 +93,9 @@ export function ModifyArtifact() {
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     artifactID: "",
-    artifactName: "",
     exhibitID: "",
     artistID: "",
+    artifactName: "",
     acquisitionDate: "",
     acquisitionValue: "",
     acquisitionType: "",
@@ -170,23 +158,11 @@ export function ModifyArtifact() {
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="exhibitID">Exhibit Name (ID)</label>
-                <select
-                  id="exhibitID"
-                  value={formData.exhibitID}
-                  onChange={handleChange}
-                >
-                  <option value="" disabled selected>
-                    Select your option
-                  </option>
-                  {exhibitOptions.map((exhibit, index) => (
-                    <option id={index} value={exhibit.id}>
-                      {`${exhibit.name} (${exhibit.id})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <ExhibitsOptional
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
                 <label htmlFor="artist">Artist Name (ID)</label>
@@ -362,26 +338,11 @@ export function AddArtifact() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="required" htmlFor="exhibitID">
-                  Exhibit Name (ID)
-                </label>
-                <select
-                  id="exhibitID"
-                  value={formData.exhibitID}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" selected disabled>
-                    Select your option
-                  </option>
-                  {exhibitOptions.map((exhibit, index) => (
-                    <option id={index} value={exhibit.id}>
-                      {`${exhibit.name} (${exhibit.id})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <ExhibitsRequired
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
                 <label className="required" htmlFor="artistID">

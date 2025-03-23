@@ -146,6 +146,10 @@ app.patch(
   "/api/artifact/modify/",
   [
     body("artifactID").isInt().withMessage("Artifact ID must be an integer."),
+    body("exhibitID")
+      .optional({ checkFalsy: true })
+      .isInt()
+      .withMessage("Exhibit ID must be an integer"),
     body("artistID")
       .optional({ checkFalsy: true })
       .isInt()
@@ -182,8 +186,9 @@ app.patch(
   async (req, res) => {
     const {
       artifactID,
-      artifactName,
+      exhibitID,
       artistID,
+      artifactName,
       acquisitionDate,
       acquisitionValue,
       acquisitionType,
@@ -194,6 +199,7 @@ app.patch(
     const fields = [
       { column: "artifact_name", value: artifactName },
       { column: "artist_id", value: artistID },
+      { column: "exhibit_id", value: exhibitID },
       { column: "acquisition_date", value: acquisitionDate },
       { column: "value", value: acquisitionValue },
       { column: "acquisition_date", value: acquisitionDate },
@@ -215,6 +221,8 @@ app.post(
     body("artifactName")
       .isString()
       .withMessage("Artifact name must be a string"),
+    body("exhibitID").isInt().withMessage("Exhibit ID but be an integer"),
+    body("artistID").isInt().withMessage("Artist ID must be an integer"),
     body("description")
       .optional({ checkFalsy: true })
       .isString()
@@ -301,6 +309,7 @@ app.post(
     body("employeeName")
       .isString()
       .withMessage("Employee name must be a string"),
+    body("exhibitID").isInt().withMessage("Exhibit ID mut be an integer"),
     body("ssn")
       .matches(/^\d{3}-\d{2}-\d{4}$/)
       .withMessage("SSN must be in the format XXX-XX-XXXX"),
@@ -331,6 +340,7 @@ app.post(
     if (validationErrorCheck(req, res)) return;
     const {
       employeeName,
+      exhibitID,
       ssn,
       phoneNumber,
       address,
@@ -355,7 +365,7 @@ app.post(
       { column: "salary", value: salary },
       { column: "role", value: role },
       { column: "is_giftshop", value: isGiftShop },
-      { column: "exhibit_id", value: 2 },
+      { column: "exhibit_id", value: exhibitID },
     ];
     await insertRecord("employees", res, fields);
   },
