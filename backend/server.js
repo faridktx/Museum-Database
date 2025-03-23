@@ -6,7 +6,6 @@ import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES } from "shared/constants.js";
 
 dotenv.config({ path: "./backend/.env" });
-console.log(process.env);
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -33,6 +32,16 @@ const validationErrorCheck = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
+  }
+};
+
+const executeSQLReturn = async (res, query) => {
+  try {
+    const [rows] = await promisePool.query(query);
+    return rows;
+  } catch (err) {
+    res.status(500).json({ errors: [] });
+    console.log("Error retrieving entires...");
   }
 };
 
@@ -78,6 +87,18 @@ const modifyRecord = async (res, id, id_column, table, fields) => {
   setVariables.push(id);
   await executeSQLQuery(res, query, setVariables);
 };
+
+app.get("/api/getartists/", async (req, res) => {
+  let query = "SELECT artist_id as id, artist_name as name FROM artists";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/getexhibits/", async (_req, res) => {
+  let query = "SELECT exhibit_id as id, exhibit_name as name FROM exhibits";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
 
 app.delete(
   "/api/artifact/delete/",
@@ -125,6 +146,10 @@ app.patch(
   "/api/artifact/modify/",
   [
     body("artifactID").isInt().withMessage("Artifact ID must be an integer."),
+    body("artistID")
+      .optional({ checkFalsy: true })
+      .isInt()
+      .withMessage("Artist ID must be an integer"),
     body("artifactName")
       .optional({ checkFalsy: true })
       .isString()
@@ -158,7 +183,7 @@ app.patch(
     const {
       artifactID,
       artifactName,
-      artist,
+      artistID,
       acquisitionDate,
       acquisitionValue,
       acquisitionType,
@@ -168,7 +193,7 @@ app.patch(
     if (validationErrorCheck(req, res)) return;
     const fields = [
       { column: "artifact_name", value: artifactName },
-      { column: "artist_id", value: artist },
+      { column: "artist_id", value: artistID },
       { column: "acquisition_date", value: acquisitionDate },
       { column: "value", value: acquisitionValue },
       { column: "acquisition_date", value: acquisitionDate },
@@ -217,7 +242,8 @@ app.post(
     if (validationErrorCheck(req, res)) return;
     const {
       artifactName,
-      artist,
+      exhibitID,
+      artistID,
       acquisitionDate,
       acquisitionValue,
       acquisitionType,
@@ -225,8 +251,8 @@ app.post(
       description,
     } = req.body;
     const fields = [
-      { column: "artist_id", value: 1 },
-      { column: "exhibit_id", value: 1 },
+      { column: "artist_id", value: artistID },
+      { column: "exhibit_id", value: exhibitID },
       { column: "artifact_name", value: artifactName },
       { column: "artifact_description", value: description },
       { column: "created_date", value: creationDate },

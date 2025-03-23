@@ -1,18 +1,18 @@
 import { useEffect, useState } from "react";
 import {
-  showToastSuccessNotification,
-  showToastFailNotification,
-  apiFetch,
+  toastSuccessDelete,
+  toastSuccessInsert,
+  toastSuccessModify,
+  toastProcessDelete,
+  toastProcessModify,
+  toastProcessInsert,
+  apiModifyFetch,
 } from "./utils";
 import "./components.css";
 import { ROLES } from "shared/constants.js";
 
 export function DeleteEmployee() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Employee", "removed");
-    }
-  }, []);
+  useEffect(() => toastSuccessDelete("Employee"), []);
 
   const [formData, setFormData] = useState({
     employeeID: "",
@@ -21,18 +21,13 @@ export function DeleteEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch(
+    const response = await apiModifyFetch(
       "/api/employee/delete/",
       "DELETE",
       formData,
     );
 
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Employee", "removal");
-    }
+    toastProcessDelete(response, "Employee");
   };
 
   const handleChange = (e) => {
@@ -270,12 +265,7 @@ export function ModifyEmployee() {
 }
 
 export function AddEmployee() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      localStorage.removeItem("modification");
-      showToastSuccessNotification("Employee", "inserted");
-    }
-  });
+  useEffect(() => toastSuccessInsert("Employee"));
 
   const [formData, setFormData] = useState({
     employeeName: "",
@@ -294,13 +284,7 @@ export function AddEmployee() {
     e.preventDefault();
 
     const response = await apiFetch("/api/employee/insert/", "POST", formData);
-
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Employee", "insertion");
-    }
+    toastProcessInsert(response, "Employee");
   };
 
   const handleChange = (e) => {

@@ -1,18 +1,32 @@
 import { useEffect, useState } from "react";
 import {
-  showToastSuccessNotification,
-  showToastFailNotification,
-  apiFetch,
+  toastSuccessDelete,
+  toastSuccessInsert,
+  toastSuccessModify,
+  toastProcessDelete,
+  toastProcessModify,
+  toastProcessInsert,
+  apiModifyFetch,
+  apiGetFetch,
 } from "./utils";
 import "./components.css";
 import { ACQUISITIONTYPES } from "shared/constants.js";
 
+const optionSetter = async (path, setter) => {
+  const response = await apiGetFetch(path);
+  setter(response.data);
+};
+
+const exhibitSetter = async (setter) => {
+  await optionSetter("/api/getexhibits/", setter);
+};
+
+const artistSetter = async (setter) => {
+  await optionSetter("/api/getartists/", setter);
+};
+
 export function DeleteArtifact() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Artifact", "removed");
-    }
-  }, []);
+  useEffect(() => toastSuccessDelete("Aritifact"), []);
 
   const [formData, setFormData] = useState({
     artifactID: "",
@@ -21,18 +35,12 @@ export function DeleteArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch(
+    const response = await apiModifyFetch(
       "/api/artifact/delete/",
       "DELETE",
       formData,
     );
-
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Artifact", "removal");
-    }
+    toastProcessDelete(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -86,16 +94,20 @@ export function DeleteArtifact() {
 }
 
 export function ModifyArtifact() {
+  useEffect(() => toastSuccessModify("Artifact"), []);
+
   useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Artifact", "modified");
-    }
+    exhibitSetter(setExhibits);
+    artistSetter(setArtists);
   }, []);
 
+  const [artistOptions, setArtists] = useState([]);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     artifactID: "",
     artifactName: "",
-    artist: "",
+    exhibitID: "",
+    artistID: "",
     acquisitionDate: "",
     acquisitionValue: "",
     acquisitionType: "",
@@ -106,14 +118,13 @@ export function ModifyArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch("/api/artifact/modify/", "PATCH", formData);
+    const response = await apiModifyFetch(
+      "/api/artifact/modify/",
+      "PATCH",
+      formData,
+    );
 
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Artifact", "modification");
-    }
+    toastProcessModify(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -160,13 +171,39 @@ export function ModifyArtifact() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="artist">Artist Name</label>
-                <input
-                  type="text"
+                <label htmlFor="exhibitID">Exhibit Name (ID)</label>
+                <select
+                  id="exhibitID"
+                  value={formData.exhibitID}
+                  onChange={handleChange}
+                >
+                  <option value="" disabled selected>
+                    Select your option
+                  </option>
+                  {exhibitOptions.map((exhibit, index) => (
+                    <option id={index} value={exhibit.id}>
+                      {`${exhibit.name} (${exhibit.id})`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="artist">Artist Name (ID)</label>
+                <select
                   id="artist"
                   value={formData.artist}
                   onChange={handleChange}
-                />
+                >
+                  <option value="" disabled selected>
+                    Select your option
+                  </option>
+                  {artistOptions.map((artist, index) => (
+                    <option id={index} value={artist.id}>
+                      {`${artist.name} (${artist.id})`}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -253,15 +290,19 @@ export function ModifyArtifact() {
 }
 
 export function AddArtifact() {
+  useEffect(() => toastSuccessInsert("Artifact"), []);
+
   useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Artifact", "inserted");
-    }
+    exhibitSetter(setExhibits);
+    artistSetter(setArtists);
   }, []);
 
+  const [artistOptions, setArtists] = useState([]);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     artifactName: "",
-    artist: "",
+    exhibitID: "",
+    artistID: "",
     acquisitionDate: "",
     acquisitionValue: "",
     acquisitionType: "",
@@ -272,14 +313,13 @@ export function AddArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch("/api/artifact/insert/", "POST", formData);
+    const response = await apiModifyFetch(
+      "/api/artifact/insert/",
+      "POST",
+      formData,
+    );
 
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Artifact", "insertion");
-    }
+    toastProcessInsert(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -323,16 +363,45 @@ export function AddArtifact() {
               </div>
 
               <div className="form-group">
-                <label className="required" htmlFor="artist">
-                  Artist Name
+                <label className="required" htmlFor="exhibitID">
+                  Exhibit Name (ID)
                 </label>
-                <input
-                  type="text"
-                  id="artist"
-                  value={formData.artist}
+                <select
+                  id="exhibitID"
+                  value={formData.exhibitID}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="" selected disabled>
+                    Select your option
+                  </option>
+                  {exhibitOptions.map((exhibit, index) => (
+                    <option id={index} value={exhibit.id}>
+                      {`${exhibit.name} (${exhibit.id})`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="required" htmlFor="artistID">
+                  Artist Name (ID)
+                </label>
+                <select
+                  id="artistID"
+                  value={formData.artistID}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="" disabled selected>
+                    Select your option
+                  </option>
+                  {artistOptions.map((artist, index) => (
+                    <option id={index} value={artist.id}>
+                      {`${artist.name} (${artist.id})`}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

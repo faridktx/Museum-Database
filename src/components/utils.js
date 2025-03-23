@@ -1,8 +1,8 @@
-export function showToastSuccessNotification(object, operation) {
+function showToastSuccessNotification(object, operation) {
   showToastNotification(`toast-success`, `${object} ${operation} successfully`);
 }
 
-export function showToastFailNotification(object, operation) {
+function showToastFailNotification(object, operation) {
   showToastNotification(`toast-error`, `${object} ${operation} failed`);
 }
 
@@ -16,23 +16,84 @@ function showToastNotification(toastClass, message) {
   setTimeout(() => toast.remove(), 3000);
 }
 
-export async function apiFetch(path, method, formData) {
-  let apiFetchResponse = { success: true, message: null };
+export function toastSuccess(entity, operation) {
+  if (localStorage.getItem("modification") === "true") {
+    showToastSuccessNotification(entity, operation);
+  }
+}
+
+export function toastSuccessDelete(entity) {
+  toastSuccess(entity, "deleted");
+}
+
+export function toastSuccessInsert(entity) {
+  toastSuccess(entity, "inserted");
+}
+
+export function toastSuccessModify(entity) {
+  toastSuccess(entity, "modified");
+}
+
+function toastProcess(response, entity, operation) {
+  if (response.success) {
+    localStorage.setItem("modification", "true");
+    location.reload();
+  } else {
+    showToastFailNotification(entity, operation);
+  }
+}
+
+export function toastProcessDelete(response, entity) {
+  toastProcess(response, entity, "deletion");
+}
+
+export function toastProcessInsert(response, entity) {
+  toastProcess(response, entity, "insertion");
+}
+
+export function toastProcessModify(response, entity) {
+  toastProcess(response, entity, "modification");
+}
+
+async function parseJSON(res, apiRes) {
+  const data = await res.json();
+  if (res.status !== 200) {
+    apiRes.success = false;
+    apiRes.errors = data.errors;
+  } else {
+    apiRes.data = data;
+  }
+}
+
+async function parseFetchError(res) {
+  res.success = false;
+  res.errors.push("Error handling submission of form");
+}
+
+export async function apiGetFetch(path) {
+  let apiResponse = { success: true, errors: [], data: [] };
+  try {
+    const response = await fetch(path, {
+      method: "GET",
+    });
+    await parseJSON(response, apiResponse);
+  } catch (err) {
+    await parseFetchError(apiResponse);
+  }
+  return apiResponse;
+}
+
+export async function apiModifyFetch(path, method, formData) {
+  let apiResponse = { success: true, errors: [] };
   try {
     const response = await fetch(path, {
       method: method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
-    console.log(response);
-    if (response.status !== 200) {
-      const data = await response.json();
-      apiFetchResponse.success = false;
-      apiFetchResponse.message = data.message;
-    }
+    await parseJSON(response, apiResponse);
   } catch (err) {
-    apiFetchResponse.success = false;
-    console.log("Error handling submission of form...", err);
+    await parseFetchError(apiResponse);
   }
-  return apiFetchResponse;
+  return apiResponse;
 }
