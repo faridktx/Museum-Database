@@ -11,7 +11,6 @@ export function Dashboard() {
         throw new Error("Failed to fetch report");
       }
       const html = await response.text();
-
       const newWindow = window.open("", "_blank");
       newWindow.document.write(html);
       newWindow.document.close();
@@ -35,7 +34,7 @@ export function Dashboard() {
               <p>View comprehensive reports about your museum's collection.</p>
               <button
                 className="button"
-                onClick={() => handleGenerateReport("Collection")}
+                onClick={() => handleGenerateReport("collection")}
               >
                 Generate Report
               </button>
@@ -45,7 +44,7 @@ export function Dashboard() {
               <p>Track the current and past exhibits.</p>
               <button
                 className="button"
-                onClick={() => handleGenerateReport("Exhibits")}
+                onClick={() => handleGenerateReport("exhibits")}
               >
                 View Status
               </button>
@@ -55,7 +54,7 @@ export function Dashboard() {
               <p>Review employee history.</p>
               <button
                 className="button"
-                onClick={() => handleGenerateReport("Employee")}
+                onClick={() => handleGenerateReport("employee")}
               >
                 Access History
               </button>

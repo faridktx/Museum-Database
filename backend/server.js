@@ -17,8 +17,8 @@ app.listen(PORT, () => {
 const pool = mysql.createPool({
   host: "localhost",
   user: "root",
-  password: "Tuotat1!",
-  database: "test_db",
+  password: "Sponge12368!",
+  database: "mydb",
   waitForConnections: true,
   connectionLimit: 30,
   queueLimit: 0,
@@ -434,6 +434,115 @@ function generateHTMLReport(data, title) {
         <thead>
           <tr>
   `;
+}
+
+// Endpoint to generate a report
+app.get("/api/report", async (req, res) => {
+  const { type } = req.query; // Get the report type from the query parameter
+
+  let query;
+  let title;
+  switch (type) {
+    case "collection":
+      query = `
+        SELECT 
+        a.Artifact_ID, 
+        a.Artifact_Name, 
+        a.Artifact_Description, 
+        a.Value, 
+        ar.Artist_Name, 
+        ar.Nationality
+        FROM artifacts a
+        JOIN artists ar ON a.Artist_ID = ar.Artist_ID;
+      `; // Replace with your collection table query
+      title = "Collection Overview Report";
+      break;
+    case "exhibits":
+      query = `
+        SELECT 
+        e.Exhibit_ID, 
+        e.Exhibit_Name, 
+        e.Description, 
+        e.Start_Date, 
+        e.Exhibit_Type, 
+        ev.Event_Name, 
+        ev.Start_Date
+        FROM exhibits e
+        JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits;
+      `; // Replace with your exhibits table query
+      title = "Exhibit Status Report";
+      break;
+    case "employee":
+      query = `
+        SELECT 
+        emp.Employee_ID, 
+        emp.Employee_Name, 
+        emp.Address, 
+        emp.Salary, 
+        emp.Work_Email, 
+        e.Exhibit_Name
+        FROM employees emp
+        JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID;
+      `; // Replace with your employee table query
+      title = "Employee History Report";
+      break;
+    default:
+      return res.status(400).send("Invalid report type");
+  }
+
+  try {
+    // Execute the SQL query
+    const [results] = await promisePool.query(query);
+
+    // Generate the HTML report
+    const htmlReport = generateHTMLReport(results, title);
+
+    // Send the HTML report as a response
+    res.send(htmlReport);
+  } catch (err) {
+    console.error("Error executing query:", err);
+    res.status(500).send("Error executing query");
+  }
+});
+
+// Function to generate HTML report
+function generateHTMLReport(data, title) {
+  let html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title}</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+        }
+        th, td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        th {
+          background-color: #f4f4f4;
+        }
+        tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>${title}</h1>
+      <table>
+        <thead>
+          <tr>
+  `;
 
   if (data.length > 0) {
     const columns = Object.keys(data[0]);
@@ -446,6 +555,17 @@ function generateHTMLReport(data, title) {
         <tbody>
   `;
 
+  data.forEach((row) => {
+    html += `
+      <tr>
+        ${Object.values(row)
+          .map((value) => `<td>${value}</td>`)
+          .join("")}
+      </tr>
+    `;
+  });
+
+  // Generate table rows dynamically
   data.forEach((row) => {
     html += `
       <tr>
