@@ -188,6 +188,13 @@ export function ModifyArtist() {
 }
 
 export function AddArtist() {
+  useEffect(() => {
+    if (localStorage.getItem("modification") === "true") {
+      localStorage.removeItem("modification");
+      showToastSuccessNotification("Artist", "inserted");
+    }
+  });
+
   const [formData, setFormData] = useState({
     artistName: "",
     nationality: "",
@@ -195,9 +202,17 @@ export function AddArtist() {
     deathDate: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiFetch("/api/artist/insert/", "POST", formData);
+
+    if (response.success) {
+      localStorage.setItem("modification", "true");
+      location.reload();
+    } else {
+      showToastFailNotification("Artist", "insertion");
+    }
   };
 
   const handleChange = (e) => {

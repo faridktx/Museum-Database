@@ -5,6 +5,7 @@ import {
   apiFetch,
 } from "./utils";
 import "./components.css";
+import { ACQUISITIONTYPES } from "shared/constants.js";
 
 export function DeleteArtifact() {
   useEffect(() => {
@@ -85,6 +86,12 @@ export function DeleteArtifact() {
 }
 
 export function ModifyArtifact() {
+  useEffect(() => {
+    if (localStorage.getItem("modification") === "true") {
+      showToastSuccessNotification("Artifact", "modified");
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
     artifactID: "",
     artifactName: "",
@@ -96,9 +103,17 @@ export function ModifyArtifact() {
     description: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiFetch("/api/artifact/modify/", "PATCH", formData);
+
+    if (response.success) {
+      localStorage.setItem("modification", "true");
+      location.reload();
+    } else {
+      showToastFailNotification("Artifact", "modification");
+    }
   };
 
   const handleChange = (e) => {
@@ -185,12 +200,14 @@ export function ModifyArtifact() {
                   value={formData.acquisitionType}
                   onChange={handleChange}
                 >
-                  <option value="" disabled>
+                  <option value="" selected disabled>
                     Select your option
                   </option>
-                  <option value="purchase">Purchase</option>
-                  <option value="gift">Gift</option>
-                  <option value="bequest">Bequest</option>
+                  {ACQUISITIONTYPES.map((acqType, index) => (
+                    <option key={index} value={acqType}>
+                      {acqType}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -236,6 +253,12 @@ export function ModifyArtifact() {
 }
 
 export function AddArtifact() {
+  useEffect(() => {
+    if (localStorage.getItem("modification") === "true") {
+      showToastSuccessNotification("Artifact", "inserted");
+    }
+  }, []);
+
   const [formData, setFormData] = useState({
     artifactName: "",
     artist: "",
@@ -246,9 +269,17 @@ export function AddArtifact() {
     description: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiFetch("/api/artifact/insert/", "POST", formData);
+
+    if (response.success) {
+      localStorage.setItem("modification", "true");
+      location.reload();
+    } else {
+      showToastFailNotification("Artifact", "insertion");
+    }
   };
 
   const handleChange = (e) => {
@@ -263,7 +294,18 @@ export function AddArtifact() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Add New Artifact</h2>
+          <h2 style={{ marginBottom: "0" }}>Add New Artifact</h2>
+          <div
+            style={{
+              fontSize: "12px",
+              marginBottom: "calc(var(--spacing) * 1.5)",
+            }}
+          >
+            <i>
+              If an artifact created by a new artist needs to be inserted,
+              please add the artist first.
+            </i>
+          </div>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -333,12 +375,14 @@ export function AddArtifact() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="" disabled>
+                  <option value="" selected disabled>
                     Select your option
                   </option>
-                  <option value="purchase">Purchase</option>
-                  <option value="gift">Gift</option>
-                  <option value="bequest">Bequest</option>
+                  {ACQUISITIONTYPES.map((acqType, index) => (
+                    <option key={index} value={acqType}>
+                      {acqType}
+                    </option>
+                  ))}
                 </select>
               </div>
 

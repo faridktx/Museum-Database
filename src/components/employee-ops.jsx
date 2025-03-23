@@ -5,6 +5,7 @@ import {
   apiFetch,
 } from "./utils";
 import "./components.css";
+import { ROLES } from "shared/constants.js";
 
 export function DeleteEmployee() {
   useEffect(() => {
@@ -120,7 +121,7 @@ export function ModifyEmployee() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="employeeID">
+                <label className="required" htmlFor="employeeID">
                   Employee ID
                 </label>
                 <input
@@ -237,12 +238,16 @@ export function ModifyEmployee() {
 
               <div className="form-group">
                 <label htmlFor="role">Role</label>
-                <input
-                  type="text"
-                  id="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                />
+                <select id="role" onChange={handleChange} value={formData.role}>
+                  <option value="" selected disabled>
+                    Select your option
+                  </option>
+                  {ROLES.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="form-actions">
@@ -265,6 +270,13 @@ export function ModifyEmployee() {
 }
 
 export function AddEmployee() {
+  useEffect(() => {
+    if (localStorage.getItem("modification") === "true") {
+      localStorage.removeItem("modification");
+      showToastSuccessNotification("Employee", "inserted");
+    }
+  });
+
   const [formData, setFormData] = useState({
     employeeName: "",
     ssn: "",
@@ -278,9 +290,17 @@ export function AddEmployee() {
     role: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiFetch("/api/employee/insert/", "POST", formData);
+
+    if (response.success) {
+      localStorage.setItem("modification", "true");
+      location.reload();
+    } else {
+      showToastFailNotification("Employee", "insertion");
+    }
   };
 
   const handleChange = (e) => {
@@ -299,7 +319,7 @@ export function AddEmployee() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="employeeName">
+                <label className="required" htmlFor="employeeName">
                   Employee Name
                 </label>
                 <input
@@ -313,7 +333,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="ssn">
+                <label className="required" htmlFor="ssn">
                   Social Security Number
                 </label>
                 <input
@@ -328,7 +348,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="phoneNumber">
+                <label className="required" htmlFor="phoneNumber">
                   Phone Number
                 </label>
                 <input
@@ -341,7 +361,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="address">
+                <label className="required" htmlFor="address">
                   Address
                 </label>
                 <input
@@ -356,7 +376,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="personalEmail">
+                <label className="required" htmlFor="personalEmail">
                   Personal Email
                 </label>
                 <input
@@ -369,7 +389,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="workEmail">
+                <label className="required" htmlFor="workEmail">
                   Work Email
                 </label>
                 <input
@@ -384,7 +404,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="birthDate">
+                <label className="required" htmlFor="birthDate">
                   Birth Date
                 </label>
                 <input
@@ -397,7 +417,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="hiringDate">
+                <label className="required" htmlFor="hiringDate">
                   Hiring Date
                 </label>
                 <input
@@ -412,7 +432,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="salary">
+                <label className="required" htmlFor="salary">
                   Salary
                 </label>
                 <input
@@ -425,16 +445,24 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="role">
+                <label className="required" htmlFor="role">
                   Role
                 </label>
-                <input
-                  type="text"
+                <select
                   id="role"
                   value={formData.role}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="" selected disabled>
+                    Select your option
+                  </option>
+                  {ROLES.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="form-actions">
