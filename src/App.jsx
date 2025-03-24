@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Home } from "./pages/home";
 import { Header } from "./components/home/header";
 import { Footer } from "./components/home/footer";
@@ -21,18 +21,12 @@ import { DashboardFooter } from "./components/dashboard/dashboard-footer";
 import { DashboardHeader } from "./components/dashboard/dashboard-header";
 
 export function App() {
-  const currentPath = window.location.pathname;
-  const inDashboard = function () {
-    return (
-      currentPath.endsWith("artifact") ||
-      currentPath.endsWith("employee") ||
-      currentPath.endsWith("artist")
-    );
-  };
+  const [location] = useLocation();
+  const notInDashboard = ["/", "/login"].includes(location);
 
   return (
     <>
-      {inDashboard() ? <DashboardHeader /> : <Header />}
+      {notInDashboard ? <Header /> : <DashboardHeader />}
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/login" component={Dashboard} />
@@ -49,7 +43,7 @@ export function App() {
         <Route path="/login/employee/modify" component={ModifyEmployee} />
         <Route path="/login/employee/remove" component={DeleteEmployee} />
       </Switch>
-      {inDashboard() ? <DashboardFooter /> : <Footer />}
+      {notInDashboard ? <Footer /> : <DashboardFooter />}
     </>
   );
 }

@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-  toastSuccessDelete,
-  toastSuccessInsert,
-  toastSuccessModify,
-  toastProcessDelete,
-  toastProcessModify,
-  toastProcessInsert,
-  apiModifyFetch,
-} from "./utils";
+import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { ROLES } from "shared/constants.js";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 
 export function DeleteEmployee() {
-  useEffect(() => toastSuccessDelete("Employee"), []);
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     employeeID: "",
@@ -28,8 +20,7 @@ export function DeleteEmployee() {
       "DELETE",
       formData,
     );
-
-    toastProcessDelete(response, "Employee");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -83,7 +74,7 @@ export function DeleteEmployee() {
 }
 
 export function ModifyEmployee() {
-  useEffect(() => toastSuccessModify("Employee"), []);
+  useEffect(() => toastSuccess(), []);
   useEffect(() => exhibitSetter(setExhibits), []);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
@@ -110,8 +101,7 @@ export function ModifyEmployee() {
       "PATCH",
       formData,
     );
-
-    toastProcessModify(response, "Employee");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -168,7 +158,9 @@ export function ModifyEmployee() {
               />
 
               <div className="form-group">
-                <label htmlFor="ssn">Social Security Number <i>(XXX-XX-XXXX)</i></label>
+                <label htmlFor="ssn">
+                  Social Security Number <i>(XXX-XX-XXXX)</i>
+                </label>
                 <input
                   type="text"
                   id="ssn"
@@ -180,7 +172,9 @@ export function ModifyEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label htmlFor="phoneNumber">Phone Number <i>(XXX-XXX-XXXX)</i></label>
+                <label htmlFor="phoneNumber">
+                  Phone Number <i>(XXX-XXX-XXXX)</i>
+                </label>
                 <input
                   type="tel"
                   id="phoneNumber"
@@ -296,7 +290,7 @@ export function ModifyEmployee() {
 
 export function AddEmployee() {
   useEffect(() => exhibitSetter(setExhibits), []);
-  useEffect(() => toastSuccessInsert("Employee"));
+  useEffect(() => toastSuccess(), []);
 
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
@@ -317,7 +311,7 @@ export function AddEmployee() {
     e.preventDefault();
 
     const response = await apiFetch("/api/employee/insert/", "POST", formData);
-    toastProcessInsert(response, "Employee");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -379,7 +373,7 @@ export function AddEmployee() {
             <div className="input-group">
               <div className="form-group">
                 <label className="required" htmlFor="phoneNumber">
-                Phone Number <i>(XXX-XXX-XXXX)</i>
+                  Phone Number <i>(XXX-XXX-XXXX)</i>
                 </label>
                 <input
                   type="tel"

@@ -31,7 +31,9 @@ const promisePool = pool.promise();
 const validationErrorCheck = (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+    return res
+      .status(400)
+      .json({ errors: errors.array().map((err) => err.msg) });
   }
 };
 
@@ -55,8 +57,7 @@ const executeSQLQuery = async (res, query, fields) => {
   }
 };
 
-const deleteRecord = async (table, column, req, res) => {
-  const { recordID } = req.body;
+const deleteRecord = async (table, column, recordID, res) => {
   const query = `DELETE FROM ${table} WHERE ${column} = ?`;
   await executeSQLQuery(res, query, [recordID]);
 };
@@ -67,7 +68,7 @@ const insertRecord = async (table, res, fields) => {
   const insertQs = " ?, ".repeat(fields.length);
   fields.forEach((field) => {
     const value = !field.value ? null : field.value;
-    setVariables.push(value);
+    insertVariables.push(value);
     insertColumns += field.column;
   });
   const query = `INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs})`;
@@ -76,19 +77,26 @@ const insertRecord = async (table, res, fields) => {
 
 const modifyRecord = async (res, id, id_column, table, fields) => {
   let setVariables = [];
-  let setQuery = "";
+  let setQueries = [];
   fields.forEach((field) => {
     if (field.value) {
-      setQuery += `SET ${field.column} = ? `;
+      setQueries.push(`${field.column} = ?`);
       setVariables.push(field.value);
     }
   });
-  let query = `UPDATE ${table} ${setQuery} WHERE ${id_column} = ?`;
-  setVariables.push(id);
-  await executeSQLQuery(res, query, setVariables);
+  if (setQueries) {
+    let setQuery = setQueries.join(", ");
+    let query = `UPDATE ${table} SET ${setQuery} WHERE ${id_column} = ?`;
+    setVariables.push(id);
+    await executeSQLQuery(res, query, setVariables);
+  } else {
+    res
+      .status(400)
+      .json({ errors: ["No fields to be modified were provided"] });
+  }
 };
 
-app.get("/api/getartists/", async (req, res) => {
+app.get("/api/getartists/", async (_req, res) => {
   let query = "SELECT artist_id as id, artist_name as name FROM artists";
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
@@ -104,13 +112,14 @@ app.delete(
   "/api/artifact/delete/",
   [
     body("artifactID")
-      .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Artifact ID must be an integer."),
   ],
   async (req, res) => {
     if (validationErrorCheck(req, res)) return;
-    await deleteRecord("artifacts", "artifact_id", req, res);
+    const { artifactID } = req.body;
+    await deleteRecord("artifacts", "artifact_id", artifactID, res);
   },
 );
 
@@ -118,13 +127,14 @@ app.delete(
   "/api/artist/delete/",
   [
     body("artistID")
-      .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Artist ID must be an integer"),
   ],
   async (req, res) => {
     if (validationErrorCheck(req, res)) return;
-    await deleteRecord("artists", "artist_id", req, res);
+    const { artistID } = req.body;
+    await deleteRecord("artists", "artist_id", artistID, res);
   },
 );
 
@@ -132,32 +142,38 @@ app.delete(
   "/api/employee/delete",
   [
     body("employeeID")
-      .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Employee ID must be an integer"),
   ],
   async (req, res) => {
     if (validationErrorCheck(req, res)) return;
-    await deleteRecord("employees", "employee_id", req, res);
+    const { employeeID } = req.body;
+    await deleteRecord("employees", "employee_id", employeeID, res);
   },
 );
 
 app.patch(
   "/api/artifact/modify/",
   [
-    body("artifactID").isInt().withMessage("Artifact ID must be an integer."),
+    body("artifactID")
+      .toInt()
+      .isInt()
+      .withMessage("Artifact ID must be an integer."),
     body("exhibitID")
       .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Exhibit ID must be an integer"),
     body("artistID")
       .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Artist ID must be an integer"),
     body("artifactName")
       .optional({ checkFalsy: true })
-      .isString()
-      .withMessage("Artifact name must be a string"),
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artifact name must not contain digits"),
     body("acquisitionDate")
       .optional({ checkFalsy: true })
       .matches(/^\d{4}-\d{2}-\d{2}$/)
@@ -166,8 +182,9 @@ app.patch(
       .withMessage("Acquisition date must be a valid date"),
     body("acquisitionValue")
       .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
-      .withMessage("Acquisition value must be an integer"),
+      .withMessage("Acquisition value must be a number"),
     body("acquisitionType")
       .optional({ checkFalsy: true })
       .isIn(ACQUISITIONTYPES)
@@ -178,10 +195,7 @@ app.patch(
       .withMessage("Acquisition date must be in the format YYYY-MM-DD")
       .isISO8601()
       .withMessage("Acquisition date must be a valid date"),
-    body("description")
-      .optional({ checkFalsy: true })
-      .isString()
-      .withMessage("Description must be a string"),
+    body("description").optional({ checkFalsy: true }),
   ],
   async (req, res) => {
     if (validationErrorCheck(req, res)) return;
@@ -214,17 +228,18 @@ app.patch(
 app.patch(
   "/api/artist/modify/",
   [
-    body("artistID").isInt().withMessage("Artist ID must be an integer"),
+    body("artistID")
+      .toInt()
+      .isInt()
+      .withMessage("Artist ID must be an integer"),
     body("artistName")
       .optional({ checkFalsy: true })
-      .isString()
-      .withMessage("Artist name must be a string"),
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artist name must not contain digits"),
     body("nationality")
       .optional({ checkFalsy: true })
       .isIn(NATIONALITIES)
-      .withMessage("Nationality must be one of the specified options")
-      .isString()
-      .withMessage("Nationality must be a string"),
+      .withMessage("Nationality must be one of the specified options"),
     body("birthDate")
       .optional({ checkFalsy: true })
       .matches(/^\d{4}-\d{2}-\d{2}$/)
@@ -243,7 +258,6 @@ app.patch(
     const { artistID, artistName, nationality, birthDate, deathDate } =
       req.body;
     const fields = [
-      { column: "artist_id", value: artistID },
       { column: "artist_name", value: artistName },
       { column: "nationality", value: nationality },
       { column: "birth_date", value: birthDate },
@@ -256,13 +270,17 @@ app.patch(
 app.patch(
   "/api/employee/modify/",
   [
-    body("employeeID").isInt().withMessage("Employee ID must be an integer"),
+    body("employeeID")
+      .toInt()
+      .isInt()
+      .withMessage("Employee ID must be an integer"),
     body("employeeName")
       .optional({ checkFalsy: true })
-      .isString()
-      .withMessage("Employee name must be a string"),
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Employee name must not contain digits"),
     body("exhibitID")
       .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Exhibit ID mut be an integer"),
     body("ssn")
@@ -299,6 +317,7 @@ app.patch(
       .withMessage("Hiring date must be a valid date"),
     body("salary")
       .optional({ checkFalsy: true })
+      .toInt()
       .isInt()
       .withMessage("Salary must be an integer"),
     body("role")
@@ -327,7 +346,6 @@ app.patch(
       isGiftShop = role === "Retail";
     }
     const fields = [
-      { column: "employee_id", value: employeeID },
       { column: "employee_name", value: employeeName },
       { column: "exhibit_id", value: exhibitID },
       { column: "ssn", value: ssn },
@@ -350,24 +368,27 @@ app.post(
   "/api/artifact/insert/",
   [
     body("artifactName")
-      .isString()
-      .withMessage("Artifact name must be a string"),
-    body("exhibitID").isInt().withMessage("Exhibit ID but be an integer"),
-    body("artistID").isInt().withMessage("Artist ID must be an integer"),
-    body("description")
-      .optional({ checkFalsy: true })
-      .isString()
-      .withMessage("Artifact description must be a string"),
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artifact name must not contain digits"),
+    body("exhibitID")
+      .toInt()
+      .isInt()
+      .withMessage("Exhibit ID but be an integer"),
+    body("artistID")
+      .toInt()
+      .isInt()
+      .withMessage("Artist ID must be an integer"),
+    body("description").optional({ checkFalsy: true }),
     body("creationDate")
       .optional({ checkFalsy: true })
       .matches(/^\d{4}-\d{2}-\d{2}$/)
       .withMessage("Acquisition date must be in the format YYYY-MM-DD")
       .isISO8601()
-      .withMessage()
       .withMessage("Acquisition date must be a valid date"),
     body("acquisitionValue")
+      .toInt()
       .isInt()
-      .withMessage("Acquisition value must be an integer"),
+      .withMessage("Acquisition value must be a number"),
     body("acquisitionType")
       .isIn(ACQUISITIONTYPES)
       .withMessage("Acquisition type must be one of the given options"),
@@ -406,12 +427,12 @@ app.post(
 app.post(
   "/api/artist/insert",
   [
-    body("artistName").isString().withMessage("Artist name must be a string"),
+    body("artistName")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artist name must not contain digits"),
     body("nationality")
       .isIn(NATIONALITIES)
-      .withMessage("Nationality must be one of the specified options")
-      .isString()
-      .withMessage("Nationality must be a string"),
+      .withMessage("Nationality must be one of the specified options"),
     body("birthDate")
       .optional({ checkFalsy: true })
       .matches(/^\d{4}-\d{2}-\d{2}$/)
@@ -442,9 +463,12 @@ app.post(
   "/api/employee/insert",
   [
     body("employeeName")
-      .isString()
-      .withMessage("Employee name must be a string"),
-    body("exhibitID").isInt().withMessage("Exhibit ID mut be an integer"),
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Employee name must not contain digits"),
+    body("exhibitID")
+      .toInt()
+      .isInt()
+      .withMessage("Exhibit ID must be an integer"),
     body("ssn")
       .matches(/^\d{3}-\d{2}-\d{4}$/)
       .withMessage("SSN must be in the format XXX-XX-XXXX"),
@@ -466,7 +490,7 @@ app.post(
       .withMessage("Hiring date must be in the format YYYY-MM-DD")
       .isISO8601()
       .withMessage("Hiring date must be a valid date"),
-    body("salary").isInt().withMessage("Salary must be an integer"),
+    body("salary").toInt().isInt().withMessage("Salary must be an integer"),
     body("role")
       .isIn(ROLES)
       .withMessage("Role must be one of the specified options"),

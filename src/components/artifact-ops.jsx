@@ -1,20 +1,12 @@
 import { useEffect, useState } from "react";
-import {
-  toastSuccessDelete,
-  toastSuccessInsert,
-  toastSuccessModify,
-  toastProcessDelete,
-  toastProcessModify,
-  toastProcessInsert,
-  apiModifyFetch,
-} from "./utils";
+import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { Select } from "./common/select";
 import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
 export function DeleteArtifact() {
-  useEffect(() => toastSuccessDelete("Aritifact"), []);
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     artifactID: "",
@@ -28,7 +20,7 @@ export function DeleteArtifact() {
       "DELETE",
       formData,
     );
-    toastProcessDelete(response, "Artifact");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -82,7 +74,7 @@ export function DeleteArtifact() {
 }
 
 export function ModifyArtifact() {
-  useEffect(() => toastSuccessModify("Artifact"), []);
+  useEffect(() => toastSuccess(), []);
 
   useEffect(() => {
     exhibitSetter(setExhibits);
@@ -111,8 +103,7 @@ export function ModifyArtifact() {
       "PATCH",
       formData,
     );
-
-    toastProcessModify(response, "Artifact");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -254,7 +245,7 @@ export function ModifyArtifact() {
 }
 
 export function AddArtifact() {
-  useEffect(() => toastSuccessInsert("Artifact"), []);
+  useEffect(() => toastSuccess(), []);
 
   useEffect(() => {
     exhibitSetter(setExhibits);
@@ -282,8 +273,7 @@ export function AddArtifact() {
       "POST",
       formData,
     );
-
-    toastProcessInsert(response, "Artifact");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
