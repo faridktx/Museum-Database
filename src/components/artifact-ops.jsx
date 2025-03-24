@@ -5,6 +5,12 @@ import {
   apiFetch,
 } from "./utils";
 import "./components.css";
+<<<<<<< Updated upstream
+=======
+import { ExhibitsRequired, ExhibitsOptional } from "./common/exhibits";
+import { ACQUISITIONTYPES } from "./constants.js";
+import { artistSetter, exhibitSetter } from "./common/setters";
+>>>>>>> Stashed changes
 
 export function DeleteArtifact() {
   useEffect(() => {
