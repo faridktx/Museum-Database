@@ -3,7 +3,7 @@ import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
-import { ACQUISITIONTYPES, ROLES } from "shared/constants.js";
+import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "shared/constants.js";
 
 dotenv.config({ path: "./backend/.env" });
 const app = express();
@@ -40,7 +40,7 @@ const executeSQLReturn = async (res, query) => {
     const [rows] = await promisePool.query(query);
     return rows;
   } catch (err) {
-    res.status(500).json({ errors: [] });
+    res.status(500).json({ errors: ["Database error"] });
     console.log("Error retrieving entires...");
   }
 };
@@ -50,7 +50,7 @@ const executeSQLQuery = async (res, query, fields) => {
     await promisePool.query(query, fields);
     res.status(200).json({ errors: [] });
   } catch (err) {
-    res.status(500).json({ errors: [] });
+    res.status(500).json({ errors: ["Database error"] });
     console.log("Error submitting form...");
   }
 };
@@ -184,6 +184,7 @@ app.patch(
       .withMessage("Description must be a string"),
   ],
   async (req, res) => {
+    if (validationErrorCheck(req, res)) return;
     const {
       artifactID,
       exhibitID,
@@ -195,7 +196,6 @@ app.patch(
       creationDate,
       description,
     } = req.body;
-    if (validationErrorCheck(req, res)) return;
     const fields = [
       { column: "artifact_name", value: artifactName },
       { column: "artist_id", value: artistID },
@@ -211,9 +211,140 @@ app.patch(
   },
 );
 
-app.patch("/api/artist/modify/", async (req, res) => {});
+app.patch(
+  "/api/artist/modify/",
+  [
+    body("artistID").isInt().withMessage("Artist ID must be an integer"),
+    body("artistName")
+      .optional({ checkFalsy: true })
+      .isString()
+      .withMessage("Artist name must be a string"),
+    body("nationality")
+      .optional({ checkFalsy: true })
+      .isIn(NATIONALITIES)
+      .withMessage("Nationality must be one of the specified options")
+      .isString()
+      .withMessage("Nationality must be a string"),
+    body("birthDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Birth date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Birth date must be a valid date"),
+    body("deathDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Death date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Death date must be a valid date"),
+  ],
+  async (req, res) => {
+    if (validationErrorCheck(req, res)) return;
+    const { artistID, artistName, nationality, birthDate, deathDate } =
+      req.body;
+    const fields = [
+      { column: "artist_id", value: artistID },
+      { column: "artist_name", value: artistName },
+      { column: "nationality", value: nationality },
+      { column: "birth_date", value: birthDate },
+      { column: "death_date", value: deathDate },
+    ];
+    await modifyRecord(res, artistID, "artist_id", "artists", fields);
+  },
+);
 
-app.patch("/api/employee/modify/", async (req, res) => {});
+app.patch(
+  "/api/employee/modify/",
+  [
+    body("employeeID").isInt().withMessage("Employee ID must be an integer"),
+    body("employeeName")
+      .optional({ checkFalsy: true })
+      .isString()
+      .withMessage("Employee name must be a string"),
+    body("exhibitID")
+      .optional({ checkFalsy: true })
+      .isInt()
+      .withMessage("Exhibit ID mut be an integer"),
+    body("ssn")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{3}-\d{2}-\d{4}$/)
+      .withMessage("SSN must be in the format XXX-XX-XXXX"),
+    body("phoneNumber")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{3}-\d{3}-\d{4}$/)
+      .withMessage("Phone number must be in the format XXX-XXX-XXXX"),
+    body("address")
+      .optional({ checkFalsy: true })
+      .isString()
+      .withMessage("Address must be a string"),
+    body("personalEmail")
+      .optional({ checkFalsy: true })
+      .isEmail()
+      .withMessage("Personal email must be a valid email"),
+    body("workEmail")
+      .optional({ checkFalsy: true })
+      .isEmail()
+      .withMessage("Work email must be a valid email"),
+    body("birthDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Birth date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Birth date must be a valid date"),
+    body("hiringDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Hiring date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Hiring date must be a valid date"),
+    body("salary")
+      .optional({ checkFalsy: true })
+      .isInt()
+      .withMessage("Salary must be an integer"),
+    body("role")
+      .optional({ checkFalsy: true })
+      .isIn(ROLES)
+      .withMessage("Role must be one of the specified options"),
+  ],
+  async (req, res) => {
+    if (validationErrorCheck(req, res)) return;
+    const {
+      employeeID,
+      exhibitID,
+      employeeName,
+      ssn,
+      phoneNumber,
+      address,
+      personalEmail,
+      workEmail,
+      birthDate,
+      hiringDate,
+      firedDate,
+      salary,
+      role,
+    } = req.body;
+    if (role) {
+      isGiftShop = role === "Retail";
+    }
+    const fields = [
+      { column: "employee_id", value: employeeID },
+      { column: "employee_name", value: employeeName },
+      { column: "exhibit_id", value: exhibitID },
+      { column: "ssn", value: ssn },
+      { column: "personal_email", value: personalEmail },
+      { column: "work_email", value: workEmail },
+      { column: "phone_number", value: phoneNumber },
+      { column: "birthdate", value: birthDate },
+      { column: "hiring_date", value: hiringDate },
+      { column: "role", value: role },
+      { column: "fired_date", value: firedDate },
+      { column: "salary", value: salary },
+      { column: "address", value: address },
+      { column: "is_giftshop", value: isGiftShop },
+    ];
+    await modifyRecord(res, employeeID, "employee_id", "employees", fields);
+  },
+);
 
 app.post(
   "/api/artifact/insert/",
@@ -276,7 +407,11 @@ app.post(
   "/api/artist/insert",
   [
     body("artistName").isString().withMessage("Artist name must be a string"),
-    body("nationality").isString().withMessage("Nationality must be a string"),
+    body("nationality")
+      .isIn(NATIONALITIES)
+      .withMessage("Nationality must be one of the specified options")
+      .isString()
+      .withMessage("Nationality must be a string"),
     body("birthDate")
       .optional({ checkFalsy: true })
       .matches(/^\d{4}-\d{2}-\d{2}$/)
