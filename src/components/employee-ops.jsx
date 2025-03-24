@@ -9,7 +9,7 @@ import {
   apiModifyFetch,
 } from "./utils";
 import "./components.css";
-import { ROLES } from "shared/constants.js";
+import { ROLES } from "./constants.js";
 import { ExhibitsOptional, ExhibitsRequired } from "./common/exhibits";
 import { exhibitSetter } from "./common/setters";
 

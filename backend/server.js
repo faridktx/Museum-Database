@@ -1,9 +1,9 @@
 import express from "express";
-import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
-import { ACQUISITIONTYPES, ROLES } from "shared/constants.js";
+import { ACQUISITIONTYPES, ROLES } from "../shared/constants.js";
+import sql from "mssql";
 
 dotenv.config({ path: "./backend/.env" });
 const app = express();
@@ -16,17 +16,45 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 30,
-  queueLimit: 0,
+// Azure SQL Database configuration
+const pool = new sql.ConnectionPool({
+  user: process.env.DB_USER, // e.g., 'NewAdminUser@dbg13-museum2025'
+  password: process.env.DB_PASSWORD, // e.g., 'Sponge12368!'
+  server: process.env.DB_HOST, // e.g., 'dbg13-museum2025.database.windows.net'
+  database: process.env.DB_NAME, // e.g., 'DBG13_MuseumDB_2025'
+  options: {
+    encrypt: true, // Use SSL encryption
+    trustServerCertificate: false, // Do not trust self-signed certificates
+  },
+  pool: {
+    max: 10, // Maximum number of connections in the pool
+    min: 0, // Minimum number of connections in the pool
+    idleTimeoutMillis: 30000, // Time a connection can be idle before being closed
+  },
 });
 
-const promisePool = pool.promise();
+// Connect to the database pool
+pool
+  .connect()
+  .then(() => {
+    console.log("Successfully connected to Azure SQL Database.");
+  })
+  .catch((err) => {
+    console.error("Error connecting to Azure SQL Database:", err);
+  });
+
+  const promisePool = {
+    request: () => pool.request(),
+    query: async (sqlQuery, params = {}) => {
+      const request = pool.request();
+      // Add input parameters to the request
+      Object.keys(params).forEach((key) => {
+        request.input(key, params[key]);
+      });
+      const result = await request.query(sqlQuery);
+      return result.recordset;
+    },
+  };
 
 const validationErrorCheck = (req, res) => {
   const errors = validationResult(req);
@@ -425,7 +453,7 @@ app.get("/api/report", async (req, res) => {
   }
 
   try {
-    const [results] = await promisePool.query(query);
+    const results = await promisePool.query(query); // Use the correct property
     const htmlReport = generateHTMLReport(results, title);
 
     res.send(htmlReport);
@@ -468,45 +496,38 @@ function generateHTMLReport(data, title) {
     </head>
     <body>
       <h1>${title}</h1>
+  `;
+
+  if (data.length === 0) {
+    html += `<p>No data found for this report.</p>`;
+  } else {
+    html += `
       <table>
         <thead>
           <tr>
-  `;
-
-  if (data.length > 0) {
-    const columns = Object.keys(data[0]);
-    html += columns.map((column) => `<th>${column}</th>`).join("");
-  }
-
-  html += `
+            ${Object.keys(data[0])
+              .map((column) => `<th>${column}</th>`)
+              .join("")}
           </tr>
         </thead>
         <tbody>
-  `;
-
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
-
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
-
-  html += `
+          ${data
+            .map(
+              (row) => `
+            <tr>
+              ${Object.values(row)
+                .map((value) => `<td>${value}</td>`)
+                .join("")}
+            </tr>
+          `
+            )
+            .join("")}
         </tbody>
       </table>
+    `;
+  }
+
+  html += `
     </body>
     </html>
   `;
