@@ -10,7 +10,8 @@ import {
 } from "./utils";
 import "./components.css";
 import { ROLES } from "./constants.js";
-import { ExhibitsOptional, ExhibitsRequired } from "./common/exhibits";
+import { ROLES } from "shared/constants.js";
+import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 
 export function DeleteEmployee() {
@@ -83,6 +84,7 @@ export function DeleteEmployee() {
 }
 
 export function ModifyEmployee() {
+  useEffect(() => toastSuccessModify("Employee"), []);
   useEffect(() => exhibitSetter(setExhibits), []);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
@@ -96,13 +98,21 @@ export function ModifyEmployee() {
     workEmail: "",
     birthDate: "",
     hiringDate: "",
+    firedDate: "",
     salary: "",
     role: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiModifyFetch(
+      "/api/employee/modify/",
+      "PATCH",
+      formData,
+    );
+
+    toastProcessModify(response, "Employee");
   };
 
   const handleChange = (e) => {
@@ -148,14 +158,18 @@ export function ModifyEmployee() {
                 />
               </div>
 
-              <ExhibitsOptional
-                exhibitID={formData.exhibitID}
-                changeHandler={handleChange}
-                exhibitOptions={exhibitOptions}
+              <Select
+                id="exhibitID"
+                field="Exhibit Name"
+                formElem={formData.exhibitID}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={true}
+                options={exhibitOptions}
               />
 
               <div className="form-group">
-                <label htmlFor="ssn">Social Security Number</label>
+                <label htmlFor="ssn">Social Security Number <i>(XXX-XX-XXXX)</i></label>
                 <input
                   type="text"
                   id="ssn"
@@ -167,7 +181,7 @@ export function ModifyEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label htmlFor="phoneNumber">Phone Number</label>
+                <label htmlFor="phoneNumber">Phone Number <i>(XXX-XXX-XXXX)</i></label>
                 <input
                   type="tel"
                   id="phoneNumber"
@@ -229,6 +243,16 @@ export function ModifyEmployee() {
                   onChange={handleChange}
                 />
               </div>
+
+              <div className="form-group">
+                <label htmlFor="firedDate">Fired Date</label>
+                <input
+                  type="date"
+                  id="firedDate"
+                  value={formData.firedDate}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
 
             <div className="input-group">
@@ -242,19 +266,15 @@ export function ModifyEmployee() {
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="role">Role</label>
-                <select id="role" onChange={handleChange} value={formData.role}>
-                  <option value="" selected disabled>
-                    Select your option
-                  </option>
-                  {ROLES.map((role, index) => (
-                    <option key={index} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="role"
+                field="Role"
+                formElem={formData.role}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={false}
+                options={ROLES}
+              />
             </div>
             <div className="form-actions">
               <button
@@ -333,15 +353,19 @@ export function AddEmployee() {
             </div>
 
             <div className="input-group">
-              <ExhibitsRequired
-                exhibitID={formData.exhibitID}
-                changeHandler={handleChange}
-                exhibitOptions={exhibitOptions}
+              <Select
+                id="exhibitID"
+                field="Exhibit Name"
+                formElem={formData.exhibitID}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={true}
+                options={exhibitOptions}
               />
 
               <div className="form-group">
                 <label className="required" htmlFor="ssn">
-                  Social Security Number
+                  Social Security Number <i>(XXX-XX-XXXX)</i>
                 </label>
                 <input
                   type="text"
@@ -356,7 +380,7 @@ export function AddEmployee() {
             <div className="input-group">
               <div className="form-group">
                 <label className="required" htmlFor="phoneNumber">
-                  Phone Number
+                Phone Number <i>(XXX-XXX-XXXX)</i>
                 </label>
                 <input
                   type="tel"
@@ -451,26 +475,15 @@ export function AddEmployee() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="required" htmlFor="role">
-                  Role
-                </label>
-                <select
-                  id="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" selected disabled>
-                    Select your option
-                  </option>
-                  {ROLES.map((role, index) => (
-                    <option key={index} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="role"
+                field="Role"
+                formElem={formData.role}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={false}
+                options={ROLES}
+              />
             </div>
             <div className="form-actions">
               <button

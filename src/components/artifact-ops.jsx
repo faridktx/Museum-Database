@@ -9,8 +9,9 @@ import {
   apiModifyFetch,
 } from "./utils";
 import "./components.css";
-import { ExhibitsRequired, ExhibitsOptional } from "./common/exhibits";
 import { ACQUISITIONTYPES } from "./constants.js";
+import { Select } from "./common/select";
+import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
 export function DeleteArtifact() {
@@ -158,29 +159,25 @@ export function ModifyArtifact() {
                 />
               </div>
 
-              <ExhibitsOptional
-                exhibitID={formData.exhibitID}
-                changeHandler={handleChange}
-                exhibitOptions={exhibitOptions}
+              <Select
+                id="exhibitID"
+                field="Exhibit Name"
+                formElem={formData.exhibitID}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={true}
+                options={exhibitOptions}
               />
 
-              <div className="form-group">
-                <label htmlFor="artist">Artist Name (ID)</label>
-                <select
-                  id="artist"
-                  value={formData.artist}
-                  onChange={handleChange}
-                >
-                  <option value="" disabled selected>
-                    Select your option
-                  </option>
-                  {artistOptions.map((artist, index) => (
-                    <option id={index} value={artist.id}>
-                      {`${artist.name} (${artist.id})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="artistID"
+                field="Artist Name"
+                formElem={formData.artistID}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={true}
+                options={artistOptions}
+              />
             </div>
 
             <div className="input-group">
@@ -206,23 +203,15 @@ export function ModifyArtifact() {
             </div>
 
             <div className="input-group">
-              <div className="form-group">
-                <label htmlFor="acquisitionType">Acquisition Type</label>
-                <select
-                  id="acquisitionType"
-                  value={formData.acquisitionType}
-                  onChange={handleChange}
-                >
-                  <option value="" selected disabled>
-                    Select your option
-                  </option>
-                  {ACQUISITIONTYPES.map((acqType, index) => (
-                    <option key={index} value={acqType}>
-                      {acqType}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="acquisitionType"
+                field="Acquisition Type"
+                formElem={formData.acquisitionType}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={false}
+                options={ACQUISITIONTYPES}
+              />
 
               <div className="form-group">
                 <label htmlFor="creationDate">Creation Date</label>
@@ -338,32 +327,25 @@ export function AddArtifact() {
                 />
               </div>
 
-              <ExhibitsRequired
-                exhibitID={formData.exhibitID}
-                changeHandler={handleChange}
-                exhibitOptions={exhibitOptions}
+              <Select
+                id="exhibitID"
+                field="Exhibit Name"
+                formElem={formData.exhibitID}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={true}
+                options={exhibitOptions}
               />
 
-              <div className="form-group">
-                <label className="required" htmlFor="artistID">
-                  Artist Name (ID)
-                </label>
-                <select
-                  id="artistID"
-                  value={formData.artistID}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" disabled selected>
-                    Select your option
-                  </option>
-                  {artistOptions.map((artist, index) => (
-                    <option id={index} value={artist.id}>
-                      {`${artist.name} (${artist.id})`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="artistID"
+                field="Artist Name"
+                formElem={formData.artistID}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={true}
+                options={artistOptions}
+              />
             </div>
 
             <div className="input-group">
@@ -395,26 +377,15 @@ export function AddArtifact() {
             </div>
 
             <div className="input-group">
-              <div className="form-group">
-                <label className="required" htmlFor="acquisitionType">
-                  Acquisition Type
-                </label>
-                <select
-                  id="acquisitionType"
-                  value={formData.acquisitionType}
-                  onChange={handleChange}
-                  required
-                >
-                  <option value="" selected disabled>
-                    Select your option
-                  </option>
-                  {ACQUISITIONTYPES.map((acqType, index) => (
-                    <option key={index} value={acqType}>
-                      {acqType}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                id="acquisitionType"
+                field="Acquisition Type"
+                formElem={formData.acquisitionType}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={false}
+                options={ACQUISITIONTYPES}
+              />
 
               <div className="form-group">
                 <label htmlFor="creationDate">Creation Date</label>
