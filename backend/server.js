@@ -18,18 +18,18 @@ app.listen(PORT, () => {
 
 // Azure SQL Database configuration
 const pool = new sql.ConnectionPool({
-  user: process.env.DB_USER, // e.g., 'NewAdminUser@dbg13-museum2025'
-  password: process.env.DB_PASSWORD, // e.g., 'Sponge12368!'
-  server: process.env.DB_HOST, // e.g., 'dbg13-museum2025.database.windows.net'
-  database: process.env.DB_NAME, // e.g., 'DBG13_MuseumDB_2025'
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_HOST,
+  database: process.env.DB_NAME, 
   options: {
-    encrypt: true, // Use SSL encryption
-    trustServerCertificate: false, // Do not trust self-signed certificates
+    encrypt: true,
+    trustServerCertificate: false,
   },
   pool: {
-    max: 10, // Maximum number of connections in the pool
-    min: 0, // Minimum number of connections in the pool
-    idleTimeoutMillis: 30000, // Time a connection can be idle before being closed
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000,
   },
 });
 
@@ -98,7 +98,7 @@ const insertRecord = async (table, res, fields) => {
     setVariables.push(value);
     insertColumns += field.column;
   });
-  const query = `INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs})`;
+  const query = `SET IDENTITY_INSERT dbo.${table} ON INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs}) SET IDENTITY_INSERT dbo.${table} OFF`;
   await executeSQLQuery(res, query, insertVariables);
 };
 
@@ -111,7 +111,7 @@ const modifyRecord = async (res, id, id_column, table, fields) => {
       setVariables.push(field.value);
     }
   });
-  let query = `UPDATE ${table} ${setQuery} WHERE ${id_column} = ?`;
+  let query = `SET IDENTITY_INSERT dbo.${table} ON UPDATE ${table} ${setQuery} WHERE ${id_column} = ? SET IDENTITY_INSERT dbo.${table} OFF`;
   setVariables.push(id);
   await executeSQLQuery(res, query, setVariables);
 };
