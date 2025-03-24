@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import {
-  showToastSuccessNotification,
-  showToastFailNotification,
-  apiFetch,
+  toastSuccessDelete,
+  toastSuccessInsert,
+  toastSuccessModify,
+  toastProcessDelete,
+  toastProcessModify,
+  toastProcessInsert,
+  apiModifyFetch,
 } from "./utils";
 import "./components.css";
 
 export function DeleteArtist() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Artist", "removed");
-    }
-  }, []);
+  useEffect(() => toastSuccessDelete("Artist"), []);
 
   const [formData, setFormData] = useState({
     artistID: "",
@@ -20,14 +20,12 @@ export function DeleteArtist() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch("/api/artist/delete/", "DELETE", formData);
-
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Artist", "removal");
-    }
+    const response = await apiModifyFetch(
+      "/api/artist/delete/",
+      "DELETE",
+      formData,
+    );
+    toastProcessDelete(response, "Artist");
   };
 
   const handleChange = (e) => {
@@ -188,6 +186,8 @@ export function ModifyArtist() {
 }
 
 export function AddArtist() {
+  useEffect(() => toastSuccessInsert("Artist"));
+
   const [formData, setFormData] = useState({
     artistName: "",
     nationality: "",
@@ -195,9 +195,15 @@ export function AddArtist() {
     deathDate: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiModifyFetch(
+      "/api/artist/insert/",
+      "POST",
+      formData,
+    );
+    toastProcessInsert(response, "Artist");
   };
 
   const handleChange = (e) => {

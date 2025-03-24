@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
 import {
-  showToastSuccessNotification,
-  showToastFailNotification,
-  apiFetch,
+  toastSuccessDelete,
+  toastSuccessInsert,
+  toastSuccessModify,
+  toastProcessDelete,
+  toastProcessModify,
+  toastProcessInsert,
+  apiModifyFetch,
 } from "./utils";
 import "./components.css";
-<<<<<<< Updated upstream
-=======
-import { ROLES } from "./constants.js";
+import { ROLES } from "shared/constants.js";
 import { ExhibitsOptional, ExhibitsRequired } from "./common/exhibits";
 import { exhibitSetter } from "./common/setters";
->>>>>>> Stashed changes
 
 export function DeleteEmployee() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Employee", "removed");
-    }
-  }, []);
+  useEffect(() => toastSuccessDelete("Employee"), []);
 
   const [formData, setFormData] = useState({
     employeeID: "",
@@ -26,18 +23,13 @@ export function DeleteEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch(
+    const response = await apiModifyFetch(
       "/api/employee/delete/",
       "DELETE",
       formData,
     );
 
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Employee", "removal");
-    }
+    toastProcessDelete(response, "Employee");
   };
 
   const handleChange = (e) => {
@@ -91,8 +83,11 @@ export function DeleteEmployee() {
 }
 
 export function ModifyEmployee() {
+  useEffect(() => exhibitSetter(setExhibits), []);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     employeeID: "",
+    exhibitID: "",
     employeeName: "",
     ssn: "",
     phoneNumber: "",
@@ -126,7 +121,7 @@ export function ModifyEmployee() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="employeeID">
+                <label className="required" htmlFor="employeeID">
                   Employee ID
                 </label>
                 <input
@@ -152,6 +147,12 @@ export function ModifyEmployee() {
                   placeholder="Enter the name of the employee"
                 />
               </div>
+
+              <ExhibitsOptional
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
                 <label htmlFor="ssn">Social Security Number</label>
@@ -243,12 +244,16 @@ export function ModifyEmployee() {
 
               <div className="form-group">
                 <label htmlFor="role">Role</label>
-                <input
-                  type="text"
-                  id="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                />
+                <select id="role" onChange={handleChange} value={formData.role}>
+                  <option value="" selected disabled>
+                    Select your option
+                  </option>
+                  {ROLES.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="form-actions">
@@ -271,8 +276,13 @@ export function ModifyEmployee() {
 }
 
 export function AddEmployee() {
+  useEffect(() => exhibitSetter(setExhibits), []);
+  useEffect(() => toastSuccessInsert("Employee"));
+
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     employeeName: "",
+    exhibitID: "",
     ssn: "",
     phoneNumber: "",
     address: "",
@@ -284,9 +294,11 @@ export function AddEmployee() {
     role: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiFetch("/api/employee/insert/", "POST", formData);
+    toastProcessInsert(response, "Employee");
   };
 
   const handleChange = (e) => {
@@ -305,7 +317,7 @@ export function AddEmployee() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="employeeName">
+                <label className="required" htmlFor="employeeName">
                   Employee Name
                 </label>
                 <input
@@ -317,9 +329,18 @@ export function AddEmployee() {
                   required
                 />
               </div>
+              <div className="form-group"></div>
+            </div>
+
+            <div className="input-group">
+              <ExhibitsRequired
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
 
               <div className="form-group">
-                <label class="required" htmlFor="ssn">
+                <label className="required" htmlFor="ssn">
                   Social Security Number
                 </label>
                 <input
@@ -334,7 +355,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="phoneNumber">
+                <label className="required" htmlFor="phoneNumber">
                   Phone Number
                 </label>
                 <input
@@ -347,7 +368,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="address">
+                <label className="required" htmlFor="address">
                   Address
                 </label>
                 <input
@@ -362,7 +383,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="personalEmail">
+                <label className="required" htmlFor="personalEmail">
                   Personal Email
                 </label>
                 <input
@@ -375,7 +396,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="workEmail">
+                <label className="required" htmlFor="workEmail">
                   Work Email
                 </label>
                 <input
@@ -390,7 +411,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="birthDate">
+                <label className="required" htmlFor="birthDate">
                   Birth Date
                 </label>
                 <input
@@ -403,7 +424,7 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="hiringDate">
+                <label className="required" htmlFor="hiringDate">
                   Hiring Date
                 </label>
                 <input
@@ -418,7 +439,7 @@ export function AddEmployee() {
 
             <div className="input-group">
               <div className="form-group">
-                <label class="required" htmlFor="salary">
+                <label className="required" htmlFor="salary">
                   Salary
                 </label>
                 <input
@@ -431,16 +452,24 @@ export function AddEmployee() {
               </div>
 
               <div className="form-group">
-                <label class="required" htmlFor="role">
+                <label className="required" htmlFor="role">
                   Role
                 </label>
-                <input
-                  type="text"
+                <select
                   id="role"
                   value={formData.role}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="" selected disabled>
+                    Select your option
+                  </option>
+                  {ROLES.map((role, index) => (
+                    <option key={index} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="form-actions">

@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
 import {
-  showToastSuccessNotification,
-  showToastFailNotification,
-  apiFetch,
+  toastSuccessDelete,
+  toastSuccessInsert,
+  toastSuccessModify,
+  toastProcessDelete,
+  toastProcessModify,
+  toastProcessInsert,
+  apiModifyFetch,
 } from "./utils";
 import "./components.css";
-<<<<<<< Updated upstream
-=======
 import { ExhibitsRequired, ExhibitsOptional } from "./common/exhibits";
-import { ACQUISITIONTYPES } from "./constants.js";
+import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
->>>>>>> Stashed changes
 
 export function DeleteArtifact() {
-  useEffect(() => {
-    if (localStorage.getItem("modification") === "true") {
-      showToastSuccessNotification("Artifact", "removed");
-    }
-  }, []);
+  useEffect(() => toastSuccessDelete("Aritifact"), []);
 
   const [formData, setFormData] = useState({
     artifactID: "",
@@ -26,18 +23,12 @@ export function DeleteArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch(
+    const response = await apiModifyFetch(
       "/api/artifact/delete/",
       "DELETE",
       formData,
     );
-
-    if (response.success) {
-      localStorage.setItem("modification", "true");
-      location.reload();
-    } else {
-      showToastFailNotification("Artifact", "removal");
-    }
+    toastProcessDelete(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -91,10 +82,20 @@ export function DeleteArtifact() {
 }
 
 export function ModifyArtifact() {
+  useEffect(() => toastSuccessModify("Artifact"), []);
+
+  useEffect(() => {
+    exhibitSetter(setExhibits);
+    artistSetter(setArtists);
+  }, []);
+
+  const [artistOptions, setArtists] = useState([]);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     artifactID: "",
+    exhibitID: "",
+    artistID: "",
     artifactName: "",
-    artist: "",
     acquisitionDate: "",
     acquisitionValue: "",
     acquisitionType: "",
@@ -102,9 +103,16 @@ export function ModifyArtifact() {
     description: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiModifyFetch(
+      "/api/artifact/modify/",
+      "PATCH",
+      formData,
+    );
+
+    toastProcessModify(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -150,14 +158,28 @@ export function ModifyArtifact() {
                 />
               </div>
 
+              <ExhibitsOptional
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
+
               <div className="form-group">
-                <label htmlFor="artist">Artist Name</label>
-                <input
-                  type="text"
+                <label htmlFor="artist">Artist Name (ID)</label>
+                <select
                   id="artist"
                   value={formData.artist}
                   onChange={handleChange}
-                />
+                >
+                  <option value="" disabled selected>
+                    Select your option
+                  </option>
+                  {artistOptions.map((artist, index) => (
+                    <option id={index} value={artist.id}>
+                      {`${artist.name} (${artist.id})`}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -191,12 +213,14 @@ export function ModifyArtifact() {
                   value={formData.acquisitionType}
                   onChange={handleChange}
                 >
-                  <option value="" disabled>
+                  <option value="" selected disabled>
                     Select your option
                   </option>
-                  <option value="purchase">Purchase</option>
-                  <option value="gift">Gift</option>
-                  <option value="bequest">Bequest</option>
+                  {ACQUISITIONTYPES.map((acqType, index) => (
+                    <option key={index} value={acqType}>
+                      {acqType}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -242,9 +266,19 @@ export function ModifyArtifact() {
 }
 
 export function AddArtifact() {
+  useEffect(() => toastSuccessInsert("Artifact"), []);
+
+  useEffect(() => {
+    exhibitSetter(setExhibits);
+    artistSetter(setArtists);
+  }, []);
+
+  const [artistOptions, setArtists] = useState([]);
+  const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState({
     artifactName: "",
-    artist: "",
+    exhibitID: "",
+    artistID: "",
     acquisitionDate: "",
     acquisitionValue: "",
     acquisitionType: "",
@@ -252,9 +286,16 @@ export function AddArtifact() {
     description: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiModifyFetch(
+      "/api/artifact/insert/",
+      "POST",
+      formData,
+    );
+
+    toastProcessInsert(response, "Artifact");
   };
 
   const handleChange = (e) => {
@@ -269,7 +310,18 @@ export function AddArtifact() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Add New Artifact</h2>
+          <h2 style={{ marginBottom: "0" }}>Add New Artifact</h2>
+          <div
+            style={{
+              fontSize: "12px",
+              marginBottom: "calc(var(--spacing) * 1.5)",
+            }}
+          >
+            <i>
+              If an artifact created by a new artist needs to be inserted,
+              please add the artist first.
+            </i>
+          </div>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -286,17 +338,31 @@ export function AddArtifact() {
                 />
               </div>
 
+              <ExhibitsRequired
+                exhibitID={formData.exhibitID}
+                changeHandler={handleChange}
+                exhibitOptions={exhibitOptions}
+              />
+
               <div className="form-group">
-                <label className="required" htmlFor="artist">
-                  Artist Name
+                <label className="required" htmlFor="artistID">
+                  Artist Name (ID)
                 </label>
-                <input
-                  type="text"
-                  id="artist"
-                  value={formData.artist}
+                <select
+                  id="artistID"
+                  value={formData.artistID}
                   onChange={handleChange}
                   required
-                />
+                >
+                  <option value="" disabled selected>
+                    Select your option
+                  </option>
+                  {artistOptions.map((artist, index) => (
+                    <option id={index} value={artist.id}>
+                      {`${artist.name} (${artist.id})`}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -339,12 +405,14 @@ export function AddArtifact() {
                   onChange={handleChange}
                   required
                 >
-                  <option value="" disabled>
+                  <option value="" selected disabled>
                     Select your option
                   </option>
-                  <option value="purchase">Purchase</option>
-                  <option value="gift">Gift</option>
-                  <option value="bequest">Bequest</option>
+                  {ACQUISITIONTYPES.map((acqType, index) => (
+                    <option key={index} value={acqType}>
+                      {acqType}
+                    </option>
+                  ))}
                 </select>
               </div>
 
