@@ -7,19 +7,19 @@ export function ArtifactOperations() {
       title: "Add Artifact",
       description: "Add a new artifact to the museum collection",
       icon: "➕",
-      path: "/login/artifact/add",
+      path: "/dashboard/artifact/add",
     },
     {
       title: "Remove Artifact",
       description: "Remove an existing artifact from the collection",
       icon: "❌",
-      path: "/login/artifact/remove",
+      path: "/dashboard/artifact/remove",
     },
     {
       title: "Modify Artifact",
       description: "Update information for an existing artifact",
       icon: "✏️",
-      path: "/login/artifact/modify",
+      path: "/dashboard/artifact/modify",
     },
   ];
 

@@ -672,3 +672,40 @@ function generateHTMLReport(data, title) {
 
   return html;
 }
+app.post(
+  "/api/login",
+  [
+    body("email").isEmail().withMessage("Email must be valid"),
+    body("password").notEmpty().withMessage("Password is required"), // you can relax this if not using passwords yet
+  ],
+  async (req, res) => {
+    if (validationErrorCheck(req, res)) return;
+
+    const { email, password } = req.body;
+
+    try {
+      const query = `SELECT * FROM employees WHERE work_email = ?`;
+      const [rows] = await promisePool.query(query, [email]);
+
+      if (rows.length === 0) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const user = rows[0];
+      console.log("User from DB:", user);
+
+      // TEMP: Password checking is skipped here
+      // In production: Compare with hashed password (e.g., bcrypt.compare(password, user.password))
+
+      return res.status(200).json({
+        id: user.employee_id,
+        name: user.employee_name,
+        role: user.role,
+        email: user.work_email,
+      });
+    } catch (error) {
+      console.error("Login error:", error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  },
+);

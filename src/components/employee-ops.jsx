@@ -4,6 +4,7 @@ import "./components.css";
 import { ROLES } from "shared/constants.js";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
+import { Link } from "wouter";
 
 export function DeleteEmployee() {
   useEffect(() => toastSuccess(), []);
@@ -55,13 +56,11 @@ export function DeleteEmployee() {
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/employee">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Remove Employee
               </button>
@@ -270,13 +269,11 @@ export function ModifyEmployee() {
               />
             </div>
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/employee">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Modify Employee
               </button>
@@ -479,13 +476,11 @@ export function AddEmployee() {
               />
             </div>
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/employee">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Add Employee
               </button>

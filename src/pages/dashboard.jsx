@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "wouter";
 import "../components/components.css";
 
 export function Dashboard() {
@@ -65,32 +66,23 @@ export function Dashboard() {
             <div className="dashboard-card">
               <h3>Update Artifacts</h3>
               <p>Add to or modify existing artifact information.</p>
-              <button
-                className="button"
-                onClick={() => (window.location.href = "/login/artifact")}
-              >
-                Update Artifact
-              </button>
+              <Link href="/dashboard/artifact">
+                <button className="button">Update Artifacts</button>
+              </Link>
             </div>
             <div className="dashboard-card">
               <h3>Update Artists</h3>
               <p>Add to or modify the existing artist database.</p>
-              <button
-                className="button"
-                onClick={() => (window.location.href = "/login/artist")}
-              >
-                Update Artists
-              </button>
+              <Link href="/dashboard/artist">
+                <button className="button">Update Artists</button>
+              </Link>
             </div>
             <div className="dashboard-card">
               <h3>Update Employees</h3>
               <p>Modify existing museum employee information.</p>
-              <button
-                className="button"
-                onClick={() => (window.location.href = "/login/employee")}
-              >
-                Update Records
-              </button>
+              <Link href="/dashboard/employee">
+                <button className="button">Update Employees</button>
+              </Link>
             </div>
           </div>
         </section>

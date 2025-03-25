@@ -3,6 +3,7 @@ import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { NATIONALITIES } from "shared/constants.js";
 import { Select } from "./common/select";
+import { Link } from "wouter";
 
 export function DeleteArtist() {
   useEffect(() => toastSuccess(), []);
@@ -54,13 +55,11 @@ export function DeleteArtist() {
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artist">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Remove Artist
               </button>
@@ -168,13 +167,11 @@ export function ModifyArtist() {
               </div>
             </div>
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artist">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Modify Artist
               </button>
@@ -271,13 +268,11 @@ export function AddArtist() {
               </div>
             </div>
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artist">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Add Artist
               </button>

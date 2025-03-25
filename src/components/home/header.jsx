@@ -1,33 +1,16 @@
-import { Link } from "wouter";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  UserButton,
+  useUser,
+} from "@clerk/clerk-react";
 import "../components.css";
 
-function NavigationTab({ isInLogin }) {
-  const navigationLinks = [
-    { name: "Features", href: "#features" },
-    { name: "Overview", href: "#overview" },
-    { name: "Contact", href: "#contact" },
-  ];
+export function Header() {
+  const { user } = useUser();
 
-  return (
-    <nav className="nav-links">
-      {isInLogin ? (
-        <></>
-      ) : (
-        navigationLinks.map((link, index) => (
-          <a key={index} href={link.href}>
-            {link.name}
-          </a>
-        ))
-      )}
-      <Link href="/login">
-        <button className="button login-button">Login</button>
-      </Link>
-    </nav>
-  );
-}
-
-export function Header({ isInLogin }) {
-  const handleClick = function () {
+  const handleClick = () => {
     window.location.href = "/";
   };
 
@@ -39,7 +22,27 @@ export function Header({ isInLogin }) {
             MuseoCore
           </h1>
         </div>
-        <NavigationTab isInLogin={isInLogin} />
+        <nav className="nav-links">
+          <a href="#features">Features</a>
+          <a href="#overview">Overview</a>
+          <a href="#contact">Contact</a>
+
+          <SignedOut>
+            <SignInButton>
+              <button className="button login-button">Login</button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <span style={{ marginRight: "1rem" }}>
+              Welcome,{" "}
+              {user?.fullName ||
+                user?.username ||
+                user?.emailAddresses[0]?.emailAddress}
+            </span>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </nav>
       </div>
     </header>
   );

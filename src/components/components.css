@@ -342,7 +342,7 @@
 
 .form-page {
   padding-top: calc(var(--spacing) * 4);
-  min-height: 70vh;
+  min-height: 80vh;
   background-color: #f8f9fa;
   display: flex;
   flex-direction: column;
@@ -361,9 +361,8 @@
   padding: calc(var(--spacing) * 2);
   margin: var(--spacing) 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  width: 80vw;
-  max-width: 90vw;
-  min-width: min(90vw, 800px);
+  max-width: 80vw;
+  min-width: 40vw;
   margin: 0 auto;
   margin-bottom: auto;
 }
@@ -459,12 +458,13 @@
 
 .operations-page {
   padding-top: calc(var(--spacing) * 4);
-  min-height: 100vh;
+  min-height: 80vh;
   background-color: #f8f9fa;
 }
 
 .operations-page h1 {
   text-align: center;
+  margin-top: 2em;
   margin-bottom: calc(var(--spacing) * 3);
   font-size: 2.5rem;
   color: var(--color-primary);

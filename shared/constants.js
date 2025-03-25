@@ -9,6 +9,7 @@ export const ROLES = [
   "Security",
   "Retail",
 ];
+
 export const NATIONALITIES = [
   "American",
   "British",

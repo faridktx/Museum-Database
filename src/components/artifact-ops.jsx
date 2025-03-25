@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
+import { Link } from "wouter";
 import { Select } from "./common/select";
 import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
@@ -55,13 +56,11 @@ export function DeleteArtifact() {
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => (location.href = "/login/artifact")}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artifact">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Remove Artifact
               </button>
@@ -226,13 +225,11 @@ export function ModifyArtifact() {
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artifact">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Modify Artifact
               </button>
@@ -399,13 +396,11 @@ export function AddArtifact() {
             </div>
 
             <div className="form-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => window.history.back()}
-              >
-                Cancel
-              </button>
+              <Link href="/dashboard/artifact">
+                <button type="button" className="button button-secondary">
+                  Cancel
+                </button>
+              </Link>
               <button type="submit" className="button">
                 Add Artifact
               </button>
