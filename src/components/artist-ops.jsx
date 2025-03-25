@@ -9,7 +9,7 @@ import {
   apiModifyFetch,
 } from "./utils";
 import "./components.css";
-import { NATIONALITIES } from "shared/constants.js";
+import { NATIONALITIES } from "./constants.js";
 import { Select } from "./common/select";
 
 export function DeleteArtist() {

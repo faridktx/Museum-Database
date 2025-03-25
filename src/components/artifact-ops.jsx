@@ -11,7 +11,6 @@ import {
 import "./components.css";
 import { ACQUISITIONTYPES } from "./constants.js";
 import { Select } from "./common/select";
-import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
 export function DeleteArtifact() {

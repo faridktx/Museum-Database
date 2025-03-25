@@ -10,7 +10,6 @@ import {
 } from "./utils";
 import "./components.css";
 import { ROLES } from "./constants.js";
-import { ROLES } from "shared/constants.js";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 
