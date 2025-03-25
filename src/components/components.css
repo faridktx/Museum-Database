@@ -249,10 +249,23 @@
   }
 }
 
-.dashboard {
+.dashboard,
+.not-found {
   padding-top: calc(var(--spacing) * 4);
-  min-height: 100vh;
+  min-height: 55vh;
   background-color: #f8f9fa;
+}
+
+.not-found {
+  margin-top: 5%;
+}
+
+.not-found h1 {
+  font-size: 4em;
+}
+
+.not-found p {
+  font-size: 1em;
 }
 
 .dashboard-content {
@@ -329,7 +342,7 @@
 
 .form-page {
   padding-top: calc(var(--spacing) * 4);
-  min-height: 100vh;
+  min-height: 70vh;
   background-color: #f8f9fa;
   display: flex;
   flex-direction: column;

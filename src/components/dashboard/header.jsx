@@ -1,4 +1,3 @@
-import { Link } from "wouter";
 import "../components.css";
 
 export function DashboardHeader() {

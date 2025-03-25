@@ -17,16 +17,17 @@ import {
   ModifyEmployee,
   DeleteEmployee,
 } from "./components/employee-ops";
-import { DashboardFooter } from "./components/dashboard/dashboard-footer";
-import { DashboardHeader } from "./components/dashboard/dashboard-header";
+import { DashboardFooter } from "./components/dashboard/footer";
+import { DashboardHeader } from "./components/dashboard/header";
+import { NotFound } from "./pages/not-found";
 
 export function App() {
   const [location] = useLocation();
   const notInDashboard = ["/", "/login"].includes(location);
-
+  const isInLogin = location === "/login";
   return (
     <>
-      {notInDashboard ? <Header /> : <DashboardHeader />}
+      {notInDashboard ? <Header isInLogin={isInLogin} /> : <DashboardHeader />}
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/login" component={Dashboard} />
@@ -42,6 +43,7 @@ export function App() {
         <Route path="/login/employee/add" component={AddEmployee} />
         <Route path="/login/employee/modify" component={ModifyEmployee} />
         <Route path="/login/employee/remove" component={DeleteEmployee} />
+        <Route component={NotFound} />
       </Switch>
       {notInDashboard ? <Footer /> : <DashboardFooter />}
     </>
