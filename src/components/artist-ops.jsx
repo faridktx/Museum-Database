@@ -1,16 +1,16 @@
-import { useEffect, useState } from "react";
-import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
+import { useState } from "react";
+import { toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { NATIONALITIES } from "shared/constants.js";
 import { Select } from "./common/select";
 import { Link } from "wouter";
 
-export function DeleteArtist() {
-  useEffect(() => toastSuccess(), []);
+const initialDeleteFormState = {
+  artistID: "",
+};
 
-  const [formData, setFormData] = useState({
-    artistID: "",
-  });
+export function DeleteArtist() {
+  const [formData, setFormData] = useState(initialDeleteFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +20,7 @@ export function DeleteArtist() {
       "DELETE",
       formData,
     );
+    if (response.success) setFormData(initialDeleteFormState);
     toastProcess(response);
   };
 
@@ -71,15 +72,16 @@ export function DeleteArtist() {
   );
 }
 
+const initialModifyFormState = {
+  artistID: "",
+  artistName: "",
+  nationality: "",
+  birthDate: "",
+  deathDate: "",
+};
+
 export function ModifyArtist() {
-  useEffect(() => toastSuccess(), []);
-  const [formData, setFormData] = useState({
-    artistID: "",
-    artistName: "",
-    nationality: "",
-    birthDate: "",
-    deathDate: "",
-  });
+  const [formData, setFormData] = useState(initialModifyFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -89,6 +91,7 @@ export function ModifyArtist() {
       "PATCH",
       formData,
     );
+    if (response.success) setFormData(initialModifyFormState);
     toastProcess(response);
   };
 
@@ -183,15 +186,15 @@ export function ModifyArtist() {
   );
 }
 
-export function AddArtist() {
-  useEffect(() => toastSuccess(), []);
+const initialAddFormState = {
+  artistName: "",
+  nationality: "",
+  birthDate: "",
+  deathDate: "",
+};
 
-  const [formData, setFormData] = useState({
-    artistName: "",
-    nationality: "",
-    birthDate: "",
-    deathDate: "",
-  });
+export function AddArtist() {
+  const [formData, setFormData] = useState(initialAddFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -201,6 +204,7 @@ export function AddArtist() {
       "POST",
       formData,
     );
+    if (response.success) setFormData(initialAddFormState);
     toastProcess(response);
   };
 

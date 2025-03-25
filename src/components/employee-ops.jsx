@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
+import { toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { ROLES } from "shared/constants.js";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 import { Link } from "wouter";
 
-export function DeleteEmployee() {
-  useEffect(() => toastSuccess(), []);
+const initialDeleteFormState = {
+  employeeID: "",
+};
 
-  const [formData, setFormData] = useState({
-    employeeID: "",
-  });
+export function DeleteEmployee() {
+  const [formData, setFormData] = useState(initialDeleteFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +21,7 @@ export function DeleteEmployee() {
       "DELETE",
       formData,
     );
+    if (response.success) setFormData(initialDeleteFormState);
     toastProcess(response);
   };
 
@@ -72,25 +73,28 @@ export function DeleteEmployee() {
   );
 }
 
+const initialModifyFormState = {
+  employeeID: "",
+  exhibitID: "",
+  employeeName: "",
+  ssn: "",
+  phoneNumber: "",
+  address: "",
+  personalEmail: "",
+  workEmail: "",
+  birthDate: "",
+  hiringDate: "",
+  firedDate: "",
+  salary: "",
+  role: "",
+};
+
 export function ModifyEmployee() {
-  useEffect(() => toastSuccess(), []);
-  useEffect(() => exhibitSetter(setExhibits), []);
+  useEffect(() => {
+    exhibitSetter(setExhibits);
+  }, []);
   const [exhibitOptions, setExhibits] = useState([]);
-  const [formData, setFormData] = useState({
-    employeeID: "",
-    exhibitID: "",
-    employeeName: "",
-    ssn: "",
-    phoneNumber: "",
-    address: "",
-    personalEmail: "",
-    workEmail: "",
-    birthDate: "",
-    hiringDate: "",
-    firedDate: "",
-    salary: "",
-    role: "",
-  });
+  const [formData, setFormData] = useState(initialModifyFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -100,6 +104,7 @@ export function ModifyEmployee() {
       "PATCH",
       formData,
     );
+    if (response.success) setFormData(initialModifyFormState);
     toastProcess(response);
   };
 
@@ -285,29 +290,33 @@ export function ModifyEmployee() {
   );
 }
 
+const initialAddFormState = {
+  employeeName: "",
+  exhibitID: "",
+  ssn: "",
+  phoneNumber: "",
+  address: "",
+  personalEmail: "",
+  workEmail: "",
+  birthDate: "",
+  hiringDate: "",
+  salary: "",
+  role: "",
+};
+
 export function AddEmployee() {
-  useEffect(() => exhibitSetter(setExhibits), []);
-  useEffect(() => toastSuccess(), []);
+  useEffect(() => {
+    exhibitSetter(setExhibits);
+  }, []);
 
   const [exhibitOptions, setExhibits] = useState([]);
-  const [formData, setFormData] = useState({
-    employeeName: "",
-    exhibitID: "",
-    ssn: "",
-    phoneNumber: "",
-    address: "",
-    personalEmail: "",
-    workEmail: "",
-    birthDate: "",
-    hiringDate: "",
-    salary: "",
-    role: "",
-  });
+  const [formData, setFormData] = useState(initialAddFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const response = await apiFetch("/api/employee/insert/", "POST", formData);
+    if (response.success) setFormData(initialAddFormState);
     toastProcess(response);
   };
 

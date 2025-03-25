@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
+import { toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Select } from "./common/select";
 import { ACQUISITIONTYPES } from "shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
-export function DeleteArtifact() {
-  useEffect(() => toastSuccess(), []);
+const initialDeleteFormState = {
+  artifactID: "",
+};
 
-  const [formData, setFormData] = useState({
-    artifactID: "",
-  });
+export function DeleteArtifact() {
+  const [formData, setFormData] = useState(initialDeleteFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +21,7 @@ export function DeleteArtifact() {
       "DELETE",
       formData,
     );
+    if (response.success) setFormData(initialDeleteFormState);
     toastProcess(response);
   };
 
@@ -72,9 +73,19 @@ export function DeleteArtifact() {
   );
 }
 
-export function ModifyArtifact() {
-  useEffect(() => toastSuccess(), []);
+const initialModifyFormState = {
+  artifactID: "",
+  exhibitID: "",
+  artistID: "",
+  artifactName: "",
+  acquisitionDate: "",
+  acquisitionValue: "",
+  acquisitionType: "",
+  creationDate: "",
+  description: "",
+};
 
+export function ModifyArtifact() {
   useEffect(() => {
     exhibitSetter(setExhibits);
     artistSetter(setArtists);
@@ -82,17 +93,7 @@ export function ModifyArtifact() {
 
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
-  const [formData, setFormData] = useState({
-    artifactID: "",
-    exhibitID: "",
-    artistID: "",
-    artifactName: "",
-    acquisitionDate: "",
-    acquisitionValue: "",
-    acquisitionType: "",
-    creationDate: "",
-    description: "",
-  });
+  const [formData, setFormData] = useState(initialModifyFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -102,6 +103,7 @@ export function ModifyArtifact() {
       "PATCH",
       formData,
     );
+    if (response.success) setFormData(initialModifyFormState);
     toastProcess(response);
   };
 
@@ -241,9 +243,18 @@ export function ModifyArtifact() {
   );
 }
 
-export function AddArtifact() {
-  useEffect(() => toastSuccess(), []);
+const initialAddFormState = {
+  artifactName: "",
+  exhibitID: "",
+  artistID: "",
+  acquisitionDate: "",
+  acquisitionValue: "",
+  acquisitionType: "",
+  creationDate: "",
+  description: "",
+};
 
+export function AddArtifact() {
   useEffect(() => {
     exhibitSetter(setExhibits);
     artistSetter(setArtists);
@@ -251,16 +262,7 @@ export function AddArtifact() {
 
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
-  const [formData, setFormData] = useState({
-    artifactName: "",
-    exhibitID: "",
-    artistID: "",
-    acquisitionDate: "",
-    acquisitionValue: "",
-    acquisitionType: "",
-    creationDate: "",
-    description: "",
-  });
+  const [formData, setFormData] = useState(initialAddFormState);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -270,6 +272,7 @@ export function AddArtifact() {
       "POST",
       formData,
     );
+    if (response.success) setFormData(initialAddFormState);
     toastProcess(response);
   };
 

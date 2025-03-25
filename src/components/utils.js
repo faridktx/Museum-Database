@@ -23,7 +23,6 @@ function createErrorMessage(toast, errors) {
 }
 
 function compileToastNotification(toastClass, message) {
-  localStorage.removeItem("modification");
   const toast = document.createElement("div");
   const title = document.createElement("h3");
   title.classList.add(toastClass);
@@ -33,16 +32,9 @@ function compileToastNotification(toastClass, message) {
   return toast;
 }
 
-export function toastSuccess() {
-  if (localStorage.getItem("modification") === "true") {
-    showToastSuccessNotification();
-  }
-}
-
 export function toastProcess(response) {
   if (response.success) {
-    localStorage.setItem("modification", "true");
-    location.reload();
+    showToastSuccessNotification();
   } else {
     showToastFailNotification(response);
   }

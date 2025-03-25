@@ -252,20 +252,20 @@
 .dashboard,
 .not-found {
   padding-top: calc(var(--spacing) * 4);
-  min-height: 55vh;
+  min-height: 67vh;
   background-color: #f8f9fa;
 }
 
 .not-found {
-  margin-top: 5%;
+  margin-top: 8%;
 }
 
 .not-found h1 {
-  font-size: 4em;
+  font-size: 6em;
 }
 
 .not-found p {
-  font-size: 1em;
+  font-size: 1.2em;
 }
 
 .dashboard-content {
@@ -362,9 +362,10 @@
   margin: var(--spacing) 0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   max-width: 80vw;
-  min-width: 40vw;
+  min-width: 50vw;
   margin: 0 auto;
   margin-bottom: auto;
+  margin-top: 6em;
 }
 
 .form-card h2 {
@@ -457,8 +458,8 @@
 }
 
 .operations-page {
-  padding-top: calc(var(--spacing) * 4);
-  min-height: 80vh;
+  padding-top: calc(var(--spacing) * 6);
+  min-height: 72vh;
   background-color: #f8f9fa;
 }
 
@@ -487,7 +488,6 @@
   transition: all 0.3s ease;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
   position: relative;
   overflow: hidden;
 }
@@ -556,8 +556,8 @@
 .dashboard-footer {
   background-color: white;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
-  padding: calc(var(--spacing) * 1.5) 0;
-  margin-top: auto;
+  padding: calc(var(--spacing) * 1.57) 0;
+  margin-top: 4em;
 }
 
 .dashboard-footer-grid {

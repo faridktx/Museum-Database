@@ -10,18 +10,13 @@ import "../components.css";
 
 export function DashboardHeader() {
   const { user } = useUser();
-
-  const handleClick = () => {
-    window.location.href = "/";
-  };
-
   return (
     <header className="header">
       <div className="container header-content">
         <div className="logo">
-          <h1 onClick={handleClick} style={{ cursor: "pointer" }}>
-            MuseoCore
-          </h1>
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <h1 style={{ cursor: "pointer" }}>MuseoCore</h1>
+          </Link>
         </div>
 
         <nav className="nav-links">

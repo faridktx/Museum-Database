@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "shared/constants.js";
 
-dotenv.config({ path: "./backend/.env" });
+dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -42,6 +42,7 @@ const executeSQLReturn = async (res, query) => {
     const [rows] = await promisePool.query(query);
     return rows;
   } catch (err) {
+    console.log(err);
     res.status(500).json({ errors: ["Database error"] });
     console.log("Error retrieving entires...");
   }

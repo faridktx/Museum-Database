@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
 import { Home } from "./pages/home";
 import { Header } from "./components/home/header";
@@ -22,6 +22,7 @@ import {
   ModifyEmployee,
   DeleteEmployee,
 } from "./components/employee-ops";
+import { useEffect } from "react";
 
 const routes = [
   { route: "/dashboard", component: Dashboard },
@@ -39,32 +40,30 @@ const routes = [
   { route: "/dashboard/employee/remove", component: DeleteEmployee },
 ];
 
-function ProtectedRoutes() {
-  return (
-    <>
-      {routes.map(({ route, component: Component }) => (
-        <Route key={route} path={route}>
-          <SignedIn>
-            <Component />
-          </SignedIn>
-          <SignedOut>
-            <RedirectToSignIn />
-          </SignedOut>
-        </Route>
-      ))}
-    </>
-  );
-}
-
 export function App() {
   const { user } = useUser();
   const isLoggedIn = !!user;
+  const [location] = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
   return (
     <>
       {isLoggedIn ? <DashboardHeader /> : <Header />}
       <Switch>
         <Route path="/" component={Home} />
-        <ProtectedRoutes />
+        {routes.map(({ route, component: Component }) => (
+          <Route key={route} path={route}>
+            <SignedIn>
+              <Component />
+            </SignedIn>
+            <SignedOut>
+              <RedirectToSignIn />
+            </SignedOut>
+          </Route>
+        ))}
         <Route>
           <NotFound />
         </Route>

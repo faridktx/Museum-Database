@@ -1,6 +1,6 @@
 function Option({ options }) {
   return options.map((field, index) => (
-    <option id={index} value={field}>
+    <option key={index} value={field}>
       {field}
     </option>
   ));
@@ -8,7 +8,7 @@ function Option({ options }) {
 
 function OptionFromDB({ options }) {
   return options.map((field, index) => (
-    <option id={index} value={field.id}>
+    <option key={index} value={field.id}>
       {`${field.name} (${field.id})`}
     </option>
   ));
