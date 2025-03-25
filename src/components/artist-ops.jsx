@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
-import { NATIONALITIES } from "shared/constants.js";
+import { NATIONALITIES } from "./shared";
 import { Select } from "./common/select";
 import { Link } from "wouter";
 

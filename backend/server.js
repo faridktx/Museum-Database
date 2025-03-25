@@ -3,7 +3,7 @@ import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
-import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "shared/constants.js";
+import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
 
 dotenv.config();
 const app = express();
