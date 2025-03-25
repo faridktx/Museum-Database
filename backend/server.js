@@ -1,9 +1,10 @@
 import express from "express";
 import mysql from "mysql2";
+import sql from 'mssql'
 import cors from "cors";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
-import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "shared/constants.js";
+import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "../shared/constants.js";
 
 dotenv.config({ path: "./backend/.env" });
 const app = express();
@@ -24,6 +25,11 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 30,
   queueLimit: 0,
+  connectTimeout: 10000, // 10 seconds
+  port: 1433, // Default port for Azure SQL
+  ssl: {
+    rejectUnauthorized: false, // Required for Azure SQL
+  }
 });
 
 const promisePool = pool.promise();
@@ -530,6 +536,29 @@ app.post(
   },
 );
 
+// MSSQL Connection Pool Configuration
+const sqlConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  server: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  port: 1433,
+  options: {
+    encrypt: true,
+    trustServerCertificate: false,
+    enableArithAbort: true
+  },
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000
+  }
+};
+
+// Create a dedicated pool for reports
+const reportPool = new sql.ConnectionPool(sqlConfig);
+const poolConnect = reportPool.connect(); // Initialize the pool
+
 app.get("/api/report", async (req, res) => {
   const { type } = req.query;
 
@@ -584,18 +613,38 @@ app.get("/api/report", async (req, res) => {
   }
 
   try {
-    const [results] = await promisePool.query(query);
-    const htmlReport = generateHTMLReport(results, title);
-
+    const pool = await sql.connect(sqlConfig);
+    const result = await pool.request().query(query);
+    const htmlReport = generateHTMLReport(result.recordset, title);
     res.send(htmlReport);
   } catch (err) {
-    console.error("Error executing query:", err);
-    res.status(500).send("Error executing query");
+    console.error("Error executing report query:", err);
+    res.status(500).json({ error: "Error generating report" });
   }
 });
 
+// Start server
+const XPORT = process.env.PORT || 5002;
+app.listen(XPORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+// HTML generator function
 function generateHTMLReport(data, title) {
-  let html = `
+  if (!data || data.length === 0) {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head><title>${title}</title></head>
+      <body>
+        <h1>${title}</h1>
+        <p>No data available</p>
+      </body>
+      </html>
+    `;
+  }
+
+  return `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -603,26 +652,11 @@ function generateHTMLReport(data, title) {
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title}</title>
       <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        th {
-          background-color: #f4f4f4;
-        }
-        tr:nth-child(even) {
-          background-color: #f9f9f9;
-        }
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
       </style>
     </head>
     <body>
@@ -630,48 +664,28 @@ function generateHTMLReport(data, title) {
       <table>
         <thead>
           <tr>
-  `;
-
-  if (data.length > 0) {
-    const columns = Object.keys(data[0]);
-    html += columns.map((column) => `<th>${column}</th>`).join("");
-  }
-
-  html += `
+            ${Object.keys(data[0]).map(col => `<th>${col}</th>`).join('')}
           </tr>
         </thead>
         <tbody>
-  `;
-
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
-
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
-
-  html += `
+          ${data.map(row => `
+            <tr>
+              ${Object.values(row).map(val => `<td>${val !== null ? val : ''}</td>`).join('')}
+            </tr>
+          `).join('')}
         </tbody>
       </table>
     </body>
     </html>
   `;
-
-  return html;
 }
+
+// Close pool on application shutdown
+process.on('SIGINT', async () => {
+  await reportPool.close();
+  process.exit();
+});
+
 app.post(
   "/api/login",
   [
