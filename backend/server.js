@@ -17,22 +17,27 @@ app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-const pool = mysql.createPool({
-  host: process.env.DB_HOST,
+// MSSQL Connection Pool Configuration
+const sqlConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  server: process.env.DB_HOST,
   database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 30,
-  queueLimit: 0,
-  connectTimeout: 10000, // 10 seconds
-  port: 1433, // Default port for Azure SQL
-  ssl: {
-    rejectUnauthorized: false, // Required for Azure SQL
+  port: 1433,
+  options: {
+    encrypt: true,
+    trustServerCertificate: false,
+    enableArithAbort: true
+  },
+  pool: {
+    max: 10,
+    min: 0,
+    idleTimeoutMillis: 30000
   }
-});
+};
 
-const promisePool = pool.promise();
+const pool = await sql.connect(sqlConfig);
+const promisePool = new sql.ConnectionPool(sqlConfig);
 
 const validationErrorCheck = (req, res) => {
   const errors = validationResult(req);
@@ -45,8 +50,8 @@ const validationErrorCheck = (req, res) => {
 
 const executeSQLReturn = async (res, query) => {
   try {
-    const [rows] = await promisePool.query(query);
-    return rows;
+    const result = await pool.request().query(query);
+    return result.recordset;
   } catch (err) {
     res.status(500).json({ errors: ["Database error"] });
     console.log("Error retrieving entires...");
@@ -54,14 +59,44 @@ const executeSQLReturn = async (res, query) => {
 };
 
 const executeSQLQuery = async (res, query, fields) => {
+  const request = pool.request();
+
   try {
-    await promisePool.query(query, fields);
-    res.status(200).json({ errors: [] });
-  } catch (err) {
-    res.status(500).json({ errors: ["Database error"] });
-    console.log("Error submitting form...");
+    // Add all fields as parameters
+    for (const [key, value] of Object.entries(fields)) {
+      let type;
+      
+      // Determine parameter type
+      switch (typeof value) {
+        case 'number':
+          type = Number.isInteger(value) ? sql.Int : sql.Decimal;
+          break;
+        case 'string':
+          type = sql.NVarChar;
+          break;
+        case 'boolean':
+          type = sql.Bit;
+          break;
+        default:
+          if (value instanceof Date) {
+            type = sql.DateTime;
+          } else if (value === null || value === undefined) {
+            type = sql.NVarChar;
+          } else {
+            type = sql.NVarChar;
+          }
+      }
+      
+      request.input(key, type, value !== null && value !== undefined ? value : null);
+    }
+
+    await request.query(query);
+    return { success: true };
+  } catch (error) {
+    console.error('Database error:', error);
+    return { success: false, error };
   }
-};
+}
 
 const deleteRecord = async (table, column, recordID, res) => {
   const query = `DELETE FROM ${table} WHERE ${column} = ?`;
@@ -77,7 +112,7 @@ const insertRecord = async (table, res, fields) => {
     insertVariables.push(value);
     insertColumns += field.column;
   });
-  const query = `INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs})`;
+  const query = `SET IDENTITY_INSERT ${table} on; INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs}); SET IDENTITY_INSERT ${table} OFF;`;
   await executeSQLQuery(res, query, insertVariables);
 };
 
@@ -536,28 +571,7 @@ app.post(
   },
 );
 
-// MSSQL Connection Pool Configuration
-const sqlConfig = {
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  server: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  port: 1433,
-  options: {
-    encrypt: true,
-    trustServerCertificate: false,
-    enableArithAbort: true
-  },
-  pool: {
-    max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000
-  }
-};
 
-// Create a dedicated pool for reports
-const reportPool = new sql.ConnectionPool(sqlConfig);
-const poolConnect = reportPool.connect(); // Initialize the pool
 
 app.get("/api/report", async (req, res) => {
   const { type } = req.query;
@@ -623,12 +637,6 @@ app.get("/api/report", async (req, res) => {
   }
 });
 
-// Start server
-const XPORT = process.env.PORT || 5002;
-app.listen(XPORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
 // HTML generator function
 function generateHTMLReport(data, title) {
   if (!data || data.length === 0) {
@@ -679,12 +687,6 @@ function generateHTMLReport(data, title) {
     </html>
   `;
 }
-
-// Close pool on application shutdown
-process.on('SIGINT', async () => {
-  await reportPool.close();
-  process.exit();
-});
 
 app.post(
   "/api/login",

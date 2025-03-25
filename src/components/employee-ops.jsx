@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
-import { ROLES } from "shared/constants.js";
+import { ROLES } from "./constants.js";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 import { Link } from "wouter";
