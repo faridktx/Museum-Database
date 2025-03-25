@@ -42,7 +42,6 @@ const executeSQLReturn = async (res, query) => {
     const [rows] = await promisePool.query(query);
     return rows;
   } catch (err) {
-    console.log(err);
     res.status(500).json({ errors: ["Database error"] });
     console.log("Error retrieving entires...");
   }
@@ -65,14 +64,14 @@ const deleteRecord = async (table, column, recordID, res) => {
 
 const insertRecord = async (table, res, fields) => {
   let insertVariables = [];
-  let insertColumns = "";
-  const insertQs = " ?, ".repeat(fields.length);
+  let insertColumns = [];
+  const insertQs = fields.map(() => "?").join(", ");
   fields.forEach((field) => {
     const value = !field.value ? null : field.value;
     insertVariables.push(value);
-    insertColumns += field.column;
+    insertColumns.push(field.column);
   });
-  const query = `INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs})`;
+  const query = `INSERT INTO ${table} (${insertColumns.join(", ")}) VALUES (${insertQs})`;
   await executeSQLQuery(res, query, insertVariables);
 };
 

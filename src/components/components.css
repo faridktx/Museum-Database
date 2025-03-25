@@ -249,15 +249,15 @@
   }
 }
 
-.dashboard,
-.not-found {
+.dashboard {
   padding-top: calc(var(--spacing) * 4);
   min-height: 67vh;
   background-color: #f8f9fa;
 }
 
 .not-found {
-  margin-top: 8%;
+  margin-top: 17em;
+  min-height: 51vh;
 }
 
 .not-found h1 {
