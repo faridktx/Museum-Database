@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "react-refresh/runtime": ["react-refresh/runtime.js"],
+      "shared/*": ["shared/*"]
+    }
+  },
+  "include": ["src"]
+}

@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  toastSuccessDelete,
-  toastSuccessInsert,
-  toastSuccessModify,
-  toastProcessDelete,
-  toastProcessModify,
-  toastProcessInsert,
-  apiModifyFetch,
-} from "./utils";
+import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { NATIONALITIES } from "./constants.js";
 import { Select } from "./common/select";
 
 export function DeleteArtist() {
-  useEffect(() => toastSuccessDelete("Artist"), []);
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     artistID: "",
@@ -27,7 +19,7 @@ export function DeleteArtist() {
       "DELETE",
       formData,
     );
-    toastProcessDelete(response, "Artist");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -81,7 +73,7 @@ export function DeleteArtist() {
 }
 
 export function ModifyArtist() {
-  useEffect(() => toastSuccessModify("Artist"), []);
+  useEffect(() => toastSuccess(), []);
   const [formData, setFormData] = useState({
     artistID: "",
     artistName: "",
@@ -98,8 +90,7 @@ export function ModifyArtist() {
       "PATCH",
       formData,
     );
-
-    toastProcessModify(response, "Artist");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -196,7 +187,7 @@ export function ModifyArtist() {
 }
 
 export function AddArtist() {
-  useEffect(() => toastSuccessInsert("Artist"));
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     artistName: "",
@@ -213,7 +204,7 @@ export function AddArtist() {
       "POST",
       formData,
     );
-    toastProcessInsert(response, "Artist");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
