@@ -104,16 +104,78 @@ const deleteRecord = async (table, column, recordID, res) => {
 };
 
 const insertRecord = async (table, res, fields) => {
-  let insertVariables = [];
-  let insertColumns = "";
-  const insertQs = " ?, ".repeat(fields.length);
-  fields.forEach((field) => {
-    const value = !field.value ? null : field.value;
-    insertVariables.push(value);
-    insertColumns += field.column;
-  });
-  const query = `SET IDENTITY_INSERT ${table} on; INSERT INTO ${table} (${insertColumns}) INSERT INTO (${insertQs}); SET IDENTITY_INSERT ${table} OFF;`;
-  await executeSQLQuery(res, query, insertVariables);
+  try {
+    // Determine if we have an identity column (assuming it's named 'id' or ends with '_ID')
+    const hasIdentityColumn = fields.some(f => 
+      f.column.toLowerCase() === 'id' || 
+      f.column.toUpperCase().endsWith('_ID')
+    );
+
+    // Build the column list and parameter placeholders
+    const columns = fields.map(field => `[${field.column}]`).join(', ');
+    const parameters = fields.map((_, index) => `@param${index}`).join(', ');
+    
+    // Create the request
+    const request = pool.request();
+    
+    // Add each field as a parameter
+    fields.forEach((field, index) => {
+      const paramName = `param${index}`;
+      const value = field.value !== undefined ? field.value : null;
+      
+      // Determine the appropriate SQL type
+      let sqlType;
+      if (value === null) {
+        sqlType = sql.Int; // Default type for NULL in identity columns
+      } else {
+        switch (typeof value) {
+          case 'number':
+            sqlType = Number.isInteger(value) ? sql.Int : sql.Decimal;
+            break;
+          case 'string':
+            sqlType = sql.NVarChar;
+            break;
+          case 'boolean':
+            sqlType = sql.Bit;
+            break;
+          default:
+            if (value instanceof Date) {
+              sqlType = sql.DateTime;
+            } else {
+              sqlType = sql.NVarChar;
+            }
+        }
+      }
+      
+      request.input(paramName, sqlType, value);
+    });
+
+    // Build the query with conditional IDENTITY_INSERT handling
+    let query = `INSERT INTO ${table} (${columns}) VALUES (${parameters}); `;
+
+
+    // Execute the query
+    const result = await request.query(query);
+    
+    // Return success response
+    res.status(200).json({
+      success: true,
+      rowsAffected: result.rowsAffected[0]
+    });
+    
+  } catch (error) {
+    console.error('Error inserting record:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error inserting record',
+      error: error.message,
+      details: {
+        number: error.number,
+        lineNumber: error.lineNumber,
+        state: error.state
+      }
+    });
+  }
 };
 
 const modifyRecord = async (res, id, id_column, table, fields) => {
