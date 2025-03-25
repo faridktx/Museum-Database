@@ -1,58 +1,51 @@
-function showToastSuccessNotification(object, operation) {
-  showToastNotification(`toast-success`, `${object} ${operation} successfully`);
-}
-
-function showToastFailNotification(object, operation) {
-  showToastNotification(`toast-error`, `${object} ${operation} failed`);
-}
-
-function showToastNotification(toastClass, message) {
-  localStorage.removeItem("modification");
-  const toast = document.createElement("div");
-  toast.classList.add("toast");
-  toast.classList.add(toastClass);
-  toast.textContent = message;
+function showToastSuccessNotification() {
+  const toast = compileToastNotification("toast-success", "Success!");
+  let message = document.createElement("div");
+  message.textContent = "Operation was successful";
+  toast.appendChild(message);
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+  setTimeout(() => toast.remove(), 5000);
 }
 
-export function toastSuccess(entity, operation) {
-  if (localStorage.getItem("modification") === "true") {
-    showToastSuccessNotification(entity, operation);
+function showToastFailNotification(response) {
+  const toast = compileToastNotification("toast-error", "Error!");
+  createErrorMessage(toast, response.errors);
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 5000);
+}
+
+function createErrorMessage(toast, errors) {
+  for (let message of errors) {
+    let errorElem = document.createElement("div");
+    errorElem.textContent = message;
+    toast.appendChild(errorElem);
   }
 }
 
-export function toastSuccessDelete(entity) {
-  toastSuccess(entity, "deleted");
+function compileToastNotification(toastClass, message) {
+  localStorage.removeItem("modification");
+  const toast = document.createElement("div");
+  const title = document.createElement("h3");
+  title.classList.add(toastClass);
+  title.textContent = message;
+  toast.appendChild(title);
+  toast.classList.add("toast");
+  return toast;
 }
 
-export function toastSuccessInsert(entity) {
-  toastSuccess(entity, "inserted");
+export function toastSuccess() {
+  if (localStorage.getItem("modification") === "true") {
+    showToastSuccessNotification();
+  }
 }
 
-export function toastSuccessModify(entity) {
-  toastSuccess(entity, "modified");
-}
-
-function toastProcess(response, entity, operation) {
+export function toastProcess(response) {
   if (response.success) {
     localStorage.setItem("modification", "true");
     location.reload();
   } else {
-    showToastFailNotification(entity, operation);
+    showToastFailNotification(response);
   }
-}
-
-export function toastProcessDelete(response, entity) {
-  toastProcess(response, entity, "deletion");
-}
-
-export function toastProcessInsert(response, entity) {
-  toastProcess(response, entity, "insertion");
-}
-
-export function toastProcessModify(response, entity) {
-  toastProcess(response, entity, "modification");
 }
 
 async function parseJSON(res, apiRes) {

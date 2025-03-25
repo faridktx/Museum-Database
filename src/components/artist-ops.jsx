@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
-import {
-  toastSuccessDelete,
-  toastSuccessInsert,
-  toastSuccessModify,
-  toastProcessDelete,
-  toastProcessModify,
-  toastProcessInsert,
-  apiModifyFetch,
-} from "./utils";
+import { toastSuccess, toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
+import { NATIONALITIES } from "shared/constants.js";
+import { Select } from "./common/select";
 
 export function DeleteArtist() {
-  useEffect(() => toastSuccessDelete("Artist"), []);
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     artistID: "",
@@ -25,7 +19,7 @@ export function DeleteArtist() {
       "DELETE",
       formData,
     );
-    toastProcessDelete(response, "Artist");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -79,6 +73,7 @@ export function DeleteArtist() {
 }
 
 export function ModifyArtist() {
+  useEffect(() => toastSuccess(), []);
   const [formData, setFormData] = useState({
     artistID: "",
     artistName: "",
@@ -87,9 +82,15 @@ export function ModifyArtist() {
     deathDate: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    const response = await apiModifyFetch(
+      "/api/artist/modify/",
+      "PATCH",
+      formData,
+    );
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -134,16 +135,16 @@ export function ModifyArtist() {
                   placeholder="Enter the name of the artist"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="nationality">Nationality</label>
-                <input
-                  type="text"
-                  id="nationality"
-                  value={formData.nationality}
-                  onChange={handleChange}
-                  placeholder="Enter the nationality of the artist"
-                />
-              </div>
+
+              <Select
+                id="nationality"
+                field="Nationality"
+                formElem={formData.nationality}
+                isRequired={false}
+                handler={handleChange}
+                isFromDB={false}
+                options={NATIONALITIES}
+              />
             </div>
 
             <div className="input-group">
@@ -186,7 +187,7 @@ export function ModifyArtist() {
 }
 
 export function AddArtist() {
-  useEffect(() => toastSuccessInsert("Artist"));
+  useEffect(() => toastSuccess(), []);
 
   const [formData, setFormData] = useState({
     artistName: "",
@@ -203,7 +204,7 @@ export function AddArtist() {
       "POST",
       formData,
     );
-    toastProcessInsert(response, "Artist");
+    toastProcess(response);
   };
 
   const handleChange = (e) => {
@@ -234,19 +235,16 @@ export function AddArtist() {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label className="required" htmlFor="nationality">
-                  Nationality
-                </label>
-                <input
-                  type="text"
-                  id="nationality"
-                  value={formData.nationality}
-                  onChange={handleChange}
-                  placeholder="Enter the nationality of the artist"
-                  required
-                />
-              </div>
+
+              <Select
+                id="nationality"
+                field="Nationality"
+                formElem={formData.nationality}
+                isRequired={true}
+                handler={handleChange}
+                isFromDB={false}
+                options={NATIONALITIES}
+              />
             </div>
 
             <div className="input-group">

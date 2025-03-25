@@ -630,22 +630,31 @@
 
 .toast {
   position: fixed;
+  overflow-y: auto;
+  min-width: 18%;
+  max-width: 30%;
+  max-height: 25%;
   bottom: 20px;
   right: 20px;
-  background-color: #333;
-  color: #fff;
+  background-color: white;
+  color: #595959;
   padding: 12px 20px;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   opacity: 0;
+  border-color: black;
   animation: fadeIn 0.4s ease forwards;
 }
+
 .toast-success {
-  background-color: #8adf8d;
+  font-size: 25px;
+  color: green;
 }
+
 .toast-error {
-  background-color: #da857f;
+  font-size: 25px;
+  color: red;
 }
 
 @keyframes fadeIn {
