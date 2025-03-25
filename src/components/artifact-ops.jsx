@@ -10,7 +10,7 @@ import {
 } from "./utils";
 import "./components.css";
 import { ExhibitsRequired, ExhibitsOptional } from "./common/exhibits";
-import { ACQUISITIONTYPES } from "shared/constants.js";
+import { ACQUISITIONTYPES, ROLES } from "../shared/constants.js";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
 export function DeleteArtifact() {
