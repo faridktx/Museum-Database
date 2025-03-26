@@ -4,7 +4,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
-import fs from "fs";
 
 dotenv.config();
 const app = express();
@@ -25,10 +24,6 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 30,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false,
-    ca: fs.readFileSync('./backend/BaltimoreCyberTrustRoot.crt.pem')
-  }
 });
 
 const promisePool = pool.promise();
