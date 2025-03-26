@@ -58,9 +58,12 @@ async function parseFetchError(res) {
 export async function apiGetFetch(path) {
   let apiResponse = { success: true, errors: [], data: [] };
   try {
-    const response = await fetch(path, {
-      method: "GET",
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}${path}`,
+      {
+        method: "GET",
+      },
+    );
     await parseJSON(response, apiResponse);
   } catch (err) {
     await parseFetchError(apiResponse);
@@ -71,11 +74,14 @@ export async function apiGetFetch(path) {
 export async function apiModifyFetch(path, method, formData) {
   let apiResponse = { success: true, errors: [] };
   try {
-    const response = await fetch(path, {
-      method: method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    const response = await fetch(
+      `${process.env.REACT_APP_BACKEND_URL}${path}`,
+      {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      },
+    );
     await parseJSON(response, apiResponse);
   } catch (err) {
     await parseFetchError(apiResponse);

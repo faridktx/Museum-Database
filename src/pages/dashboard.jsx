@@ -5,7 +5,9 @@ import "../components/components.css";
 export function Dashboard() {
   const handleGenerateReport = async (reportType) => {
     try {
-      const response = await fetch(`/api/report?type=${reportType}`);
+      const response = await fetch(
+        `${process.env.REACT_APP_BACKEND_URL}/api/report?type=${reportType}`,
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch report");
       }
