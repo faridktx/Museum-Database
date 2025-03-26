@@ -16,6 +16,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.4.0",
     "react-scripts": "^5.0.1",
+    "serve": "^14.2.4",
     "wouter": "^3.6.0"
   },
   "devDependencies": {
@@ -38,10 +39,8 @@
     "ajv": "6.12.6"
   },
   "scripts": {
-    "start-client": "cd src && npm start",
-    "start-server": "nodemon backend/server.js",
-    "dev": "concurrently \"npm run start-client\" \"npm run start-server\"",
-    "start": "react-scripts start"
+    "build": "react-scripts build",
+    "serve": "serve -s build"
   },
   "browserslist": {
     "production": [
