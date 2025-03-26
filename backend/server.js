@@ -533,64 +533,76 @@ app.post(
 app.get("/api/report", async (req, res) => {
   const { type } = req.query;
 
-  let query;
-  let title;
-  switch (type) {
-    case "collection":
-      query = `
-        SELECT 
-        a.Artifact_ID, 
-        a.Artifact_Name, 
-        a.Artifact_Description, 
-        a.Value, 
-        ar.Artist_Name, 
-        ar.Nationality
-        FROM artifacts a
-        JOIN artists ar ON a.Artist_ID = ar.Artist_ID;
-      `;
-      title = "Collection Overview Report";
-      break;
-    case "exhibits":
-      query = `
-        SELECT 
-        e.Exhibit_ID, 
-        e.Exhibit_Name, 
-        e.Description, 
-        e.Start_Date, 
-        e.Exhibit_Type, 
-        ev.Event_Name, 
-        ev.Start_Date
-        FROM exhibits e
-        JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits;
-      `;
-      title = "Exhibit Status Report";
-      break;
-    case "employee":
-      query = `
-        SELECT 
-        emp.Employee_ID, 
-        emp.Employee_Name, 
-        emp.Address, 
-        emp.Salary, 
-        emp.Work_Email, 
-        e.Exhibit_Name
-        FROM employees emp
-        JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID;
-      `;
-      title = "Employee History Report";
-      break;
-    default:
-      return res.status(400).send("Invalid report type");
+  if (!type) {
+    return res.status(400).send("Report type is required");
   }
 
+  let query;
+  let title;
   try {
-    const [results] = await promisePool.query(query);
-    const htmlReport = generateHTMLReport(results, title);
+    switch (type) {
+      case "collection":
+        query = `
+          SELECT 
+            a.Artifact_ID, 
+            a.Artifact_Name, 
+            a.Artifact_Description, 
+            a.Value, 
+            ar.Artist_Name, 
+            ar.Nationality
+          FROM artifacts a
+          JOIN artists ar ON a.Artist_ID = ar.Artist_ID
+          ORDER BY a.Artifact_ID;
+        `;
+        title = "Collection Overview Report";
+        break;
+      case "exhibits":
+        query = `
+          SELECT 
+            e.Exhibit_ID, 
+            e.Exhibit_Name, 
+            e.Description, 
+            e.Start_Date, 
+            e.Exhibit_Type,
+            IFNULL(ev.Event_Name, 'N/A') AS Event_Name,
+            IFNULL(ev.Start_Date, 'N/A') AS Event_Start_Date
+          FROM exhibits e
+          LEFT JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits
+          ORDER BY e.Exhibit_ID;
+        `;
+        title = "Exhibit Status Report";
+        break;
+      case "employee":
+        query = `
+          SELECT 
+            emp.Employee_ID, 
+            emp.Employee_Name, 
+            emp.Address, 
+            emp.Salary, 
+            emp.Work_Email, 
+            IFNULL(e.Exhibit_Name, 'N/A') AS Exhibit_Name
+          FROM employees emp
+          LEFT JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID
+          ORDER BY emp.Employee_ID;
+        `;
+        title = "Employee History Report";
+        break;
+      default:
+        return res.status(400).send("Invalid report type");
+    }
 
+    const [results] = await promisePool.query(query);
+    
+    if (results.length === 0) {
+      return res.status(404).send("No data found for this report");
+    }
+
+    const htmlReport = generateHTMLReport(results, title);
+    res.setHeader('Content-Type', 'text/html');
     res.send(htmlReport);
   } catch (err) {
-    console.error("Error executing query:", err);
-    res.status(500).send("Error executing query");
+    console.error("Error generating report:", err);
+    res.status(500).send("Error generating report");
   }
 });
 
@@ -607,21 +619,37 @@ function generateHTMLReport(data, title) {
           font-family: Arial, sans-serif;
           margin: 20px;
         }
+        h1 {
+          color: #333;
+          text-align: center;
+        }
         table {
           width: 100%;
           border-collapse: collapse;
           margin-top: 20px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
         th, td {
           border: 1px solid #ddd;
-          padding: 8px;
+          padding: 12px;
           text-align: left;
         }
         th {
-          background-color: #f4f4f4;
+          background-color: #4CAF50;
+          color: white;
+          font-weight: bold;
         }
         tr:nth-child(even) {
-          background-color: #f9f9f9;
+          background-color: #f2f2f2;
+        }
+        tr:hover {
+          background-color: #e9e9e9;
+        }
+        .report-footer {
+          margin-top: 20px;
+          text-align: right;
+          font-style: italic;
+          color: #666;
         }
       </style>
     </head>
@@ -632,9 +660,10 @@ function generateHTMLReport(data, title) {
           <tr>
   `;
 
+  // Add table headers
   if (data.length > 0) {
     const columns = Object.keys(data[0]);
-    html += columns.map((column) => `<th>${column}</th>`).join("");
+    html += columns.map((column) => `<th>${column.replace(/_/g, ' ')}</th>`).join("");
   }
 
   html += `
@@ -643,21 +672,12 @@ function generateHTMLReport(data, title) {
         <tbody>
   `;
 
+  // Add table rows (only once - removed the duplicate loop)
   data.forEach((row) => {
     html += `
       <tr>
         ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
-
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
+          .map((value) => `<td>${value !== null ? value : 'N/A'}</td>`)
           .join("")}
       </tr>
     `;
@@ -666,6 +686,9 @@ function generateHTMLReport(data, title) {
   html += `
         </tbody>
       </table>
+      <div class="report-footer">
+        Report generated on ${new Date().toLocaleString()}
+      </div>
     </body>
     </html>
   `;
