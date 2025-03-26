@@ -44,6 +44,7 @@ const executeSQLReturn = async (res, query) => {
   } catch (err) {
     res.status(500).json({ errors: ["Database error"] });
     console.log("Error retrieving entires...");
+    console.log(err);
   }
 };
 
@@ -54,6 +55,7 @@ const executeSQLQuery = async (res, query, fields) => {
   } catch (err) {
     res.status(500).json({ errors: ["Database error"] });
     console.log("Error submitting form...");
+    console.log(err);
   }
 };
 

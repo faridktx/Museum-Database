@@ -3,7 +3,7 @@ import { toastProcess, apiModifyFetch } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Select } from "./common/select";
-import { ACQUISITIONTYPES } from "./shared";
+import { ACQUISITIONTYPES } from "./constants";
 import { artistSetter, exhibitSetter } from "./common/setters";
 
 const initialDeleteFormState = {
