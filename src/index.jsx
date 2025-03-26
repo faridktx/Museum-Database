@@ -4,9 +4,6 @@ import { ClerkProvider } from "@clerk/clerk-react";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import "./index.css";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const clerkKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY;
 
