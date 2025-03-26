@@ -7,8 +7,10 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.25.2",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
+    "fs": "^0.0.1-security",
     "mssql": "^11.0.1",
     "mysql2": "^3.14.0",
     "react": "^19.0.0",
@@ -34,8 +36,10 @@
     "ajv": "6.12.6"
   },
   "scripts": {
-    "build": "react-scripts build",
-    "serve": "serve -s build"
+    "start-client": "cd src && npm start",
+    "start-server": "nodemon backend/server.js",
+    "dev": "concurrently \"npm run start-client\" \"npm run start-server\"",
+    "start": "react-scripts start"
   },
   "browserslist": {
     "production": [
