@@ -2,12 +2,16 @@ import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
+import { requireAuth } from "@clerk/express";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
 
 dotenv.config();
 const app = express();
-app.use(cors());
+app.use(
+  cors({ origin: process.env.REACT_APP_FRONTEND_URL, credentials: true }),
+);
 app.use(express.json());
 
 const PORT = process.env.PORT || 5001;
@@ -55,7 +59,7 @@ const executeSQLQuery = async (res, query, fields) => {
     res.status(200).json({ errors: [] });
   } catch (err) {
     res.status(500).json({ errors: ["Database error"] });
-    console.log("Error submitting form...");
+    console.log("Error modifying database...");
     console.log(err);
   }
 };
@@ -113,6 +117,7 @@ app.get("/api/getexhibits/", async (_req, res) => {
 
 app.delete(
   "/api/artifact/delete/",
+  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -128,6 +133,7 @@ app.delete(
 
 app.delete(
   "/api/artist/delete/",
+  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -143,6 +149,7 @@ app.delete(
 
 app.delete(
   "/api/employee/delete",
+  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -158,6 +165,7 @@ app.delete(
 
 app.patch(
   "/api/artifact/modify/",
+  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -230,6 +238,7 @@ app.patch(
 
 app.patch(
   "/api/artist/modify/",
+  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -272,6 +281,7 @@ app.patch(
 
 app.patch(
   "/api/employee/modify/",
+  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -369,6 +379,7 @@ app.patch(
 
 app.post(
   "/api/artifact/insert/",
+  requireAuth(),
   [
     body("artifactName")
       .custom((value) => !/\d/.test(value))
@@ -429,6 +440,7 @@ app.post(
 
 app.post(
   "/api/artist/insert",
+  requireAuth(),
   [
     body("artistName")
       .custom((value) => !/\d/.test(value))
@@ -464,6 +476,7 @@ app.post(
 
 app.post(
   "/api/employee/insert",
+  requireAuth(),
   [
     body("employeeName")
       .custom((value) => !/\d/.test(value))
@@ -532,6 +545,91 @@ app.post(
     await insertRecord("employees", res, fields);
   },
 );
+
+app.post(
+  "/api/memberships",
+  requireAuth(),
+  [
+    body("membership")
+      .isIn(["individual", "dual", "family", "benefactor"])
+      .withMessage("Membership type must be within accepted categories"),
+  ],
+  async (req, res) => {
+    if (validationErrorCheck(req, res)) return;
+    const clerkUserId = req.auth.userId;
+    const { membership } = req.body;
+
+    const query = `UPDATE guests SET membership = ?, paid_date = ? WHERE guest_id = ?`;
+    await executeSQLQuery(res, query, [
+      membership,
+      new Date().toISOString().split("T")[0],
+      clerkUserId,
+    ]);
+  },
+);
+
+app.post("/api/tickets", requireAuth(), async (req, res) => {
+  const clerkUserId = req.auth.userId;
+  const ticketsPurchased = req.body;
+  const exhibits = ticketsPurchased.exhibits;
+  const tickets = ticketsPurchased.tickets;
+
+  const insertQuery = `
+    INSERT INTO tickets (guest_id, purchase_date, ticket_type, quantity)
+  `;
+  for (const purchases of [exhibits, tickets]) {
+    if (
+      Object.keys(purchases).reduce((total, qty) => total + purchases[qty], 0)
+    ) {
+      let values = [];
+      let fields = [];
+
+      for (const purchase of Object.keys(purchases)) {
+        if (purchases[purchase] > 0) {
+          values.push("(?, ?, ?, ?)");
+          fields.push(
+            clerkUserId,
+            new Date().toISOString().split("T")[0],
+            purchase,
+            purchases[purchase],
+          );
+        }
+      }
+      const query = `${insertQuery} VALUES ${values.join(", ")}`;
+      await executeSQLQuery(res, query, fields);
+    }
+  }
+});
+
+app.get("/api/role", requireAuth(), async (req, res) => {
+  const clerkUserId = req.auth.userId;
+  const query = "SELECT role FROM users WHERE clerk_id = ?";
+  const [rows] = await promisePool.query(query, [clerkUserId]);
+  res.json({ role: rows[0].role });
+});
+
+app.post("/api/register-user", requireAuth(), async (req, res) => {
+  const clerkUserId = req.auth.userId;
+  const user = await clerkClient.users.getUser(clerkUserId);
+  const email = user.emailAddresses[0]?.emailAddress;
+  const phone = user.phoneNumbers[0]?.phoneNumber;
+  const name = user.fullname;
+
+  await promisePool.query(
+    `INSERT IGNORE INTO guests (guest_id, membership, paid_date)
+    VALUES (?, ?, ?)
+    `,
+    [clerkUserId, null, null],
+  );
+
+  await promisePool.query(
+    `INSERT IGNORE INTO users (clerk_id, email, phone_number, name, role)
+    VALUES (?, ?, ?, ?, ?)
+    `,
+    [clerkUserId, email, phone, name, "guest"],
+  );
+  res.status(200).json({ errors: [] });
+});
 
 app.get("/api/report", async (req, res) => {
   const { type } = req.query;
@@ -675,40 +773,3 @@ function generateHTMLReport(data, title) {
 
   return html;
 }
-app.post(
-  "/api/login",
-  [
-    body("email").isEmail().withMessage("Email must be valid"),
-    body("password").notEmpty().withMessage("Password is required"), // you can relax this if not using passwords yet
-  ],
-  async (req, res) => {
-    if (validationErrorCheck(req, res)) return;
-
-    const { email, password } = req.body;
-
-    try {
-      const query = `SELECT * FROM employees WHERE work_email = ?`;
-      const [rows] = await promisePool.query(query, [email]);
-
-      if (rows.length === 0) {
-        return res.status(401).json({ message: "Invalid email or password" });
-      }
-
-      const user = rows[0];
-      console.log("User from DB:", user);
-
-      // TEMP: Password checking is skipped here
-      // In production: Compare with hashed password (e.g., bcrypt.compare(password, user.password))
-
-      return res.status(200).json({
-        id: user.employee_id,
-        name: user.employee_name,
-        role: user.role,
-        email: user.work_email,
-      });
-    } catch (error) {
-      console.error("Login error:", error);
-      return res.status(500).json({ message: "Server error" });
-    }
-  },
-);

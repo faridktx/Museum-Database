@@ -1,7 +1,7 @@
-import { apiGetFetch } from "../utils";
+import { apiFetch } from "../utils";
 
 const optionSetter = async (path, setter) => {
-  const response = await apiGetFetch(path);
+  const response = await apiFetch(path, "GET");
   setter(response.data);
 };
 

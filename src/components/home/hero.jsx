@@ -8,7 +8,7 @@ export function Hero() {
           <h1>Professional Museum Collection Management</h1>
           <p className="hero-subtitle">
             Streamline your museum's artifact tracking and collection management
-            with MuseoCore's comprehensive digital solution.
+            with The Curio Collection's comprehensive digital solution.
           </p>
           <a href="#contact" className="button">
             Schedule a Demo

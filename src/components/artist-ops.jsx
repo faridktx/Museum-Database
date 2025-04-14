@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { toastProcess, apiModifyFetch } from "./utils";
+import { toastProcess, fetchWithBody } from "./utils";
 import "./components.css";
 import { NATIONALITIES } from "./constants";
 import { Select } from "./common/select";
@@ -15,7 +15,7 @@ export function DeleteArtist() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artist/delete/",
       "DELETE",
       formData,
@@ -86,7 +86,7 @@ export function ModifyArtist() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artist/modify/",
       "PATCH",
       formData,
@@ -199,7 +199,7 @@ export function AddArtist() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artist/insert/",
       "POST",
       formData,

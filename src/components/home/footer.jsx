@@ -31,7 +31,7 @@ export function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <p>&copy; 2025 MuseoCore. All rights reserved.</p>
+          <p>&copy; 2025 The Curio Collection. All rights reserved.</p>
         </div>
       </div>
     </footer>

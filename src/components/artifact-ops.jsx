@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { toastProcess, apiModifyFetch } from "./utils";
+import { toastProcess, fetchWithBody } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Select } from "./common/select";
@@ -16,7 +16,7 @@ export function DeleteArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artifact/delete/",
       "DELETE",
       formData,
@@ -98,7 +98,7 @@ export function ModifyArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artifact/modify/",
       "PATCH",
       formData,
@@ -267,7 +267,7 @@ export function AddArtifact() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/artifact/insert/",
       "POST",
       formData,

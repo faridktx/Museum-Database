@@ -8,6 +8,7 @@ import { DashboardHeader } from "./components/dashboard/header";
 import { DashboardFooter } from "./components/dashboard/footer";
 import { NotFound } from "./pages/not-found";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+import { Tickets } from "./pages/tickets";
 import {
   AddArtifact,
   ModifyArtifact,
@@ -17,6 +18,8 @@ import { ArtifactOperations } from "./pages/artifact";
 import { ArtistOperations } from "./pages/artist";
 import { EmployeeOperations } from "./pages/employees";
 import { AddArtist, ModifyArtist, DeleteArtist } from "./components/artist-ops";
+import { Memberships } from "./pages/memberships";
+import { GiftShop } from "./pages/giftshop";
 import {
   AddEmployee,
   ModifyEmployee,
@@ -25,6 +28,9 @@ import {
 import { useEffect } from "react";
 
 const routes = [
+  { route: "/tickets", component: Tickets },
+  { route: "/gift-shop", component: GiftShop },
+  { route: "/memberships", component: Memberships },
   { route: "/dashboard", component: Dashboard },
   { route: "/dashboard/artifact", component: ArtifactOperations },
   { route: "/dashboard/artist", component: ArtistOperations },

@@ -50,7 +50,7 @@ export function DashboardFooter() {
         </div>
         <div className="dashboard-footer-bottom">
           <p>
-            © 2025 MuseoCore. <a href="/terms">Terms</a> ·{" "}
+            © 2025 The Curio Collection. <a href="/terms">Terms</a> ·{" "}
             <a href="/privacy">Privacy</a> · <a href="/security">Security</a>
           </p>
         </div>

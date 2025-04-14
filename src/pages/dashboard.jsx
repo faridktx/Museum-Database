@@ -1,25 +1,67 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
 import "../components/components.css";
+import { apiFetch } from "../components/utils";
 
 export function Dashboard() {
-  const handleGenerateReport = async (reportType) => {
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_BACKEND_URL}/api/report?type=${reportType}`,
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch report");
-      }
-      const html = await response.text();
-      const newWindow = window.open("", "_blank");
-      newWindow.document.write(html);
-      newWindow.document.close();
-    } catch (error) {
-      console.error("Error generating report:", error);
-      alert("Error generating report. Please try again.");
-    }
+  const [role, setRole] = useState(null);
+
+  const roleData = {
+    curator: [
+      {
+        dataTitle: "Update Artifacts",
+        reportTitle: "Artifacts Overview",
+        relation: "artifact",
+      },
+      {
+        dataTitle: "Update Artists",
+        reportTitle: "Artists Overview",
+        relation: "artist",
+      },
+      {
+        dataTitle: "Update Exhibits",
+        reportTitle: "Exhibits Overview",
+        relation: "exhibit",
+      },
+    ],
+    admin: [
+      {
+        dataTitle: "Update Employees",
+        reportTitle: "Employees Overview",
+        relation: "employee",
+      },
+      {
+        dataTitle: "Update Tickets",
+        reportTitle: "Tickets Overview",
+        relation: "ticket",
+      },
+      {
+        dataTitle: "Update Guests",
+        reportTitle: "Guests Overview",
+        relation: "guest",
+      },
+    ],
+    "gift-shop": [
+      {
+        dataTitle: "Update Inventory",
+        reportTitle: "Inventory Overview",
+        relation: "inventory",
+      },
+      {
+        dataTitle: "Update Sales",
+        reportTitle: "Sales Overview",
+        relation: "sales",
+      },
+    ],
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await apiFetch("/api/role", "GET");
+      setRole(response.data.role);
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="dashboard">
@@ -30,62 +72,35 @@ export function Dashboard() {
         <section className="dashboard-section">
           <h2>Reports</h2>
           <div className="dashboard-grid">
-            <div className="dashboard-card">
-              <h3>Collection Overview</h3>
-              <p>View comprehensive reports about your museum's collection.</p>
-              <button
-                className="button"
-                onClick={() => handleGenerateReport("collection")}
-              >
-                Generate Report
-              </button>
-            </div>
-            <div className="dashboard-card">
-              <h3>Exhibit Status</h3>
-              <p>Track the current and past exhibits.</p>
-              <button
-                className="button"
-                onClick={() => handleGenerateReport("exhibits")}
-              >
-                View Status
-              </button>
-            </div>
-            <div className="dashboard-card">
-              <h3>Employees</h3>
-              <p>Review employee history.</p>
-              <button
-                className="button"
-                onClick={() => handleGenerateReport("employee")}
-              >
-                Access History
-              </button>
-            </div>
+            {role &&
+              roleData[role].map((card) => (
+                <div key={card.relation} className="dashboard-card">
+                  <h3>{card.reportTitle}</h3>
+                  <p>
+                    View comprehensive reports about your museum's{" "}
+                    {card.relation}
+                    s.
+                  </p>
+                  <Link href={`/dashboard/${card.relation}`}>
+                    <button className="button">Access Report</button>
+                  </Link>
+                </div>
+              ))}
           </div>
         </section>
         <section className="dashboard-section">
           <h2>Data Management</h2>
           <div className="dashboard-grid">
-            <div className="dashboard-card">
-              <h3>Update Artifacts</h3>
-              <p>Add to or modify existing artifact information.</p>
-              <Link href="/dashboard/artifact">
-                <button className="button">Update Artifacts</button>
-              </Link>
-            </div>
-            <div className="dashboard-card">
-              <h3>Update Artists</h3>
-              <p>Add to or modify the existing artist database.</p>
-              <Link href="/dashboard/artist">
-                <button className="button">Update Artists</button>
-              </Link>
-            </div>
-            <div className="dashboard-card">
-              <h3>Update Employees</h3>
-              <p>Modify existing museum employee information.</p>
-              <Link href="/dashboard/employee">
-                <button className="button">Update Employees</button>
-              </Link>
-            </div>
+            {role &&
+              roleData[role].map((card) => (
+                <div key={card.relation} className="dashboard-card">
+                  <h3>{card.dataTitle}</h3>
+                  <p>Add to or modify existing {card.relation} information.</p>
+                  <Link href={`/dashboard/${card.relation}`}>
+                    <button className="button">Modify Data</button>
+                  </Link>
+                </div>
+              ))}
           </div>
         </section>
       </div>

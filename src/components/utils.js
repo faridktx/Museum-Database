@@ -55,15 +55,14 @@ async function parseFetchError(res) {
   res.errors.push("Error handling submission of form");
 }
 
-export async function apiGetFetch(path) {
+export async function apiFetch(path, method) {
   let apiResponse = { success: true, errors: [], data: [] };
+  const url = new URL(path, process.env.REACT_APP_BACKEND_URL);
   try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}${path}`,
-      {
-        method: "GET",
-      },
-    );
+    const response = await fetch(url.toString(), {
+      method: method,
+      credentials: "include",
+    });
     await parseJSON(response, apiResponse);
   } catch (err) {
     await parseFetchError(apiResponse);
@@ -71,17 +70,16 @@ export async function apiGetFetch(path) {
   return apiResponse;
 }
 
-export async function apiModifyFetch(path, method, formData) {
+export async function fetchWithBody(path, method, formData) {
   let apiResponse = { success: true, errors: [] };
+  const url = new URL(path, process.env.REACT_APP_BACKEND_URL);
   try {
-    const response = await fetch(
-      `${process.env.REACT_APP_BACKEND_URL}${path}`,
-      {
-        method: method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      },
-    );
+    const response = await fetch(url.toString(), {
+      method: method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+      credentials: "include",
+    });
     await parseJSON(response, apiResponse);
   } catch (err) {
     await parseFetchError(apiResponse);

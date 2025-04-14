@@ -8,13 +8,14 @@ export function Contact() {
   return (
     <section id="contact" className="contact section">
       <div className="container">
-        <h2 className="section-title">Get Started with MuseoCore</h2>
+        <h2 className="section-title">Get Started with The Curio Collection</h2>
         <div className="contact-grid">
           <div className="contact-info">
             <h3>Transform Your Collection Management</h3>
             <p>
               Ready to elevate your museum's collection management? Contact us
-              today to schedule a personalized demo of MuseoCore's capabilities.
+              today to schedule a personalized demo of The Curio Collection's
+              capabilities.
             </p>
             <img
               src="https://images.unsplash.com/photo-1507679799987-c73779587ccf"

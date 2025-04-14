@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { toastProcess, apiModifyFetch } from "./utils";
+import { toastProcess, fetchWithBody } from "./utils";
 import "./components.css";
 import { ROLES } from "./constants";
 import { Select } from "./common/select";
@@ -16,7 +16,7 @@ export function DeleteEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/employee/delete/",
       "DELETE",
       formData,
@@ -99,7 +99,7 @@ export function ModifyEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiModifyFetch(
+    const response = await fetchWithBody(
       "/api/employee/modify/",
       "PATCH",
       formData,
@@ -315,7 +315,11 @@ export function AddEmployee() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await apiFetch("/api/employee/insert/", "POST", formData);
+    const response = await fetchWithBody(
+      "/api/employee/insert/",
+      "POST",
+      formData,
+    );
     if (response.success) setFormData(initialAddFormState);
     toastProcess(response);
   };

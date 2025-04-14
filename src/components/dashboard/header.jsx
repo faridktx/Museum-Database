@@ -7,6 +7,7 @@ import {
 } from "@clerk/clerk-react";
 import { Link } from "wouter";
 import "../components.css";
+import { OnSignUp } from "../on-sign-up";
 
 export function DashboardHeader() {
   const { user } = useUser();
@@ -15,11 +16,14 @@ export function DashboardHeader() {
       <div className="container header-content">
         <div className="logo">
           <Link href="/" style={{ textDecoration: "none" }}>
-            <h1 style={{ cursor: "pointer" }}>MuseoCore</h1>
+            <h1 style={{ cursor: "pointer" }}>The Curio Collection</h1>
           </Link>
         </div>
 
         <nav className="nav-links">
+          <Link href="/tickets">Tickets</Link>
+          <Link href="/memberships">Memberships</Link>
+          <Link href="/gift-shop">Gift Shop</Link>
           <Link href="/dashboard">Dashboard Home</Link>
 
           <SignedOut>
@@ -29,6 +33,7 @@ export function DashboardHeader() {
           </SignedOut>
 
           <SignedIn>
+            <OnSignUp />
             <span style={{ marginRight: "1rem" }}>
               Welcome,{" "}
               {user?.fullName ||
