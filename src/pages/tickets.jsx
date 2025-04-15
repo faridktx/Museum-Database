@@ -1,40 +1,67 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "../components/components.css";
 import { fetchWithBody } from "../components/utils";
+import { useUser } from "@clerk/clerk-react";
+import { apiFetch, compileErrors } from "../components/utils";
+import { Popup } from "../components/popup";
 
 export function Tickets() {
-  const [tickets, setTickets] = useState({
-    general: 0,
-    senior: 0,
-    student: 0,
-    child: 0,
+  const { user } = useUser();
+  const [ticketPrices, setTicketPrices] = useState({});
+  const [exhibitPrices, setExhibitPrices] = useState({});
+  const [tickets, setTickets] = useState({});
+  const [exhibits, setExhibits] = useState({});
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
   });
+  useEffect(() => {
+    const loadExhibits = async () => {
+      const response = await apiFetch("/api/getexhibitnames/", "GET", user.id);
 
-  const [exhibits, setExhibits] = useState({
-    "Ancient Egypt": 0,
-    "Renaissance Art": 0,
-    "Modern Sculpture": 0,
-    "Natural History": 0,
-  });
+      const exhibitQuantity = {};
+      const exhibitPrices = {};
+      response.data.forEach((exhibit) => {
+        exhibitQuantity[exhibit.exhibit_name] = 0;
+        exhibitPrices[exhibit.exhibit_name] = 15;
+      });
 
-  const ticketPrices = {
-    general: 15,
-    senior: 10,
-    student: 8,
-    child: 5,
-  };
+      setExhibits(exhibitQuantity);
+      setExhibitPrices(exhibitPrices);
+    };
+    loadExhibits();
+  }, []);
 
-  const exhibitPrices = {
-    "Ancient Egypt": 8,
-    "Renaissance Art": 10,
-    "Modern Sculpture": 7,
-    "Natural History": 9,
-  };
+  useEffect(() => {
+    const loadTickets = async () => {
+      const response = await apiFetch("/api/gettickets/", "GET", user.id);
+
+      const ticketQuantity = {};
+      const ticketPrices = {};
+      response.data
+        .sort((a, b) => a.price - b.price)
+        .forEach((ticket) => {
+          ticketQuantity[ticket.ticket_type] = 0;
+          ticketPrices[ticket.ticket_type] = ticket.price;
+        });
+
+      setTickets(ticketQuantity);
+      setTicketPrices(ticketPrices);
+    };
+    loadTickets();
+  }, []);
 
   const totalQuantitySelected = () => {
-    return Object.values(tickets).reduce((total, qty) => {
+    const ticketsSelected = Object.values(tickets).reduce((total, qty) => {
       return total + qty;
-    });
+    }, 0);
+    const exhibitsSelected = Object.values(exhibits).reduce((total, qty) => {
+      return total + qty;
+    }, 0);
+    return exhibitsSelected + ticketsSelected;
   };
 
   const handleTicketChange = (type, value) => {
@@ -55,11 +82,41 @@ export function Tickets() {
     }
   };
 
-  const handleTicketPurchase = () => {
-    const response = fetchWithBody("/api/tickets", "POST", {
+  const handleTicketPurchase = async (e) => {
+    e.preventDefault();
+    const response = await fetchWithBody("/api/tickets", "POST", {
       tickets: tickets,
       exhibits: exhibits,
+      id: user.id,
     });
+    if (response.success) {
+      let resetExhibits = {};
+      Object.keys(exhibits).forEach((exhibit) => {
+        resetExhibits[exhibit] = 0;
+      });
+
+      let resetTickets = {};
+      Object.keys(tickets).forEach((ticket) => {
+        resetTickets[ticket] = 0;
+      });
+
+      setTickets(resetTickets);
+      setExhibits(resetExhibits);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully purchased your tickets!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
+    setShowPopup(true);
   };
 
   const calculateSubtotal = () => {
@@ -178,7 +235,7 @@ export function Tickets() {
             </div>
             <button
               disabled={totalQuantitySelected() <= 0}
-              onClick={() => handleTicketPurchase()}
+              onClick={(e) => handleTicketPurchase(e)}
               className="button checkout-button"
             >
               Purchase Tickets
@@ -186,6 +243,13 @@ export function Tickets() {
           </div>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }

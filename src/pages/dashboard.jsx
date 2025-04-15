@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "wouter";
 import "../components/components.css";
+import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../components/utils";
 
 export function Dashboard() {
+  const { user } = useUser();
   const [role, setRole] = useState(null);
 
   const roleData = {
@@ -31,11 +33,6 @@ export function Dashboard() {
         relation: "employee",
       },
       {
-        dataTitle: "Update Tickets",
-        reportTitle: "Tickets Overview",
-        relation: "ticket",
-      },
-      {
         dataTitle: "Update Guests",
         reportTitle: "Guests Overview",
         relation: "guest",
@@ -57,7 +54,7 @@ export function Dashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await apiFetch("/api/role", "GET");
+      const response = await apiFetch("/api/role", "GET", user.id);
       setRole(response.data.role);
     };
     fetchData();
@@ -72,8 +69,7 @@ export function Dashboard() {
         <section className="dashboard-section">
           <h2>Reports</h2>
           <div className="dashboard-grid">
-            {role &&
-              roleData[role].map((card) => (
+            {roleData[role]?.map((card) => (
                 <div key={card.relation} className="dashboard-card">
                   <h3>{card.reportTitle}</h3>
                   <p>
@@ -91,8 +87,7 @@ export function Dashboard() {
         <section className="dashboard-section">
           <h2>Data Management</h2>
           <div className="dashboard-grid">
-            {role &&
-              roleData[role].map((card) => (
+            {roleData[role]?.map((card) => (
                 <div key={card.relation} className="dashboard-card">
                   <h3>{card.dataTitle}</h3>
                   <p>Add to or modify existing {card.relation} information.</p>

@@ -2,16 +2,13 @@ import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
-import { requireAuth } from "@clerk/express";
-import { clerkClient } from "@clerk/clerk-sdk-node";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
+import { clerkClient } from "@clerk/clerk-sdk-node";
 
 dotenv.config();
 const app = express();
-app.use(
-  cors({ origin: process.env.REACT_APP_FRONTEND_URL, credentials: true }),
-);
+app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 5001;
@@ -103,21 +100,20 @@ const modifyRecord = async (res, id, id_column, table, fields) => {
   }
 };
 
-app.get("/api/getartists/", async (_req, res) => {
-  let query = "SELECT artist_id as id, artist_name as name FROM artists";
+app.get("/api/getartists/", async (_, res) => {
+  const query = "SELECT artist_id as id, artist_name as name FROM artists";
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
 
-app.get("/api/getexhibits/", async (_req, res) => {
-  let query = "SELECT exhibit_id as id, exhibit_name as name FROM exhibits";
+app.get("/api/getexhibits/", async (_, res) => {
+  const query = "SELECT exhibit_id as id, exhibit_name as name FROM exhibits";
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
 
 app.delete(
   "/api/artifact/delete/",
-  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -133,7 +129,6 @@ app.delete(
 
 app.delete(
   "/api/artist/delete/",
-  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -149,7 +144,6 @@ app.delete(
 
 app.delete(
   "/api/employee/delete",
-  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -165,7 +159,6 @@ app.delete(
 
 app.patch(
   "/api/artifact/modify/",
-  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -238,7 +231,6 @@ app.patch(
 
 app.patch(
   "/api/artist/modify/",
-  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -281,7 +273,6 @@ app.patch(
 
 app.patch(
   "/api/employee/modify/",
-  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -379,7 +370,6 @@ app.patch(
 
 app.post(
   "/api/artifact/insert/",
-  requireAuth(),
   [
     body("artifactName")
       .custom((value) => !/\d/.test(value))
@@ -440,7 +430,6 @@ app.post(
 
 app.post(
   "/api/artist/insert",
-  requireAuth(),
   [
     body("artistName")
       .custom((value) => !/\d/.test(value))
@@ -476,7 +465,6 @@ app.post(
 
 app.post(
   "/api/employee/insert",
-  requireAuth(),
   [
     body("employeeName")
       .custom((value) => !/\d/.test(value))
@@ -548,7 +536,6 @@ app.post(
 
 app.post(
   "/api/memberships",
-  requireAuth(),
   [
     body("membership")
       .isIn(["individual", "dual", "family", "benefactor"])
@@ -556,20 +543,30 @@ app.post(
   ],
   async (req, res) => {
     if (validationErrorCheck(req, res)) return;
-    const clerkUserId = req.auth.userId;
+
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
     const { membership } = req.body;
 
-    const query = `UPDATE guests SET membership = ?, paid_date = ? WHERE guest_id = ?`;
+    const query = `UPDATE guests SET membership_type = ?, paid_date = ? WHERE guest_id = ?`;
     await executeSQLQuery(res, query, [
       membership,
       new Date().toISOString().split("T")[0],
-      clerkUserId,
+      id,
     ]);
   },
 );
 
-app.post("/api/tickets", requireAuth(), async (req, res) => {
-  const clerkUserId = req.auth.userId;
+app.post("/api/tickets", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   const ticketsPurchased = req.body;
   const exhibits = ticketsPurchased.exhibits;
   const tickets = ticketsPurchased.tickets;
@@ -577,56 +574,132 @@ app.post("/api/tickets", requireAuth(), async (req, res) => {
   const insertQuery = `
     INSERT INTO tickets (guest_id, purchase_date, ticket_type, quantity)
   `;
-  for (const purchases of [exhibits, tickets]) {
-    if (
-      Object.keys(purchases).reduce((total, qty) => total + purchases[qty], 0)
-    ) {
-      let values = [];
-      let fields = [];
+  const purchases = { ...tickets, ...exhibits };
+  if (
+    Object.keys(purchases).reduce((total, qty) => total + purchases[qty], 0)
+  ) {
+    let values = [];
+    let fields = [];
 
-      for (const purchase of Object.keys(purchases)) {
-        if (purchases[purchase] > 0) {
-          values.push("(?, ?, ?, ?)");
-          fields.push(
-            clerkUserId,
-            new Date().toISOString().split("T")[0],
-            purchase,
-            purchases[purchase],
-          );
-        }
+    for (const purchase of Object.keys(purchases)) {
+      if (purchases[purchase] > 0) {
+        values.push("(?, ?, ?, ?)");
+        fields.push(
+          id,
+          new Date().toISOString().split("T")[0],
+          purchase,
+          purchases[purchase],
+        );
       }
-      const query = `${insertQuery} VALUES ${values.join(", ")}`;
-      await executeSQLQuery(res, query, fields);
     }
+    const query = `${insertQuery} VALUES ${values.join(", ")}`;
+    await executeSQLQuery(res, query, fields);
   }
 });
 
-app.get("/api/role", requireAuth(), async (req, res) => {
-  const clerkUserId = req.auth.userId;
-  const query = "SELECT role FROM users WHERE clerk_id = ?";
-  const [rows] = await promisePool.query(query, [clerkUserId]);
+app.post("/api/giftshop", async (req, res) => {
+  const { id, cart } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  let values = [];
+  let fields = [];
+  const insertQuery = `
+    INSERT INTO gift_shop_sales (item_id, guest_id, sale_date, quantity, total_cost)
+  `;
+  Object.keys(cart).forEach((itemId) => {
+    values.push("(?, ?, ?, ?, ?)");
+    fields.push(
+      parseInt(itemId),
+      id,
+      new Date().toISOString().split("T")[0],
+      cart[itemId],
+      1,
+    );
+  });
+  const query = `${insertQuery} VALUES ${values.join(", ")}`;
+  await executeSQLQuery(res, query, fields);
+});
+
+app.get("/api/gettickets/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  const query = "SELECT * FROM ticket_types";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/getgiftshopitems/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  const query = "SELECT * FROM gift_shop_inventory";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/getexhibitnames/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  const query = "SELECT exhibit_id, exhibit_name FROM exhibits";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/getmemberships/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  const query = "SELECT * FROM membership_types";
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/role", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
+  const query = "SELECT role FROM users WHERE user_id = ?";
+  const [rows] = await promisePool.query(query, [id]);
   res.json({ role: rows[0].role });
 });
 
-app.post("/api/register-user", requireAuth(), async (req, res) => {
-  const clerkUserId = req.auth.userId;
-  const user = await clerkClient.users.getUser(clerkUserId);
-  const email = user.emailAddresses[0]?.emailAddress;
-  const phone = user.phoneNumbers[0]?.phoneNumber;
-  const name = user.fullname;
+app.post("/api/register-user", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
 
+  const user = await clerkClient.users.getUser(id);
+  const email = user.emailAddresses[0]?.emailAddress;
+  const firstName = user.firstName;
+  const lastName = user.lastName;
+  const phone = user.phoneNumbers[0]?.phoneNumber;
   await promisePool.query(
-    `INSERT IGNORE INTO guests (guest_id, membership, paid_date)
+    `INSERT IGNORE INTO guests (guest_id, membership_type, paid_date)
     VALUES (?, ?, ?)
     `,
-    [clerkUserId, null, null],
+    [id, null, null],
   );
 
   await promisePool.query(
-    `INSERT IGNORE INTO users (clerk_id, email, phone_number, name, role)
-    VALUES (?, ?, ?, ?, ?)
+    `INSERT IGNORE INTO users (user_id, email, phone_number, first_name, last_name, role)
+    VALUES (?, ?, ?, ?, ?, ?)
     `,
-    [clerkUserId, email, phone, name, "guest"],
+    [id, email, phone, firstName, lastName, "guest"],
   );
   res.status(200).json({ errors: [] });
 });

@@ -6,9 +6,12 @@ export function OnSignUp() {
   const { user } = useUser();
 
   useEffect(() => {
-    if (user) {
-      apiFetch("/api/register-user", "POST");
-    }
+    const registerUser = async () => {
+      if (user) {
+        apiFetch("/api/register-user", "POST", user.id);
+      }
+    };
+    registerUser();
   }, [user]);
 
   return null;
