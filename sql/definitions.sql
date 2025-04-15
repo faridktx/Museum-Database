@@ -11,15 +11,15 @@ DROP TABLE IF EXISTS railway.membership_types;
 DROP TABLE IF EXISTS railway.ticket_types;
 
 CREATE TABLE railway.artists (
-    artist_id SMALLINT UNSIGNED NOT NULL PRIMARY KEY,
+    artist_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     artist_name VARCHAR(25) NOT NULL,
     birth_date DATE NULL,
     death_date DATE NULL,
     nationality VARCHAR(25) NOT NULL
 );
 CREATE TABLE railway.exhibits (
-    exhibit_id INT UNSIGNED NOT NULL PRIMARY KEY,
-    exhibit_name VARCHAR(25) NOT NULL,
+    exhibit_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    exhibit_name VARCHAR(50) NOT NULL,
     description VARCHAR(100),
     start_date DATE NOT NULL,
     end_date DATE
@@ -56,15 +56,16 @@ CREATE TABLE railway.employees (
 );
 CREATE TABLE railway.guests (
     guest_id VARCHAR(250) NOT NULL PRIMARY KEY,
-    membership_type VARCHAR(30) NOT NULL,
-    paid_date DATE NOT NULL
+    membership_type VARCHAR(30),
+    paid_date DATE
 );
 CREATE TABLE railway.gift_shop_inventory (
     item_id SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    item_name VARCHAR(25) NOT NULL,
+    item_name VARCHAR(50) NOT NULL,
     description VARCHAR(100) NOT NULL,
+    category VARCHAR(20) NOT NULL,
     quantity SMALLINT NOT NULL,
-    unit_price SMALLINT NOT NULL
+    unit_price FLOAT NOT NULL
 );
 CREATE TABLE railway.gift_shop_sales (
     sale_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -81,26 +82,29 @@ CREATE TABLE railway.users (
     user_id VARCHAR(250) NOT NULL PRIMARY KEY,
     email VARCHAR(100),
     phone_number CHAR(12),
-    name VARCHAR(30),
-    role VARCHAR(20) NOT NULL,
+    first_name VARCHAR(30),
+    last_name VARCHAR(30),
+    role VARCHAR(20) NOT NULL
 );
 CREATE TABLE railway.tickets (
     ticket_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     guest_id VARCHAR(250) NOT NULL,
     purchase_date DATE NOT NULL,
-    ticket_type VARCHAR(20) NOT NULL,
+    ticket_type VARCHAR(50) NOT NULL,
     quantity INT NOT NULL,
 
     FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE CASCADE
 );
 CREATE TABLE railway.membership_types (
     membership_type VARCHAR(30) NOT NULL PRIMARY KEY,
-    annual_fee INT NOT NULL,
+    period VARCHAR(5) NOT NULL,
+    price INT NOT NULL,
     ticket_discount INT NOT NULL,
-    exhibit_discount INT NOT NULL
+    exhibit_discount INT NOT NULL,
+    giftshop_discount INT NOT NULL,
+    benefits VARCHAR(500) NOT NULL
 );
 CREATE TABLE railway.ticket_types (
     ticket_type VARCHAR(20) NOT NULL PRIMARY KEY,
-    price INT NOT NULL,
-    is_exhibit BOOLEAN NOT NULL
+    price INT NOT NULL
 );

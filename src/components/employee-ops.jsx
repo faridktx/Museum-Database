@@ -1,28 +1,50 @@
 import { useEffect, useState } from "react";
-import { toastProcess, fetchWithBody } from "./utils";
+import { fetchWithBody } from "./utils";
 import "./components.css";
 import { ROLES } from "./constants";
 import { Select } from "./common/select";
 import { exhibitSetter } from "./common/setters";
 import { Link } from "wouter";
+import { Popup } from "../components/popup";
+import { useUser } from "@clerk/clerk-react";
 
 const initialDeleteFormState = {
   employeeID: "",
 };
 
 export function DeleteEmployee() {
+  const { user } = useUser();
   const [formData, setFormData] = useState(initialDeleteFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/employee/delete/",
-      "DELETE",
-      formData,
-    );
-    if (response.success) setFormData(initialDeleteFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/employee/delete/", "DELETE", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialDeleteFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully removed the employee!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {
@@ -69,6 +91,13 @@ export function DeleteEmployee() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }
@@ -93,19 +122,39 @@ export function ModifyEmployee() {
   useEffect(() => {
     exhibitSetter(setExhibits);
   }, []);
+  const { user } = useUser();
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialModifyFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/employee/modify/",
-      "PATCH",
-      formData,
-    );
-    if (response.success) setFormData(initialModifyFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/employee/modify/", "PATCH", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialModifyFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully modified the employee!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {
@@ -286,6 +335,13 @@ export function ModifyEmployee() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }
@@ -309,19 +365,39 @@ export function AddEmployee() {
     exhibitSetter(setExhibits);
   }, []);
 
+  const { user } = useUser();
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialAddFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/employee/insert/",
-      "POST",
-      formData,
-    );
-    if (response.success) setFormData(initialAddFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/employee/insert/", "POST", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialAddFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully added the employee!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {
@@ -501,6 +577,13 @@ export function AddEmployee() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }

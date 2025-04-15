@@ -1,28 +1,50 @@
 import { useEffect, useState } from "react";
-import { toastProcess, fetchWithBody } from "./utils";
+import { fetchWithBody } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Select } from "./common/select";
 import { ACQUISITIONTYPES } from "./constants";
+import { useUser } from "@clerk/clerk-react";
 import { artistSetter, exhibitSetter } from "./common/setters";
+import { Popup } from "../components/popup";
 
 const initialDeleteFormState = {
   artifactID: "",
 };
 
 export function DeleteArtifact() {
+  const { user } = useUser();
   const [formData, setFormData] = useState(initialDeleteFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/artifact/delete/",
-      "DELETE",
-      formData,
-    );
-    if (response.success) setFormData(initialDeleteFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/artifact/delete/", "DELETE", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialDeleteFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully removed the artifact!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {
@@ -69,6 +91,13 @@ export function DeleteArtifact() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }
@@ -91,20 +120,39 @@ export function ModifyArtifact() {
     artistSetter(setArtists);
   }, []);
 
+  const { user } = useUser();
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialModifyFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/artifact/modify/",
-      "PATCH",
-      formData,
-    );
-    if (response.success) setFormData(initialModifyFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/artifact/modify/", "PATCH", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialModifyFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully modified the artifact!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -239,6 +287,13 @@ export function ModifyArtifact() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }
@@ -260,20 +315,39 @@ export function AddArtifact() {
     artistSetter(setArtists);
   }, []);
 
+  const { user } = useUser();
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialAddFormState);
+  const [showPopup, setShowPopup] = useState(false);
+  const [currentPopup, setCurrentPopup] = useState({
+    title: "",
+    message: "",
+    buttonText: "Ok",
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await fetchWithBody(
-      "/api/artifact/insert/",
-      "POST",
-      formData,
-    );
-    if (response.success) setFormData(initialAddFormState);
-    toastProcess(response);
+    const response = await fetchWithBody("/api/artifact/insert/", "POST", {
+      ...formData,
+      id: user.id,
+    });
+    if (response.success) {
+      setFormData(initialAddFormState);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setCurrentPopup({
+        title: "Success!",
+        message: "You have successfully added the artifact!",
+        buttonText: "Ok",
+      });
+    } else {
+      setCurrentPopup({
+        title: "Error!",
+        message: compileErrors(response.errors),
+        buttonText: "Ok",
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -411,6 +485,13 @@ export function AddArtifact() {
           </form>
         </div>
       </div>
+      <Popup
+        show={showPopup}
+        title={currentPopup.title}
+        message={currentPopup.message}
+        buttonText={currentPopup.buttonText}
+        onClose={() => setShowPopup(false)}
+      />
     </div>
   );
 }
