@@ -9,6 +9,16 @@ import { DashboardFooter } from "./components/dashboard/footer";
 import { NotFound } from "./pages/not-found";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { Tickets } from "./pages/tickets";
+import { SupportDocumentation } from "./pages/SupportDocumentation";
+import { SupportCenter } from "./pages/SupportCenter";
+import { SupportAccount } from "./pages/SupportAccount";
+import { SupportTutorials } from "./pages/SupportTutorials";
+import { SupportApi } from "./pages/SupportApi";
+import { SupportFaq } from "./pages/SupportFaq";
+import { SupportContact } from "./pages/SupportContact";
+import { SupportKnowledge } from "./pages/SupportKnowledge";
+import { SupportReport } from "./pages/SupportReport";
+
 import {
   AddArtifact,
   ModifyArtifact,
@@ -60,6 +70,16 @@ export function App() {
       {isLoggedIn ? <DashboardHeader /> : <Header />}
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/support-docs" component={SupportDocumentation} />
+        <Route path="/support-center" component={SupportCenter} />
+        <Route path="/support-account" component={SupportAccount} />
+        <Route path="/support-tutorials" component={SupportTutorials} />
+        <Route path="/support-api" component={SupportApi} />
+        <Route path="/support-faq" component={SupportFaq} />
+        <Route path="/support-contact" component={SupportContact} />
+        <Route path="/support-knowledge" component={SupportKnowledge} />
+        <Route path="/support-report" component={SupportReport} />
+
         {routes.map(({ route, component: Component }) => (
           <Route key={route} path={route}>
             <SignedIn>
@@ -74,6 +94,7 @@ export function App() {
           <NotFound />
         </Route>
       </Switch>
+      
       {isLoggedIn ? <DashboardFooter /> : <Footer />}
     </>
   );

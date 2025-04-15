@@ -1448,3 +1448,129 @@
     margin-top: calc(var(--spacing) / 2);
   }
 }
+
+.support-hero {
+  background: linear-gradient(to right, #f8f9fa, #e3e8ef);
+  padding: 60px 0 40px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.breadcrumb {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.support-subtitle {
+  font-size: 18px;
+  color: #555;
+  margin-top: 10px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.support-search {
+  margin-top: 20px;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  max-width: 400px;
+}
+
+.support-section {
+  margin-top: 48px;
+}
+
+.support-section h2 {
+  font-size: 22px;
+  margin-bottom: 16px;
+  color: var(--color-primary);
+}
+
+.support-card {
+  background-color: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.support-links {
+  list-style: none;
+  padding: 0;
+}
+
+.support-links li {
+  margin-bottom: 12px;
+}
+
+.support-links a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.support-links a:hover {
+  color: #2d4e78;
+  text-decoration: underline;
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+}
+
+.icon-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.styled-list {
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+}
+
+.warning {
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: default;
+}
+
+.custom-link {
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.custom-link:hover {
+  color: #3730a3;
+  text-decoration: underline;
+}

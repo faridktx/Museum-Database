@@ -1,4 +1,5 @@
 import "../components.css";
+import { Link } from "wouter";
 
 export function DashboardFooter() {
   return (
@@ -9,13 +10,13 @@ export function DashboardFooter() {
             <h3>Quick Links</h3>
             <ul>
               <li>
-                <a href="/documentation">Documentation</a>
+                <Link href="/support-docs">Documentation</Link>
               </li>
               <li>
-                <a href="/support">Support Center</a>
+                <Link href="/support-center">Support Center</Link>
               </li>
               <li>
-                <a href="/settings">Account Settings</a>
+                <Link href="/support-account">Account Settings</Link>
               </li>
             </ul>
           </div>
@@ -23,13 +24,13 @@ export function DashboardFooter() {
             <h3>Resources</h3>
             <ul>
               <li>
-                <a href="/tutorials">Tutorials</a>
+                <Link href="/support-tutorials">Tutorials</Link>
               </li>
               <li>
-                <a href="/api-docs">API Documentation</a>
+                <Link href="/support-api">API Documentation</Link>
               </li>
               <li>
-                <a href="/faq">FAQ</a>
+                <Link href="/support-faq">FAQ</Link>
               </li>
             </ul>
           </div>
@@ -37,13 +38,13 @@ export function DashboardFooter() {
             <h3>Support</h3>
             <ul>
               <li>
-                <a href="/contact-support">Contact Support</a>
+                <Link href="/support-contact">Contact Support</Link>
               </li>
               <li>
-                <a href="/knowledge-base">Knowledge Base</a>
+                <Link href="/support-knowledge">Knowledge Base</Link>
               </li>
               <li>
-                <a href="/report-issue">Report an Issue</a>
+                <Link href="/support-report">Report an Issue</Link>
               </li>
             </ul>
           </div>
