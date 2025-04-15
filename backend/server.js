@@ -695,6 +695,44 @@ app.get("/api/report", async (req, res) => {
   }
 });
 
+app.post("/api/exhibit/insert/", async (req, res) => {
+  const { exhibitName, description, startDate, endDate, location } = req.body;
+  try {
+    await db.query(
+      "INSERT INTO Exhibits (Exhibit_Name, Description, Start_Date, End_Date, Location) VALUES (?, ?, ?, ?, ?)",
+      [exhibitName, description, startDate, endDate, location]
+    );
+    res.json({ success: true, message: "Exhibit added successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Insert error" });
+  }
+});
+
+app.patch("/api/exhibit/modify/", async (req, res) => {
+  const { exhibitID, exhibitName, description, startDate, endDate, location } = req.body;
+  try {
+    await db.query(
+      "UPDATE Exhibits SET Exhibit_Name=?, Description=?, Start_Date=?, End_Date=?, Location=? WHERE Exhibit_ID=?",
+      [exhibitName, description, startDate, endDate, location, exhibitID]
+    );
+    res.json({ success: true, message: "Exhibit updated successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Update error" });
+  }
+});
+
+app.delete("/api/exhibit/delete/", async (req, res) => {
+  const { exhibitID } = req.body;
+  try {
+    await db.query("DELETE FROM Exhibits WHERE Exhibit_ID = ?", [exhibitID]);
+    res.json({ success: true, message: "Exhibit deleted successfully!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Delete error" });
+  }
+});
 function generateHTMLReport(data, title) {
   let html = `
     <!DOCTYPE html>
