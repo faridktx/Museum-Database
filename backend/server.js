@@ -2,10 +2,10 @@ import express from "express";
 import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
-import { requireAuth } from "@clerk/express";
 import { clerkClient } from "@clerk/clerk-sdk-node";
 import { body, validationResult } from "express-validator";
 import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
+import { ClerkExpressWithAuth, getAuth } from "@clerk/express";
 
 dotenv.config();
 const app = express();
@@ -117,7 +117,6 @@ app.get("/api/getexhibits/", async (_req, res) => {
 
 app.delete(
   "/api/artifact/delete/",
-  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -133,7 +132,6 @@ app.delete(
 
 app.delete(
   "/api/artist/delete/",
-  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -149,7 +147,6 @@ app.delete(
 
 app.delete(
   "/api/employee/delete",
-  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -165,7 +162,6 @@ app.delete(
 
 app.patch(
   "/api/artifact/modify/",
-  requireAuth(),
   [
     body("artifactID")
       .toInt()
@@ -238,7 +234,6 @@ app.patch(
 
 app.patch(
   "/api/artist/modify/",
-  requireAuth(),
   [
     body("artistID")
       .toInt()
@@ -281,7 +276,6 @@ app.patch(
 
 app.patch(
   "/api/employee/modify/",
-  requireAuth(),
   [
     body("employeeID")
       .toInt()
@@ -379,7 +373,6 @@ app.patch(
 
 app.post(
   "/api/artifact/insert/",
-  requireAuth(),
   [
     body("artifactName")
       .custom((value) => !/\d/.test(value))
@@ -440,7 +433,6 @@ app.post(
 
 app.post(
   "/api/artist/insert",
-  requireAuth(),
   [
     body("artistName")
       .custom((value) => !/\d/.test(value))
@@ -476,7 +468,6 @@ app.post(
 
 app.post(
   "/api/employee/insert",
-  requireAuth(),
   [
     body("employeeName")
       .custom((value) => !/\d/.test(value))
@@ -548,7 +539,6 @@ app.post(
 
 app.post(
   "/api/memberships",
-  requireAuth(),
   [
     body("membership")
       .isIn(["individual", "dual", "family", "benefactor"])
@@ -568,7 +558,7 @@ app.post(
   },
 );
 
-app.post("/api/tickets", requireAuth(), async (req, res) => {
+app.post("/api/tickets", async (req, res) => {
   const clerkUserId = req.auth.userId;
   const ticketsPurchased = req.body;
   const exhibits = ticketsPurchased.exhibits;
@@ -601,14 +591,14 @@ app.post("/api/tickets", requireAuth(), async (req, res) => {
   }
 });
 
-app.get("/api/role", requireAuth(), async (req, res) => {
+app.get("/api/role", async (req, res) => {
   const clerkUserId = req.auth.userId;
   const query = "SELECT role FROM users WHERE clerk_id = ?";
   const [rows] = await promisePool.query(query, [clerkUserId]);
   res.json({ role: rows[0].role });
 });
 
-app.post("/api/register-user", requireAuth(), async (req, res) => {
+app.post("/api/register-user", async (req, res) => {
   const clerkUserId = req.auth.userId;
   const user = await clerkClient.users.getUser(clerkUserId);
   const email = user.emailAddresses[0]?.emailAddress;

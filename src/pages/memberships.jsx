@@ -76,13 +76,6 @@ export function Memberships() {
     setMembership(membershipId);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Submitting membership application:", {
-      membershipType: membership,
-    });
-  };
-
   return (
     <div className="memberships-page">
       <div className="container">
@@ -139,7 +132,7 @@ export function Memberships() {
                 membership application.
               </p>
 
-              <form onSubmit={handleSubmit}>
+              <form>
                 <div className="membership-summary">
                   <h3>Membership Summary</h3>
                   <div className="summary-row">
