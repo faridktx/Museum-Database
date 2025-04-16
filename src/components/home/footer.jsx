@@ -1,37 +1,59 @@
 import "../components.css";
+import { Link } from "wouter";
 
 export function Footer() {
   return (
-    <footer className="footer">
+    <footer className="dashboard-footer">
       <div className="container">
-        <div className="footer-grid">
-          <div className="footer-section">
-            <h3>Company</h3>
+        <div className="dashboard-footer-grid">
+          <div className="dashboard-footer-section">
+            <h3>Quick Links</h3>
             <ul>
-              <li>About Us</li>
-              <li>Careers</li>
-              <li>Partners</li>
+              <li>
+                <Link href="/support-docs">Documentation</Link>
+              </li>
+              <li>
+                <Link href="/support-center">Support Center</Link>
+              </li>
+              <li>
+                <Link href="/support-account">Account Settings</Link>
+              </li>
             </ul>
           </div>
-          <div className="footer-section">
+          <div className="dashboard-footer-section">
             <h3>Resources</h3>
             <ul>
-              <li>Documentation</li>
-              <li>Blog</li>
-              <li>Case Studies</li>
+              <li>
+                <Link href="/support-tutorials">Tutorials</Link>
+              </li>
+              <li>
+                <Link href="/support-api">API Documentation</Link>
+              </li>
+              <li>
+                <Link href="/support-faq">FAQ</Link>
+              </li>
             </ul>
           </div>
-          <div className="footer-section">
+          <div className="dashboard-footer-section">
             <h3>Support</h3>
             <ul>
-              <li>Help Center</li>
-              <li>Contact</li>
-              <li>Privacy Policy</li>
+              <li>
+                <Link href="/support-contact">Contact Support</Link>
+              </li>
+              <li>
+                <Link href="/support-knowledge">Knowledge Base</Link>
+              </li>
+              <li>
+                <Link href="/support-report">Report an Issue</Link>
+              </li>
             </ul>
           </div>
         </div>
-        <div className="footer-bottom">
-          <p>&copy; 2025 The Curio Collection. All rights reserved.</p>
+        <div className="dashboard-footer-bottom">
+          <p>
+            © 2025 The Curio Collection. <a href="/terms">Terms</a> ·{" "}
+            <a href="/privacy">Privacy</a> · <a href="/security">Security</a>
+          </p>
         </div>
       </div>
     </footer>
