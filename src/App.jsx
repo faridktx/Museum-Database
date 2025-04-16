@@ -5,7 +5,6 @@ import { Header } from "./components/home/header";
 import { Footer } from "./components/home/footer";
 import { Dashboard } from "./pages/dashboard";
 import { DashboardHeader } from "./components/dashboard/header";
-import { DashboardFooter } from "./components/dashboard/footer";
 import { NotFound } from "./pages/not-found";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { Tickets } from "./pages/tickets";
@@ -124,7 +123,7 @@ export function App() {
         </Route>
       </Switch>
 
-      {isLoggedIn ? <DashboardFooter /> : <Footer />}
+      {<Footer />}
     </>
   );
 }

@@ -5,13 +5,13 @@ export function Hero() {
     <section className="hero section">
       <div className="container">
         <div className="hero-content">
-          <h1>Professional Museum Collection Management</h1>
+          <h1>Welcome to The Curio Collection</h1>
           <p className="hero-subtitle">
-            Streamline your museum's artifact tracking and collection management
-            with The Curio Collection's comprehensive digital solution.
+            Explore and manage artifacts from The Curio Collection — your
+            gateway to curated history and digital preservation.
           </p>
           <a href="#contact" className="button">
-            Schedule a Demo
+            Learn More
           </a>
         </div>
         <div className="hero-image">

@@ -3,31 +3,33 @@ import "../components.css";
 export function Features() {
   const features = [
     {
-      title: "Digital Cataloging",
+      title: "Curated Exhibitions",
       description:
-        "Efficiently catalog and organize your entire collection with our intuitive digital system.",
+        "Explore thoughtfully curated exhibitions featuring rare artifacts and compelling narratives from around the world.",
     },
     {
-      title: "Asset Tracking",
+      title: "Permanent Collection",
       description:
-        "Real-time tracking of artifacts, loans, and exhibitions with comprehensive audit trails.",
+        "Discover the core collection of unique objects spanning centuries of artistic and cultural history.",
     },
     {
-      title: "Conservation Management",
+      title: "Educational Programs",
       description:
-        "Monitor and schedule conservation tasks while maintaining detailed condition reports.",
+        "Participate in engaging lectures, workshops, and school programs designed for all ages.",
     },
     {
-      title: "Research Access",
+      title: "Research & Archives",
       description:
-        "Facilitate research with easy access to collection data and high-resolution imagery.",
+        "Access a growing archive of historical materials and collaborate with scholars through our research initiatives.",
     },
   ];
 
   return (
     <section id="features" className="features section">
       <div className="container">
-        <h2 className="section-title">Key Features</h2>
+        <h2 className="section-title">
+          What You'll Find at The Curio Collection
+        </h2>
         <div className="features-grid">
           {features.map((feature, index) => (
             <div key={index} className="feature-card">
