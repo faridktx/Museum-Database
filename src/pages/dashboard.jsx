@@ -17,12 +17,10 @@ export function Dashboard() {
       },
       {
         dataTitle: "Update Artists",
-        reportTitle: "Artists Overview",
         relation: "artist",
       },
       {
         dataTitle: "Update Exhibits",
-        reportTitle: "Exhibits Overview",
         relation: "exhibit",
       },
     ],
@@ -34,7 +32,6 @@ export function Dashboard() {
       },
       {
         dataTitle: "Update Guests",
-        reportTitle: "Guests Overview",
         relation: "guest",
       },
     ],
@@ -69,31 +66,64 @@ export function Dashboard() {
         <section className="dashboard-section">
           <h2>Reports</h2>
           <div className="dashboard-grid">
-            {roleData[role]?.map((card) => (
-              <div key={card.relation} className="dashboard-card">
-                <h3>{card.reportTitle}</h3>
-                <p>
-                  View comprehensive reports about your museum's {card.relation}
-                  s.
-                </p>
-                <Link href={`/dashboard/${card.relation}-report`}>
-                  <button className="button">Access Report</button>
-                </Link>
-              </div>
+            {roleData[role]?.map((card) => {
+              if (!card?.reportTitle) {
+                return (
+                  <div
+                    key={`${card.reportTitle}-undefined`}
+                    className="dashboard-card"
+                  ></div>
+                );
+              }
+
+              return (
+                <div key={card.relation} className="dashboard-card">
+                  <h3>{card.reportTitle}</h3>
+                  <p>
+                    View comprehensive reports about your museum's{" "}
+                    {card.relation}
+                    s.
+                  </p>
+                  <Link href={`/dashboard/${card.relation}-report`}>
+                    <button className="button">Access Report</button>
+                  </Link>
+                </div>
+              );
+            })}
+            {Array.from({ length: 3 - roleData[role]?.length }, (_, i) => (
+              <div key={i} className="dashboard-card"></div>
             ))}
           </div>
         </section>
         <section className="dashboard-section">
           <h2>Data Management</h2>
           <div className="dashboard-grid">
-            {roleData[role]?.map((card) => (
-              <div key={card.relation} className="dashboard-card">
-                <h3>{card.dataTitle}</h3>
-                <p>Add to or modify existing {card.relation} information.</p>
-                <Link href={`/dashboard/${card.relation}`}>
-                  <button className="button">Modify Data</button>
-                </Link>
-              </div>
+            {roleData[role]?.map((card) => {
+              if (!card?.dataTitle) {
+                return (
+                  <div
+                    key={`${card.dataTitle}-undefined`}
+                    className="dashboard-card"
+                  ></div>
+                );
+              }
+
+              return (
+                <div key={card.relation} className="dashboard-card">
+                  <h3>{card.dataTitle}</h3>
+                  <p>
+                    View comprehensive reports about your museum's{" "}
+                    {card.relation}
+                    s.
+                  </p>
+                  <Link href={`/dashboard/${card.relation}-report`}>
+                    <button className="button">Access Report</button>
+                  </Link>
+                </div>
+              );
+            })}
+            {Array.from({ length: 3 - roleData[role]?.length }, (_, i) => (
+              <div key={i} className="dashboard-card"></div>
             ))}
           </div>
         </section>

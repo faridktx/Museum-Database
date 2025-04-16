@@ -188,9 +188,9 @@ export function EmployeeReport() {
           text: "Number of Employees",
         },
         ticks: {
-            stepSize: 1,
-            precision: 0,
-        }
+          stepSize: 1,
+          precision: 0,
+        },
       },
     },
   };

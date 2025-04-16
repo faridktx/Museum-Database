@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { FaBug } from "react-icons/fa";
 
 export function SupportReport() {
   const [form, setForm] = useState({ subject: "", details: "" });
@@ -12,14 +11,19 @@ export function SupportReport() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Integrate backend/EmailJS logic here
     setSubmitted(true);
   };
 
   return (
     <div
       className="support-page container"
-      style={{ paddingTop: "120px", maxWidth: "720px", margin: "0 auto" }}
+      style={{
+        paddingTop: "120px",
+        maxWidth: "720px",
+        margin: "0 auto",
+        flex: "1",
+        flexDirection: "column",
+      }}
     >
       <div className="support-header" style={{ marginBottom: "2rem" }}>
         <p className="breadcrumb">Home / Support / Report an Issue</p>
