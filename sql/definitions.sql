@@ -20,14 +20,15 @@ CREATE TABLE railway.artists (
 CREATE TABLE railway.exhibits (
     exhibit_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     exhibit_name VARCHAR(50) NOT NULL,
-    description VARCHAR(100),
+    description VARCHAR(100) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE
 );
 CREATE TABLE railway.artifacts (
     artifact_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    artist_id SMALLINT UNSIGNED NOT NULL,
+    artifact_name VARCHAR(100) NOT NULL,
     exhibit_id INT UNSIGNED NOT NULL,
+    artist_id SMALLINT UNSIGNED NOT NULL,
     description VARCHAR(100),
     created_date DATE,
     value INT NOT NULL,

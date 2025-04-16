@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { NATIONALITIES } from "./constants";
 import { Select } from "./common/select";
@@ -58,7 +58,7 @@ export function DeleteArtist() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Remove Existing Artist</h2>
+          <h2>Remove Artist</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -156,7 +156,7 @@ export function ModifyArtist() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Modify Existing Artist</h2>
+          <h2>Modify Artist</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
