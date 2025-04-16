@@ -54,7 +54,7 @@ export function GiftShop() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

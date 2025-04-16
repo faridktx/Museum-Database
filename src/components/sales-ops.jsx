@@ -45,7 +45,7 @@ export function AddSale() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -61,7 +61,9 @@ export function AddSale() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="itemID">Item ID</label>
+                <label className="required" htmlFor="itemID">
+                  Item ID
+                </label>
                 <input
                   type="number"
                   id="itemID"
@@ -71,9 +73,11 @@ export function AddSale() {
                 />
               </div>
               <div className="form-group">
-                <label className="required" htmlFor="guestID">Guest ID</label>
+                <label className="required" htmlFor="guestID">
+                  Guest ID
+                </label>
                 <input
-                  type="number"
+                  type="text"
                   id="guestID"
                   value={formData.guestID}
                   onChange={handleChange}
@@ -83,7 +87,9 @@ export function AddSale() {
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="saleDate">Sale Date</label>
+                <label className="required" htmlFor="saleDate">
+                  Sale Date
+                </label>
                 <input
                   type="date"
                   id="saleDate"
@@ -93,7 +99,9 @@ export function AddSale() {
                 />
               </div>
               <div className="form-group">
-                <label className="required" htmlFor="quantity">Quantity</label>
+                <label className="required" htmlFor="quantity">
+                  Quantity
+                </label>
                 <input
                   type="number"
                   id="quantity"
@@ -105,9 +113,12 @@ export function AddSale() {
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="totalCost">Total Cost</label>
+                <label className="required" htmlFor="totalCost">
+                  Total Cost
+                </label>
                 <input
                   type="number"
+                  step="any"
                   id="totalCost"
                   value={formData.totalCost}
                   onChange={handleChange}
@@ -180,7 +191,7 @@ export function ModifySale() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -222,7 +233,7 @@ export function ModifySale() {
               <div className="form-group">
                 <label htmlFor="guestID">Guest ID</label>
                 <input
-                  type="number"
+                  type="text"
                   id="guestID"
                   value={formData.guestID}
                   onChange={handleChange}
@@ -254,6 +265,7 @@ export function ModifySale() {
                 <label htmlFor="totalCost">Total Cost</label>
                 <input
                   type="number"
+                  step="any"
                   id="totalCost"
                   value={formData.totalCost}
                   onChange={handleChange}
@@ -320,7 +332,7 @@ export function DeleteSale() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

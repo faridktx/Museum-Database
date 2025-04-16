@@ -43,7 +43,7 @@ export function AddExhibit() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -71,7 +71,9 @@ export function AddExhibit() {
                 />
               </div>
               <div className="form-group">
-                <label className="required" htmlFor="description">Description</label>
+                <label className="required" htmlFor="description">
+                  Description
+                </label>
                 <input
                   type="text"
                   id="description"
@@ -83,7 +85,9 @@ export function AddExhibit() {
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="startDate">Start Date</label>
+                <label className="required" htmlFor="startDate">
+                  Start Date
+                </label>
                 <input
                   type="date"
                   id="startDate"
@@ -166,7 +170,7 @@ export function ModifyExhibit() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -295,7 +299,7 @@ export function DeleteExhibit() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -312,7 +316,7 @@ export function DeleteExhibit() {
             <div className="input-group">
               <div className="form-group">
                 <label className="required" htmlFor="exhibitID">
-                Exhibit ID
+                  Exhibit ID
                 </label>
                 <input
                   type="number"

@@ -45,7 +45,7 @@ export function AddInventory() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -61,7 +61,9 @@ export function AddInventory() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="itemName">Item Name</label>
+                <label className="required" htmlFor="itemName">
+                  Item Name
+                </label>
                 <input
                   type="text"
                   id="itemName"
@@ -71,7 +73,9 @@ export function AddInventory() {
                 />
               </div>
               <div className="form-group">
-                <label className="required" htmlFor="description">Description</label>
+                <label className="required" htmlFor="description">
+                  Description
+                </label>
                 <input
                   type="text"
                   id="description"
@@ -83,7 +87,9 @@ export function AddInventory() {
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="category">Category</label>
+                <label className="required" htmlFor="category">
+                  Category
+                </label>
                 <input
                   type="text"
                   id="category"
@@ -93,7 +99,9 @@ export function AddInventory() {
                 />
               </div>
               <div className="form-group">
-                <label className="required" htmlFor="quantity">Quantity</label>
+                <label className="required" htmlFor="quantity">
+                  Quantity
+                </label>
                 <input
                   type="number"
                   id="quantity"
@@ -105,9 +113,12 @@ export function AddInventory() {
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label className="required" htmlFor="unitPrice">Unit Price</label>
+                <label className="required" htmlFor="unitPrice">
+                  Unit Price
+                </label>
                 <input
                   type="number"
+                  step="any"
                   id="unitPrice"
                   value={formData.unitPrice}
                   onChange={handleChange}
@@ -180,7 +191,7 @@ export function ModifyInventory() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -254,6 +265,7 @@ export function ModifyInventory() {
                 <label htmlFor="unitPrice">Unit Price</label>
                 <input
                   type="number"
+                  step="any"
                   id="unitPrice"
                   value={formData.unitPrice}
                   onChange={handleChange}
@@ -320,7 +332,7 @@ export function DeleteInventory() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

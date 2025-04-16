@@ -63,7 +63,18 @@ const executeSQLQuery = async (res, query, fields) => {
 
 const deleteRecord = async (table, column, recordID, res) => {
   const query = `DELETE FROM ${table} WHERE ${column} = ?`;
-  await executeSQLQuery(res, query, [recordID]);
+
+  try {
+    const [result] = await promisePool.query(query, [recordID]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ errors: ["Inserted ID does not exist."] });
+    }
+    res.status(200).json({ errors: [] });
+  } catch (err) {
+    res.status(500).json({ errors: ["Database error"] });
+    console.log("Error modifying database...");
+    console.log(err);
+  }
 };
 
 const insertRecord = async (table, res, fields) => {
@@ -92,7 +103,20 @@ const modifyRecord = async (res, id, id_column, table, fields) => {
     let setQuery = setQueries.join(", ");
     let query = `UPDATE ${table} SET ${setQuery} WHERE ${id_column} = ?`;
     setVariables.push(id);
-    await executeSQLQuery(res, query, setVariables);
+
+    try {
+      const [result] = await promisePool.query(query, setVariables);
+      if (result.affectedRows === 0) {
+        return res
+          .status(404)
+          .json({ errors: ["Inserted ID does not exist."] });
+      }
+      res.status(200).json({ errors: [] });
+    } catch (err) {
+      res.status(500).json({ errors: ["Database error"] });
+      console.log("Error modifying database...");
+      console.log(err);
+    }
   } else {
     res
       .status(400)
@@ -121,6 +145,13 @@ app.delete(
       .withMessage("Artifact ID must be an integer."),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const { artifactID } = req.body;
     await deleteRecord("artifacts", "artifact_id", artifactID, res);
@@ -136,6 +167,13 @@ app.delete(
       .withMessage("Artist ID must be an integer"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const { artistID } = req.body;
     await deleteRecord("artists", "artist_id", artistID, res);
@@ -151,6 +189,13 @@ app.delete(
       .withMessage("Employee ID must be an integer"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const { employeeID } = req.body;
     await deleteRecord("employees", "employee_id", employeeID, res);
@@ -202,6 +247,13 @@ app.patch(
     body("description").optional({ checkFalsy: true }),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const {
       artifactID,
@@ -258,6 +310,13 @@ app.patch(
       .withMessage("Death date must be a valid date"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const { artistID, artistName, nationality, birthDate, deathDate } =
       req.body;
@@ -330,6 +389,13 @@ app.patch(
       .withMessage("Role must be one of the specified options"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const {
       employeeID,
@@ -399,6 +465,13 @@ app.post(
       .withMessage("Acquisition date must be a valid date"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const {
       artifactName,
@@ -447,6 +520,13 @@ app.post(
       .withMessage("Death date must be a valid date"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const { artistName, nationality, birthDate, deathDate } = req.body;
     const fields = [
@@ -496,6 +576,13 @@ app.post(
       .withMessage("Role must be one of the specified options"),
   ],
   async (req, res) => {
+    const { id } = req.body;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ errors: ["Do not have authorized access"] });
+    }
+
     if (validationErrorCheck(req, res)) return;
     const {
       employeeName,
@@ -683,10 +770,10 @@ app.post("/api/register-user", async (req, res) => {
   const lastName = user.lastName;
   const phone = user.phoneNumbers[0]?.phoneNumber;
   await promisePool.query(
-    `INSERT IGNORE INTO guests (guest_id, membership_type, paid_date)
-    VALUES (?, ?, ?)
+    `INSERT IGNORE INTO guests (guest_id, first_name, last_name, email, phone_number, membership_type, paid_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
-    [id, null, null],
+    [id, firstName, lastName, email, phone, null, null],
   );
 
   await promisePool.query(
@@ -699,6 +786,11 @@ app.post("/api/register-user", async (req, res) => {
 });
 
 app.patch("/api/guest/modify", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const {
     guestID,
@@ -721,12 +813,22 @@ app.patch("/api/guest/modify", async (req, res) => {
 });
 
 app.delete("/api/guest/delete", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { guestID } = req.body;
   await deleteRecord("guests", "guest_id", guestID, res);
 });
 
 app.post("/api/exhibit/insert", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { exhibitName, description, startDate, endDate } = req.body;
   const fields = [
@@ -739,6 +841,11 @@ app.post("/api/exhibit/insert", async (req, res) => {
 });
 
 app.patch("/api/exhibit/modify", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { exhibitID, exhibitName, description, startDate, endDate } = req.body;
   const fields = [
@@ -751,12 +858,22 @@ app.patch("/api/exhibit/modify", async (req, res) => {
 });
 
 app.delete("/api/exhibit/delete", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { exhibitID } = req.body;
   await deleteRecord("exhibits", "exhibit_id", exhibitID, res);
 });
 
 app.post("/api/inventory/insert", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { itemName, description, category, quantity, unitPrice } = req.body;
   const fields = [
@@ -770,6 +887,11 @@ app.post("/api/inventory/insert", async (req, res) => {
 });
 
 app.patch("/api/inventory/modify", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { itemID, itemName, description, category, quantity, unitPrice } =
     req.body;
@@ -784,12 +906,22 @@ app.patch("/api/inventory/modify", async (req, res) => {
 });
 
 app.delete("/api/inventory/delete", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { itemID } = req.body;
   await deleteRecord("gift_shop_inventory", "item_id", itemID, res);
 });
 
 app.post("/api/sales/insert", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { itemID, guestID, saleDate, quantity, totalCost } = req.body;
   const fields = [
@@ -803,6 +935,11 @@ app.post("/api/sales/insert", async (req, res) => {
 });
 
 app.patch("/api/sales/modify", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { saleID, itemID, guestID, saleDate, quantity, totalCost } = req.body;
   const fields = [
@@ -816,23 +953,29 @@ app.patch("/api/sales/modify", async (req, res) => {
 });
 
 app.delete("/api/sales/delete", async (req, res) => {
+  const { id } = req.body;
+  if (!id) {
+    return res.status(401).json({ errors: ["Do not have authorized access"] });
+  }
+
   if (validationErrorCheck(req, res)) return;
   const { saleID } = req.body;
   await deleteRecord("gift_shop_sales", "sale_id", saleID, res);
 });
 
-// GET unresolved fraud alerts
 app.get("/api/alerts", async (req, res) => {
   const { userId } = req.query;
   const [rows] = await promisePool.query(
-    "SELECT alert_id, message FROM fraud_alerts WHERE is_resolved = FALSE ORDER BY created_at DESC"
+    "SELECT alert_id, message FROM fraud_alerts WHERE is_resolved = FALSE ORDER BY created_at DESC",
   );
   res.json({ success: true, data: rows });
 });
 
-// POST to resolve an alert
 app.post("/api/resolve-alert", async (req, res) => {
   const { alert_id } = req.body;
-  await promisePool.query("UPDATE fraud_alerts SET is_resolved = TRUE WHERE alert_id = ?", [alert_id]);
+  await promisePool.query(
+    "UPDATE fraud_alerts SET is_resolved = TRUE WHERE alert_id = ?",
+    [alert_id],
+  );
   res.json({ success: true });
 });

@@ -53,7 +53,5 @@ export function capitalize(str) {
 }
 
 export function compileErrors(arr) {
-  return arr.reduce((message, error) => {
-    return `${message}\n${error}`;
-  }, "");
+  return arr.join("\n");
 }

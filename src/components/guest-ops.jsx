@@ -47,7 +47,7 @@ export function ModifyGuest() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -107,7 +107,9 @@ export function ModifyGuest() {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="phoneNumber">Phone Number <i>(XXX-XXX-XXXX)</i></label>
+                <label htmlFor="phoneNumber">
+                  Phone Number <i>(XXX-XXX-XXXX)</i>
+                </label>
                 <input
                   type="tel"
                   id="phoneNumber"
@@ -196,7 +198,7 @@ export function DeleteGuest() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

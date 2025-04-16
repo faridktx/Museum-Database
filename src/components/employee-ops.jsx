@@ -8,12 +8,6 @@ import { Link } from "wouter";
 import { Popup } from "../components/popup";
 import { useUser } from "@clerk/clerk-react";
 
-const compileErrors = (errorsArray) => {
-  return Array.isArray(errorsArray)
-    ? errorsArray.join(", ")
-    : "Missing Information.";
-};
-
 const initialDeleteFormState = {
   employeeID: "",
 };
@@ -45,7 +39,7 @@ export function DeleteEmployee() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -125,10 +119,10 @@ const initialModifyFormState = {
 };
 
 export function ModifyEmployee() {
-  useEffect(() => {
-    exhibitSetter(setExhibits);
-  }, []);
   const { user } = useUser();
+  useEffect(() => {
+    exhibitSetter(setExhibits, user.id);
+  }, []);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialModifyFormState);
   const [showPopup, setShowPopup] = useState(false);
@@ -155,7 +149,7 @@ export function ModifyEmployee() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -367,11 +361,11 @@ const initialAddFormState = {
 };
 
 export function AddEmployee() {
+  const { user } = useUser();
   useEffect(() => {
-    exhibitSetter(setExhibits);
+    exhibitSetter(setExhibits, user.id);
   }, []);
 
-  const { user } = useUser();
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialAddFormState);
   const [showPopup, setShowPopup] = useState(false);
@@ -398,7 +392,7 @@ export function AddEmployee() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
