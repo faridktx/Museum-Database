@@ -39,7 +39,7 @@ export function DeleteArtifact() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -115,12 +115,12 @@ const initialModifyFormState = {
 };
 
 export function ModifyArtifact() {
+  const { user } = useUser();
   useEffect(() => {
-    exhibitSetter(setExhibits);
-    artistSetter(setArtists);
+    exhibitSetter(setExhibits, user.id);
+    artistSetter(setArtists, user.id);
   }, []);
 
-  const { user } = useUser();
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialModifyFormState);
@@ -148,7 +148,7 @@ export function ModifyArtifact() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -311,12 +311,12 @@ const initialAddFormState = {
 };
 
 export function AddArtifact() {
+  const { user } = useUser();
   useEffect(() => {
-    exhibitSetter(setExhibits);
-    artistSetter(setArtists);
+    exhibitSetter(setExhibits, user.id);
+    artistSetter(setArtists, user.id);
   }, []);
 
-  const { user } = useUser();
   const [artistOptions, setArtists] = useState([]);
   const [exhibitOptions, setExhibits] = useState([]);
   const [formData, setFormData] = useState(initialAddFormState);
@@ -344,7 +344,7 @@ export function AddArtifact() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

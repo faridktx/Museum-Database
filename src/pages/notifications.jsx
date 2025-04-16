@@ -68,10 +68,14 @@ export function NotificationsPage() {
           {alerts.map((alert) => (
             <li key={alert.alert_id} style={styles.item}>
               <div>
-                <strong>{alert.alert_type || "Alert"}</strong><br />
+                <strong>{alert.alert_type || "Alert"}</strong>
+                <br />
                 {alert.message}
               </div>
-              <button onClick={() => resolveAlert(alert.alert_id)} style={styles.button}>
+              <button
+                onClick={() => resolveAlert(alert.alert_id)}
+                style={styles.button}
+              >
                 Mark as Resolved
               </button>
             </li>

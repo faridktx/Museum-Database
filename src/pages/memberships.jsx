@@ -46,7 +46,7 @@ export function Memberships() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

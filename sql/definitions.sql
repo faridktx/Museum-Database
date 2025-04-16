@@ -1,12 +1,12 @@
+DROP TABLE IF EXISTS railway.employees;
 DROP TABLE IF EXISTS railway.artifacts;
 DROP TABLE IF EXISTS railway.artists;
 DROP TABLE IF EXISTS railway.exhibits;
-DROP TABLE IF EXISTS railway.employees;
-DROP TABLE IF EXISTS railway.gift_shop_inventory;
 DROP TABLE IF EXISTS railway.gift_shop_sales;
+DROP TABLE IF EXISTS railway.gift_shop_inventory;
+DROP TABLE IF EXISTS railway.tickets;
 DROP TABLE IF EXISTS railway.guests;
 DROP TABLE IF EXISTS railway.users;
-DROP TABLE IF EXISTS railway.tickets;
 DROP TABLE IF EXISTS railway.membership_types;
 DROP TABLE IF EXISTS railway.ticket_types;
 
@@ -57,6 +57,10 @@ CREATE TABLE railway.employees (
 );
 CREATE TABLE railway.guests (
     guest_id VARCHAR(250) NOT NULL PRIMARY KEY,
+    first_name VARCHAR(30),
+    last_name VARCHAR(30),
+    email VARCHAR(100),
+    phone_number CHAR(12),
     membership_type VARCHAR(30),
     paid_date DATE
 );
@@ -74,7 +78,7 @@ CREATE TABLE railway.gift_shop_sales (
     guest_id VARCHAR(250) NOT NULL,
     sale_date DATE NOT NULL,
     quantity INT NOT NULL,
-    total_cost INT NOT NULL,
+    total_cost FLOAT NOT NULL,
 
     FOREIGN KEY (item_id) REFERENCES gift_shop_inventory(item_id) ON DELETE CASCADE,
     FOREIGN KEY (guest_id) REFERENCES guests(guest_id) ON DELETE CASCADE

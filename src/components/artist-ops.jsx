@@ -38,7 +38,7 @@ export function DeleteArtist() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -136,7 +136,7 @@ export function ModifyArtist() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });
@@ -276,7 +276,7 @@ export function AddArtist() {
       });
     } else {
       setCurrentPopup({
-        title: "Error!",
+        title: "Errors!",
         message: compileErrors(response.errors),
         buttonText: "Ok",
       });

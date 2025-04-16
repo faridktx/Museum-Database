@@ -38,7 +38,10 @@ export function FraudAlertPopup() {
           {alerts.map((alert) => (
             <li key={alert.alert_id} style={itemStyle}>
               {alert.message}
-              <button style={resolveButtonStyle} onClick={() => resolveAlert(alert.alert_id)}>
+              <button
+                style={resolveButtonStyle}
+                onClick={() => resolveAlert(alert.alert_id)}
+              >
                 Resolve
               </button>
             </li>
@@ -52,66 +55,65 @@ export function FraudAlertPopup() {
   );
 }
 
-
 const popupWrapperStyle = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0, 0, 0, 0.5)",
-    zIndex: 9999,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  };
-  
-  const popupStyle = {
-    background: "white",
-    borderRadius: "12px",
-    padding: "2rem",
-    width: "400px",
-    maxWidth: "90%",
-    boxShadow: "0 15px 30px rgba(0, 0, 0, 0.2)",
-    textAlign: "center",
-  };
-  
-  const headerStyle = {
-    fontSize: "1.25rem",
-    fontWeight: "bold",
-    marginBottom: "1rem",
-  };
-  
-  const listStyle = {
-    listStyleType: "none",
-    padding: 0,
-    margin: "0 0 1.5rem 0",
-    textAlign: "left",
-  };
-  
-  const itemStyle = {
-    marginBottom: "0.75rem",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    fontSize: "0.95rem",
-  };
-  
-  const resolveButtonStyle = {
-    marginLeft: "1rem",
-    padding: "4px 10px",
-    fontSize: "0.75rem",
-    backgroundColor: "#222",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  };
-  
-  const dismissButtonStyle = {
-    marginTop: "1rem",
-    padding: "8px 16px",
-    fontSize: "0.85rem",
-    backgroundColor: "#111",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  };
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0, 0, 0, 0.5)",
+  zIndex: 9999,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const popupStyle = {
+  background: "white",
+  borderRadius: "12px",
+  padding: "2rem",
+  width: "400px",
+  maxWidth: "90%",
+  boxShadow: "0 15px 30px rgba(0, 0, 0, 0.2)",
+  textAlign: "center",
+};
+
+const headerStyle = {
+  fontSize: "1.25rem",
+  fontWeight: "bold",
+  marginBottom: "1rem",
+};
+
+const listStyle = {
+  listStyleType: "none",
+  padding: 0,
+  margin: "0 0 1.5rem 0",
+  textAlign: "left",
+};
+
+const itemStyle = {
+  marginBottom: "0.75rem",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  fontSize: "0.95rem",
+};
+
+const resolveButtonStyle = {
+  marginLeft: "1rem",
+  padding: "4px 10px",
+  fontSize: "0.75rem",
+  backgroundColor: "#222",
+  color: "white",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+};
+
+const dismissButtonStyle = {
+  marginTop: "1rem",
+  padding: "8px 16px",
+  fontSize: "0.85rem",
+  backgroundColor: "#111",
+  color: "white",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+};
