@@ -7,8 +7,9 @@ export function Hero() {
         <div className="hero-content">
           <h1>Welcome to The Curio Collection</h1>
           <p className="hero-subtitle">
-            Explore and manage artifacts from The Curio Collection — your
-            gateway to curated history and digital preservation.
+            Discover the wonders of art, culture, and history at The Curio
+            Collection — a museum dedicated to preserving and showcasing
+            humanity’s most intriguing artifacts.
           </p>
           <a href="#contact" className="button">
             Learn More
@@ -17,7 +18,7 @@ export function Hero() {
         <div className="hero-image">
           <img
             src="https://images.unsplash.com/photo-1491156855053-9cdff72c7f85"
-            alt="Museum Collection Interface"
+            alt="Museum Collection Display"
             loading="eager"
           />
         </div>

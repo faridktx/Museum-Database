@@ -755,7 +755,7 @@ app.get("/api/role", async (req, res) => {
 
   const query = "SELECT role FROM users WHERE user_id = ?";
   const [rows] = await promisePool.query(query, [id]);
-  res.json({ role: rows[0].role });
+  res.json({ role: rows[0]?.role });
 });
 
 app.post("/api/register-user", async (req, res) => {

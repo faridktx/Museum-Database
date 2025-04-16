@@ -108,26 +108,31 @@ export function App() {
   }, [location]);
 
   return (
-    <>
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
       {isLoggedIn ? <DashboardHeader /> : <Header />}
-      <Switch>
-        <Route path="/" component={Home} />
-        {routes.map(({ route, component: Component }) => (
-          <Route key={route} path={route}>
-            <SignedIn>
-              <Component />
-            </SignedIn>
-            <SignedOut>
-              <RedirectToSignIn />
-            </SignedOut>
-          </Route>
-        ))}
-        <Route>
-          <NotFound />
-        </Route>
-      </Switch>
 
-      {<Footer />}
-    </>
+      <main style={{ flex: 1 }}>
+        <Switch>
+          <Route path="/" component={Home} />
+          {routes.map(({ route, component: Component }) => (
+            <Route key={route} path={route}>
+              <SignedIn>
+                <Component />
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </Route>
+          ))}
+          <Route>
+            <NotFound />
+          </Route>
+        </Switch>
+      </main>
+
+      <Footer />
+    </div>
   );
 }

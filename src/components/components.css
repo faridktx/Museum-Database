@@ -555,6 +555,8 @@
 }
 
 .dashboard-footer {
+  flex-direction: column;
+  flex: 1;
   background-color: white;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   padding: calc(var(--spacing) * 1.57) 0;
