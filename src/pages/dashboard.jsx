@@ -37,14 +37,12 @@ export function Dashboard() {
     ],
     "gift-shop": [
       {
-        dataTitle: "Update Inventory",
-        reportTitle: "Inventory Overview",
-        relation: "inventory",
+        dataTitle: "Update Sales",
+        relation: "sales",
       },
       {
-        dataTitle: "Update Sales",
-        reportTitle: "Sales Overview",
-        relation: "sales",
+        dataTitle: "Update Inventory",
+        relation: "inventory",
       },
     ],
   };

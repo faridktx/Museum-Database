@@ -1012,3 +1012,24 @@ app.get("/api/employee-report", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/sales-report", async (_, res) => {
+  const query = `
+  SELECT 
+      i.category,
+      s.sale_date,
+      SUM(s.quantity) AS total_items_sold,
+      SUM(s.total_cost) AS total_revenue,
+      COUNT(DISTINCT s.guest_id) AS unique_customers
+  FROM 
+      gift_shop_sales s
+  JOIN 
+      gift_shop_inventory i ON s.item_id = i.item_id
+  GROUP BY 
+      i.category, s.sale_date
+  ORDER BY 
+      s.sale_date, i.category;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});

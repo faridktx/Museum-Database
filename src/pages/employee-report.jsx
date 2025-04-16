@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
 import { Bar, Line } from "react-chartjs-2";
 import { apiFetch } from "../components/utils";
@@ -14,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { ArrowLeft, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import "../components/components.css";
 
 ChartJS.register(
@@ -30,7 +29,6 @@ ChartJS.register(
 
 export function EmployeeReport() {
   const { user } = useUser();
-  const [, navigate] = useLocation();
   const [reportData, setReportData] = useState([]);
 
   useEffect(() => {
@@ -46,14 +44,14 @@ export function EmployeeReport() {
     const roles = [...new Set(reportData.map((item) => item.role))];
 
     const colors = {
-      Curator: "rgba(74, 111, 165, 1)", // Museum blue
-      Educator: "rgba(108, 195, 213, 1)", // Light cyan
-      Reception: "rgba(227, 119, 104, 1)", // Soft red
-      Custodian: "rgba(118, 169, 125, 1)", // Sage green
-      Administrator: "rgba(124, 148, 207, 1)", // Soft blue
-      Development: "rgba(201, 184, 102, 1)", // Gold
-      Security: "rgba(92, 135, 39, 1)", // Olive green
-      Retail: "rgba(183, 146, 104, 1)", // Tan
+      Curator: "rgba(74, 111, 165, 1)",
+      Educator: "rgba(108, 195, 213, 1)",
+      Reception: "rgba(227, 119, 104, 1)",
+      Custodian: "rgba(118, 169, 125, 1)",
+      Administrator: "rgba(124, 148, 207, 1)",
+      Development: "rgba(201, 184, 102, 1)",
+      Security: "rgba(92, 135, 39, 1)",
+      Retail: "rgba(183, 146, 104, 1)",
     };
 
     const backgroundColors = {
@@ -97,14 +95,14 @@ export function EmployeeReport() {
     const roles = [...new Set(reportData.map((item) => item.role))];
 
     const colors = {
-      Curator: "rgba(74, 111, 165, 1)", // Museum blue
-      Educator: "rgba(108, 195, 213, 1)", // Light cyan
-      Reception: "rgba(227, 119, 104, 1)", // Soft red
-      Custodian: "rgba(118, 169, 125, 1)", // Sage green
-      Administrator: "rgba(124, 148, 207, 1)", // Soft blue
-      Development: "rgba(201, 184, 102, 1)", // Gold
-      Security: "rgba(92, 135, 39, 1)", // Olive green
-      Retail: "rgba(183, 146, 104, 1)", // Tan
+      Curator: "rgba(74, 111, 165, 1)",
+      Educator: "rgba(108, 195, 213, 1)",
+      Reception: "rgba(227, 119, 104, 1)",
+      Custodian: "rgba(118, 169, 125, 1)",
+      Administrator: "rgba(124, 148, 207, 1)",
+      Development: "rgba(201, 184, 102, 1)",
+      Security: "rgba(92, 135, 39, 1)",
+      Retail: "rgba(183, 146, 104, 1)",
     };
 
     const datasets = roles.map((role) => {

@@ -9,7 +9,6 @@ import {
   ShoppingBag,
   Coffee,
   Gem,
-  FileText,
   Puzzle,
 } from "lucide-react";
 
@@ -67,7 +66,6 @@ export function GiftShop() {
     Apparel: <ShoppingBag size={48} strokeWidth={1} />,
     Home: <Coffee size={48} strokeWidth={1} />,
     Collectibles: <Gem size={48} strokeWidth={1} />,
-    Stationery: <FileText size={48} strokeWidth={1} />,
     Games: <Puzzle size={48} strokeWidth={1} />,
   };
 
