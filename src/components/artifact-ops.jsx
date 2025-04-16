@@ -153,6 +153,7 @@ export function ModifyArtifact() {
         buttonText: "Ok",
       });
     }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {
