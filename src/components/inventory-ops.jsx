@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Popup } from "../components/popup";
@@ -57,7 +57,7 @@ export function AddInventory() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Add Inventory Item</h2>
+          <h2>Add Inventory</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -192,7 +192,7 @@ export function ModifyInventory() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Modify Inventory Item</h2>
+          <h2>Modify Inventory</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -332,7 +332,7 @@ export function DeleteInventory() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Remove Inventory Item</h2>
+          <h2>Remove Inventory</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">

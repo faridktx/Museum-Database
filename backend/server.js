@@ -346,9 +346,6 @@ app.patch(
       salary,
       role,
     } = req.body;
-    if (role) {
-      isGiftShop = role === "Retail";
-    }
     const fields = [
       { column: "employee_name", value: employeeName },
       { column: "exhibit_id", value: exhibitID },
@@ -362,7 +359,6 @@ app.patch(
       { column: "fired_date", value: firedDate },
       { column: "salary", value: salary },
       { column: "address", value: address },
-      { column: "is_giftshop", value: isGiftShop },
     ];
     await modifyRecord(res, employeeID, "employee_id", "employees", fields);
   },
@@ -514,7 +510,6 @@ app.post(
       salary,
       role,
     } = req.body;
-    const isGiftShop = role === "Retail";
     const fields = [
       { column: "employee_name", value: employeeName },
       { column: "ssn", value: ssn },
@@ -527,7 +522,6 @@ app.post(
       { column: "fired_date", value: null },
       { column: "salary", value: salary },
       { column: "role", value: role },
-      { column: "is_giftshop", value: isGiftShop },
       { column: "exhibit_id", value: exhibitID },
     ];
     await insertRecord("employees", res, fields);

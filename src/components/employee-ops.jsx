@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { ROLES } from "./constants";
 import { Select } from "./common/select";
@@ -65,7 +65,7 @@ export function DeleteEmployee() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Remove Existing Employee</h2>
+          <h2>Remove Employee</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -175,7 +175,7 @@ export function ModifyEmployee() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Modify Existing Employee</h2>
+          <h2>Modify Employee</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
