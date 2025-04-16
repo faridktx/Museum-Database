@@ -1491,7 +1491,6 @@
   min-width: 120px;
 }
 
-/* Popup Types */
 .popup-success {
   border-top: 5px solid #4caf50;
 }
@@ -1527,7 +1526,7 @@
 .button-error {
   background-color: #f44336;
 }
-=======
+
 .support-hero {
   background: linear-gradient(to right, #f8f9fa, #e3e8ef);
   padding: 60px 0 40px;
@@ -1633,7 +1632,9 @@
   margin-bottom: 2rem;
   border-radius: 12px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .card:hover {

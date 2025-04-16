@@ -44,7 +44,7 @@ export function SupportFaq() {
       question: "Is my data backed up?",
       answer:
         "We back up all data daily and store encrypted versions on secure servers to prevent data loss.",
-    }
+    },
   ];
 
   const toggleFaq = (index) => {
@@ -52,18 +52,39 @@ export function SupportFaq() {
   };
 
   return (
-    <div className="support-page container" style={{ paddingTop: "120px", maxWidth: "860px", margin: "0 auto" }}>
-      <div className="support-header" style={{ marginBottom: '2rem' }}>
+    <div
+      className="support-page container"
+      style={{ paddingTop: "120px", maxWidth: "860px", margin: "0 auto" }}
+    >
+      <div className="support-header" style={{ marginBottom: "2rem" }}>
         <p className="breadcrumb">Home / Support / FAQ</p>
-        <h1 style={{ fontSize: '2.2rem', fontWeight: '700' }}>Frequently Asked Questions</h1>
-        <p className="support-subtitle" style={{ fontSize: '1.1rem', color: '#555' }}>
-          Find answers to the most commonly asked questions about using the Curio Collection platform. Browse categories, expand questions, and learn more instantly.
+        <h1 style={{ fontSize: "2.2rem", fontWeight: "700" }}>
+          Frequently Asked Questions
+        </h1>
+        <p
+          className="support-subtitle"
+          style={{ fontSize: "1.1rem", color: "#555" }}
+        >
+          Find answers to the most commonly asked questions about using the
+          Curio Collection platform. Browse categories, expand questions, and
+          learn more instantly.
         </p>
       </div>
 
-      <section className="support-section card hover-card" style={{ padding: '2rem' }}>
-        <div className="icon-header" style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: '1.5rem' }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>Help Topics</h2>
+      <section
+        className="support-section card hover-card"
+        style={{ padding: "2rem" }}
+      >
+        <div
+          className="icon-header"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: "1.5rem" }}>Help Topics</h2>
         </div>
 
         <div className="faq-list">
@@ -82,9 +103,17 @@ export function SupportFaq() {
               }}
               onClick={() => toggleFaq(index)}
             >
-              <strong style={{ fontSize: '1.05rem' }}>{faq.question}</strong>
+              <strong style={{ fontSize: "1.05rem" }}>{faq.question}</strong>
               {openIndex === index && (
-                <p style={{ marginTop: "0.75rem", fontSize: '0.95rem', color: '#333' }}>{faq.answer}</p>
+                <p
+                  style={{
+                    marginTop: "0.75rem",
+                    fontSize: "0.95rem",
+                    color: "#333",
+                  }}
+                >
+                  {faq.answer}
+                </p>
               )}
             </div>
           ))}

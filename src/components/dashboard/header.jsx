@@ -43,7 +43,9 @@ export function DashboardHeader() {
       <div className="container header-content">
         <div className="logo">
           <Link href="/" style={{ textDecoration: "none" }}>
-            <h1 style={{ cursor: "pointer", margin: 0 }}>The Curio Collection</h1>
+            <h1 style={{ cursor: "pointer", margin: 0 }}>
+              The Curio Collection
+            </h1>
           </Link>
         </div>
 

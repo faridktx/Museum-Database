@@ -704,183 +704,125 @@ app.post("/api/register-user", async (req, res) => {
   res.status(200).json({ errors: [] });
 });
 
-app.get("/api/report", async (req, res) => {
-  const { type } = req.query;
-
-  let query;
-  let title;
-  switch (type) {
-    case "collection":
-      query = `
-        SELECT 
-        a.Artifact_ID, 
-        a.Artifact_Name, 
-        a.Artifact_Description, 
-        a.Value, 
-        ar.Artist_Name, 
-        ar.Nationality
-        FROM artifacts a
-        JOIN artists ar ON a.Artist_ID = ar.Artist_ID;
-      `;
-      title = "Collection Overview Report";
-      break;
-    case "exhibits":
-      query = `
-        SELECT 
-        e.Exhibit_ID, 
-        e.Exhibit_Name, 
-        e.Description, 
-        e.Start_Date, 
-        e.Exhibit_Type, 
-        ev.Event_Name, 
-        ev.Start_Date
-        FROM exhibits e
-        JOIN events ev ON e.Exhibit_ID = ev.Included_Exhibits;
-      `;
-      title = "Exhibit Status Report";
-      break;
-    case "employee":
-      query = `
-        SELECT 
-        emp.Employee_ID, 
-        emp.Employee_Name, 
-        emp.Address, 
-        emp.Salary, 
-        emp.Work_Email, 
-        e.Exhibit_Name
-        FROM employees emp
-        JOIN exhibits e ON emp.Exhibit_ID = e.Exhibit_ID;
-      `;
-      title = "Employee History Report";
-      break;
-    default:
-      return res.status(400).send("Invalid report type");
-  }
-
-  try {
-    const [results] = await promisePool.query(query);
-    const htmlReport = generateHTMLReport(results, title);
-
-    res.send(htmlReport);
-  } catch (err) {
-    console.error("Error executing query:", err);
-    res.status(500).send("Error executing query");
-  }
+app.patch("/api/guest/modify", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const {
+    guestID,
+    firstName,
+    lastName,
+    email,
+    phoneNumber,
+    paidDate,
+    membershipType,
+  } = req.body;
+  const fields = [
+    { column: "first_name", value: firstName },
+    { column: "last_name", value: lastName },
+    { column: "email", value: email },
+    { column: "phone_number", value: phoneNumber },
+    { column: "paid_date", value: paidDate },
+    { column: "membership_type", value: membershipType },
+  ];
+  await modifyRecord(res, guestID, "guest_id", "guests", fields);
 });
 
-app.post("/api/exhibit/insert/", async (req, res) => {
-  const { exhibitName, description, startDate, endDate, location } = req.body;
-  try {
-    await db.query(
-      "INSERT INTO Exhibits (Exhibit_Name, Description, Start_Date, End_Date, Location) VALUES (?, ?, ?, ?, ?)",
-      [exhibitName, description, startDate, endDate, location]
-    );
-    res.json({ success: true, message: "Exhibit added successfully!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Insert error" });
-  }
+app.delete("/api/guest/delete", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { guestID } = req.body;
+  await deleteRecord("guests", "guest_id", guestID, res);
 });
 
-app.patch("/api/exhibit/modify/", async (req, res) => {
-  const { exhibitID, exhibitName, description, startDate, endDate, location } = req.body;
-  try {
-    await db.query(
-      "UPDATE Exhibits SET Exhibit_Name=?, Description=?, Start_Date=?, End_Date=?, Location=? WHERE Exhibit_ID=?",
-      [exhibitName, description, startDate, endDate, location, exhibitID]
-    );
-    res.json({ success: true, message: "Exhibit updated successfully!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Update error" });
-  }
+app.post("/api/exhibit/insert", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { exhibitName, description, startDate, endDate } = req.body;
+  const fields = [
+    { column: "exhibit_name", value: exhibitName },
+    { column: "description", value: description },
+    { column: "start_date", value: startDate },
+    { column: "end_date", value: endDate },
+  ];
+  await insertRecord("exhibits", res, fields);
 });
 
-app.delete("/api/exhibit/delete/", async (req, res) => {
+app.patch("/api/exhibit/modify", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { exhibitID, exhibitName, description, startDate, endDate } = req.body;
+  const fields = [
+    { column: "exhibit_name", value: exhibitName },
+    { column: "description", value: description },
+    { column: "start_date", value: startDate },
+    { column: "end_date", value: endDate },
+  ];
+  await modifyRecord(res, exhibitID, "exhibit_id", "exhibits", fields);
+});
+
+app.delete("/api/exhibit/delete", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
   const { exhibitID } = req.body;
-  try {
-    await db.query("DELETE FROM Exhibits WHERE Exhibit_ID = ?", [exhibitID]);
-    res.json({ success: true, message: "Exhibit deleted successfully!" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Delete error" });
-  }
+  await deleteRecord("exhibits", "exhibit_id", exhibitID, res);
 });
-function generateHTMLReport(data, title) {
-  let html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${title}</title>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 20px;
-        }
-        th, td {
-          border: 1px solid #ddd;
-          padding: 8px;
-          text-align: left;
-        }
-        th {
-          background-color: #f4f4f4;
-        }
-        tr:nth-child(even) {
-          background-color: #f9f9f9;
-        }
-      </style>
-    </head>
-    <body>
-      <h1>${title}</h1>
-      <table>
-        <thead>
-          <tr>
-  `;
 
-  if (data.length > 0) {
-    const columns = Object.keys(data[0]);
-    html += columns.map((column) => `<th>${column}</th>`).join("");
-  }
+app.post("/api/inventory/insert", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { itemName, description, category, quantity, unitPrice } = req.body;
+  const fields = [
+    { column: "item_name", value: itemName },
+    { column: "description", value: description },
+    { column: "category", value: category },
+    { column: "quantity", value: quantity },
+    { column: "unit_price", value: unitPrice },
+  ];
+  await insertRecord("gift_shop_inventory", res, fields);
+});
 
-  html += `
-          </tr>
-        </thead>
-        <tbody>
-  `;
+app.patch("/api/inventory/modify", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { itemID, itemName, description, category, quantity, unitPrice } =
+    req.body;
+  const fields = [
+    { column: "item_name", value: itemName },
+    { column: "description", value: description },
+    { column: "category", value: category },
+    { column: "quantity", value: quantity },
+    { column: "unit_price", value: unitPrice },
+  ];
+  await modifyRecord(res, itemID, "item_id", "gift_shop_inventory", fields);
+});
 
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
+app.delete("/api/inventory/delete", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { itemID } = req.body;
+  await deleteRecord("gift_shop_inventory", "item_id", itemID, res);
+});
 
-  data.forEach((row) => {
-    html += `
-      <tr>
-        ${Object.values(row)
-          .map((value) => `<td>${value}</td>`)
-          .join("")}
-      </tr>
-    `;
-  });
+app.post("/api/sales/insert", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { itemID, guestID, saleDate, quantity, totalCost } = req.body;
+  const fields = [
+    { column: "item_id", value: itemID },
+    { column: "guest_id", value: guestID },
+    { column: "sale_date", value: saleDate },
+    { column: "quantity", value: quantity },
+    { column: "total_cost", value: totalCost },
+  ];
+  await insertRecord("gift_shop_sales", res, fields);
+});
 
-  html += `
-        </tbody>
-      </table>
-    </body>
-    </html>
-  `;
+app.patch("/api/sales/modify", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { saleID, itemID, guestID, saleDate, quantity, totalCost } = req.body;
+  const fields = [
+    { column: "item_id", value: itemID },
+    { column: "guest_id", value: guestID },
+    { column: "sale_date", value: saleDate },
+    { column: "quantity", value: quantity },
+    { column: "total_cost", value: totalCost },
+  ];
+  await modifyRecord(res, saleID, "sale_id", "gift_shop_sales", fields);
+});
 
-  return html;
-}
+app.delete("/api/sales/delete", async (req, res) => {
+  if (validationErrorCheck(req, res)) return;
+  const { saleID } = req.body;
+  await deleteRecord("gift_shop_sales", "sale_id", saleID, res);
+});

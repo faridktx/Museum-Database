@@ -70,32 +70,31 @@ export function Dashboard() {
           <h2>Reports</h2>
           <div className="dashboard-grid">
             {roleData[role]?.map((card) => (
-                <div key={card.relation} className="dashboard-card">
-                  <h3>{card.reportTitle}</h3>
-                  <p>
-                    View comprehensive reports about your museum's{" "}
-                    {card.relation}
-                    s.
-                  </p>
-                  <Link href={`/dashboard/${card.relation}`}>
-                    <button className="button">Access Report</button>
-                  </Link>
-                </div>
-              ))}
+              <div key={card.relation} className="dashboard-card">
+                <h3>{card.reportTitle}</h3>
+                <p>
+                  View comprehensive reports about your museum's {card.relation}
+                  s.
+                </p>
+                <Link href={`/dashboard/${card.relation}`}>
+                  <button className="button">Access Report</button>
+                </Link>
+              </div>
+            ))}
           </div>
         </section>
         <section className="dashboard-section">
           <h2>Data Management</h2>
           <div className="dashboard-grid">
             {roleData[role]?.map((card) => (
-                <div key={card.relation} className="dashboard-card">
-                  <h3>{card.dataTitle}</h3>
-                  <p>Add to or modify existing {card.relation} information.</p>
-                  <Link href={`/dashboard/${card.relation}`}>
-                    <button className="button">Modify Data</button>
-                  </Link>
-                </div>
-              ))}
+              <div key={card.relation} className="dashboard-card">
+                <h3>{card.dataTitle}</h3>
+                <p>Add to or modify existing {card.relation} information.</p>
+                <Link href={`/dashboard/${card.relation}`}>
+                  <button className="button">Modify Data</button>
+                </Link>
+              </div>
+            ))}
           </div>
         </section>
       </div>

@@ -18,12 +18,19 @@ import { SupportFaq } from "./pages/SupportFaq";
 import { SupportContact } from "./pages/SupportContact";
 import { SupportKnowledge } from "./pages/SupportKnowledge";
 import { SupportReport } from "./pages/SupportReport";
-
+import { ModifyGuest, DeleteGuest } from "./components/guest-ops";
+import { GuestOperations } from "./pages/guest";
+import { ExhibitOperations } from "./pages/exhibits";
 import {
   AddArtifact,
   ModifyArtifact,
   DeleteArtifact,
 } from "./components/artifact-ops";
+import {
+  DeleteExhibit,
+  AddExhibit,
+  ModifyExhibit,
+} from "./components/exhibit-ops";
 import { ArtifactOperations } from "./pages/artifact";
 import { ArtistOperations } from "./pages/artist";
 import { EmployeeOperations } from "./pages/employees";
@@ -36,24 +43,56 @@ import {
   DeleteEmployee,
 } from "./components/employee-ops";
 import { useEffect } from "react";
+import { InventoryOperations } from "./pages/inventory";
+import {
+  AddInventory,
+  ModifyInventory,
+  DeleteInventory,
+} from "./components/inventory-ops";
+import { SalesOperations } from "./pages/sales";
+import { AddSale, ModifySale, DeleteSale } from "./components/sales-ops";
 
 const routes = [
   { route: "/tickets", component: Tickets },
   { route: "/gift-shop", component: GiftShop },
   { route: "/memberships", component: Memberships },
   { route: "/dashboard", component: Dashboard },
+  { route: "/dashboard/sales", component: SalesOperations },
+  { route: "/dashboard/inventory", component: InventoryOperations },
+  { route: "/dashboard/exhibit", component: ExhibitOperations },
   { route: "/dashboard/artifact", component: ArtifactOperations },
+  { route: "/dashboard/guest", component: GuestOperations },
+  { route: "/dashboard/guest/modify", component: ModifyGuest },
+  { route: "/dashboard/guest/remove", component: DeleteGuest },
   { route: "/dashboard/artist", component: ArtistOperations },
   { route: "/dashboard/employee", component: EmployeeOperations },
   { route: "/dashboard/artifact/add", component: AddArtifact },
   { route: "/dashboard/artifact/modify", component: ModifyArtifact },
   { route: "/dashboard/artifact/remove", component: DeleteArtifact },
+  { route: "/dashboard/exhibit/add", component: AddExhibit },
+  { route: "/dashboard/exhibit/modify", component: ModifyExhibit },
+  { route: "/dashboard/exhibit/remove", component: DeleteExhibit },
   { route: "/dashboard/artist/add", component: AddArtist },
   { route: "/dashboard/artist/modify", component: ModifyArtist },
   { route: "/dashboard/artist/remove", component: DeleteArtist },
   { route: "/dashboard/employee/add", component: AddEmployee },
   { route: "/dashboard/employee/modify", component: ModifyEmployee },
   { route: "/dashboard/employee/remove", component: DeleteEmployee },
+  { route: "/dashboard/inventory/add", component: AddInventory },
+  { route: "/dashboard/inventory/modify", component: ModifyInventory },
+  { route: "/dashboard/inventory/remove", component: DeleteInventory },
+  { route: "/dashboard/sales/add", component: AddSale },
+  { route: "/dashboard/sales/modify", component: ModifySale },
+  { route: "/dashboard/sales/remove", component: DeleteSale },
+  { route: "/support-docs", component: SupportDocumentation },
+  { route: "/support-center", component: SupportCenter },
+  { route: "/support-account", component: SupportAccount },
+  { route: "/support-tutorials", component: SupportTutorials },
+  { route: "/support-api", component: SupportApi },
+  { route: "/support-faq", component: SupportFaq },
+  { route: "/support-contact", component: SupportContact },
+  { route: "/support-knowledge", component: SupportKnowledge },
+  { route: "/support-report", component: SupportReport },
 ];
 
 export function App() {
@@ -70,16 +109,6 @@ export function App() {
       {isLoggedIn ? <DashboardHeader /> : <Header />}
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/support-docs" component={SupportDocumentation} />
-        <Route path="/support-center" component={SupportCenter} />
-        <Route path="/support-account" component={SupportAccount} />
-        <Route path="/support-tutorials" component={SupportTutorials} />
-        <Route path="/support-api" component={SupportApi} />
-        <Route path="/support-faq" component={SupportFaq} />
-        <Route path="/support-contact" component={SupportContact} />
-        <Route path="/support-knowledge" component={SupportKnowledge} />
-        <Route path="/support-report" component={SupportReport} />
-
         {routes.map(({ route, component: Component }) => (
           <Route key={route} path={route}>
             <SignedIn>
@@ -94,7 +123,7 @@ export function App() {
           <NotFound />
         </Route>
       </Switch>
-      
+
       {isLoggedIn ? <DashboardFooter /> : <Footer />}
     </>
   );
