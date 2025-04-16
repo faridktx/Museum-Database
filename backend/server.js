@@ -979,3 +979,36 @@ app.post("/api/resolve-alert", async (req, res) => {
   );
   res.json({ success: true });
 });
+
+app.get("/api/artifact-report", async (_, res) => {
+  const query = `
+  SELECT
+    YEAR(a.acquisition_date) AS acquisition_year,
+    ar.nationality,
+    COUNT(*) AS total_artifacts,
+    SUM(a.value) AS total_value
+    FROM railway.artifacts a
+    JOIN railway.artists ar ON a.artist_id = ar.artist_id
+    GROUP BY acquisition_year, ar.nationality
+    ORDER BY acquisition_year, total_value DESC
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/employee-report", async (_, res) => {
+  const query = `
+  SELECT
+    e.exhibit_name,
+    emp.role,
+    COUNT(*) AS total_employees,
+    COUNT(CASE WHEN emp.fired_date IS NULL THEN 1 END) AS active_employees,
+    AVG(emp.salary) AS average_salary
+  FROM railway.employees AS emp
+  JOIN railway.exhibits AS e ON emp.exhibit_id = e.exhibit_id
+  GROUP BY e.exhibit_name, emp.role
+  ORDER BY e.exhibit_name, emp.role
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});

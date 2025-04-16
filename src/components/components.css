@@ -1718,3 +1718,260 @@
     transform: scale(1);
   }
 }
+
+.reports-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 60px;
+  padding-top: 80px;
+}
+
+.reports-page .container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-controls-simplified {
+  margin-top: 20px;
+}
+
+.report-header-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.export-button {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.report-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.custom-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+  background-color: #f8f8f8;
+  padding: 15px;
+  border-radius: 8px;
+  justify-content: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 3px 8px;
+  white-space: nowrap;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+.chart-container {
+  height: 400px;
+  width: 100%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 10px;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  width: 100%;
+}
+
+.pie-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 300px;
+}
+
+.pie-chart h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #1a1a1a;
+  font-family: "Playfair Display", serif;
+}
+
+.button-outline {
+  background-color: transparent;
+  color: #4a6fa5;
+  border: 1px solid #4a6fa5;
+}
+
+.button-outline:hover {
+  background-color: #f0f4f9;
+}
+
+.report-results {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.report-header h2 {
+  font-size: 1.5rem;
+  margin: 0;
+  color: #1a1a1a;
+  font-family: "Playfair Display", serif;
+}
+
+.report-date {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.report-table-container {
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.report-table th {
+  background-color: #f8f8f8;
+  color: #1a1a1a;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 15px;
+  border-bottom: 2px solid #ddd;
+}
+
+.report-table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  color: #333333;
+}
+
+.report-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-on-display {
+  background-color: #e3f7ed;
+  color: #28a745;
+}
+
+.status-in-storage {
+  background-color: #f8f9fa;
+  color: #6c757d;
+}
+
+.status-on-loan {
+  background-color: #e3f2fd;
+  color: #0d6efd;
+}
+
+.status-in-conservation {
+  background-color: #fff3cd;
+  color: #ffc107;
+}
+
+.status-new-acquisition {
+  background-color: #f8d7da;
+  color: #dc3545;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+  margin-right: 8px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .filter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-actions {
+    flex-direction: column;
+  }
+
+  .report-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .report-date {
+    margin-top: 5px;
+  }
+
+  .report-header-actions {
+    margin-bottom: 15px;
+  }
+
+  .export-button {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 10px;
+    justify-content: center;
+  }
+
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-container {
+    height: 280px;
+  }
+}
+
+.dashboard-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  margin-bottom: calc(var(--spacing) * 2);
+}
