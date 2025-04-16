@@ -114,7 +114,7 @@ export function Dashboard() {
                     {card.relation}
                     s.
                   </p>
-                  <Link href={`/dashboard/${card.relation}-report`}>
+                  <Link href={`/dashboard/${card.relation}`}>
                     <button className="button">Access Report</button>
                   </Link>
                 </div>
