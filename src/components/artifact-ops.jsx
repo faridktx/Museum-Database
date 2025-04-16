@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Select } from "./common/select";
@@ -59,7 +59,7 @@ export function DeleteArtifact() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Remove Existing Artifact</h2>
+          <h2>Remove Artifact</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -168,7 +168,7 @@ export function ModifyArtifact() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Modify Existing Artifact</h2>
+          <h2>Modify Artifact</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -349,6 +349,7 @@ export function AddArtifact() {
         buttonText: "Ok",
       });
     }
+    setShowPopup(true);
   };
 
   const handleChange = (e) => {

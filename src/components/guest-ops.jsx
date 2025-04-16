@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Popup } from "../components/popup";
@@ -67,7 +67,7 @@ export function ModifyGuest() {
                   Guest ID
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id="guestID"
                   value={formData.guestID}
                   onChange={handleChange}
@@ -126,20 +126,18 @@ export function ModifyGuest() {
                   onChange={handleChange}
                 />
               </div>
-              <div className="input-group">
-                <div className="form-group">
-                  <label htmlFor="membershipTier">Membership Tier</label>
-                  <input
-                    type="text"
-                    id="membershipTier"
-                    value={formData.membershipType}
-                    onChange={handleChange}
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="membershipTier">Membership Tier</label>
+                <input
+                  type="text"
+                  id="membershipTier"
+                  value={formData.membershipType}
+                  onChange={handleChange}
+                />
               </div>
             </div>
             <div className="form-actions">
-              <Link href="/dashboard/guests">
+              <Link href="/dashboard/guest">
                 <button type="button" className="button button-secondary">
                   Cancel
                 </button>
@@ -210,7 +208,7 @@ export function DeleteGuest() {
     <div className="form-page">
       <div className="container">
         <div className="form-card">
-          <h2>Remove Existing Guest</h2>
+          <h2>Remove Guest</h2>
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
@@ -218,7 +216,7 @@ export function DeleteGuest() {
                   Guest ID
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id="guestID"
                   value={formData.guestID}
                   onChange={handleChange}
@@ -228,7 +226,7 @@ export function DeleteGuest() {
               <div className="form-group"></div>
             </div>
             <div className="form-actions">
-              <Link href="/dashboard/guests">
+              <Link href="/dashboard/guest">
                 <button type="button" className="button button-secondary">
                   Cancel
                 </button>

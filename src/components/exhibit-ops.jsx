@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { fetchWithBody } from "./utils";
+import { fetchWithBody, compileErrors } from "./utils";
 import "./components.css";
 import { Link } from "wouter";
 import { Popup } from "../components/popup";
@@ -71,23 +71,25 @@ export function AddExhibit() {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="description">Description</label>
+                <label className="required" htmlFor="description">Description</label>
                 <input
                   type="text"
                   id="description"
                   value={formData.description}
                   onChange={handleChange}
+                  required
                 />
               </div>
             </div>
             <div className="input-group">
               <div className="form-group">
-                <label htmlFor="startDate">Start Date</label>
+                <label className="required" htmlFor="startDate">Start Date</label>
                 <input
                   type="date"
                   id="startDate"
                   value={formData.startDate}
                   onChange={handleChange}
+                  required
                 />
               </div>
               <div className="form-group">
@@ -101,7 +103,7 @@ export function AddExhibit() {
               </div>
             </div>
             <div className="form-actions">
-              <Link href="/dashboard/exhibits">
+              <Link href="/dashboard/exhibit">
                 <button type="button" className="button button-secondary">
                   Cancel
                 </button>
@@ -234,7 +236,7 @@ export function ModifyExhibit() {
               </div>
             </div>
             <div className="form-actions">
-              <Link href="/dashboard/exhibits">
+              <Link href="/dashboard/exhibit">
                 <button type="button" className="button button-secondary">
                   Cancel
                 </button>
@@ -309,18 +311,22 @@ export function DeleteExhibit() {
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <div className="form-group">
-                <label htmlFor="exhibitID">Exhibit ID</label>
+                <label className="required" htmlFor="exhibitID">
+                Exhibit ID
+                </label>
                 <input
                   type="number"
                   id="exhibitID"
                   value={formData.exhibitID}
                   onChange={handleChange}
+                  placeholder="Enter the ID of the exhibit"
                   required
                 />
               </div>
+              <div className="form-group"></div>
             </div>
             <div className="form-actions">
-              <Link href="/dashboard/exhibits">
+              <Link href="/dashboard/exhibit">
                 <button type="button" className="button button-secondary">
                   Cancel
                 </button>
