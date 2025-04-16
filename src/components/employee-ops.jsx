@@ -8,6 +8,12 @@ import { Link } from "wouter";
 import { Popup } from "../components/popup";
 import { useUser } from "@clerk/clerk-react";
 
+const compileErrors = (errorsArray) => {
+  return Array.isArray(errorsArray)
+    ? errorsArray.join(", ")
+    : "Missing Information.";
+};
+
 const initialDeleteFormState = {
   employeeID: "",
 };

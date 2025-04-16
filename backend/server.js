@@ -356,7 +356,7 @@ app.patch(
       { column: "personal_email", value: personalEmail },
       { column: "work_email", value: workEmail },
       { column: "phone_number", value: phoneNumber },
-      { column: "birthdate", value: birthDate },
+      { column: "birth_date", value: birthDate },
       { column: "hiring_date", value: hiringDate },
       { column: "role", value: role },
       { column: "fired_date", value: firedDate },
@@ -522,7 +522,7 @@ app.post(
       { column: "personal_email", value: personalEmail },
       { column: "work_email", value: workEmail },
       { column: "address", value: address },
-      { column: "birthdate", value: birthDate },
+      { column: "birth_date", value: birthDate },
       { column: "hiring_date", value: hiringDate },
       { column: "fired_date", value: null },
       { column: "salary", value: salary },
@@ -825,4 +825,20 @@ app.delete("/api/sales/delete", async (req, res) => {
   if (validationErrorCheck(req, res)) return;
   const { saleID } = req.body;
   await deleteRecord("gift_shop_sales", "sale_id", saleID, res);
+});
+
+// GET unresolved fraud alerts
+app.get("/api/alerts", async (req, res) => {
+  const { userId } = req.query;
+  const [rows] = await promisePool.query(
+    "SELECT alert_id, message FROM fraud_alerts WHERE is_resolved = FALSE ORDER BY created_at DESC"
+  );
+  res.json({ success: true, data: rows });
+});
+
+// POST to resolve an alert
+app.post("/api/resolve-alert", async (req, res) => {
+  const { alert_id } = req.body;
+  await promisePool.query("UPDATE fraud_alerts SET is_resolved = TRUE WHERE alert_id = ?", [alert_id]);
+  res.json({ success: true });
 });
