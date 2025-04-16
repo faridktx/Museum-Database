@@ -76,7 +76,7 @@ export function Dashboard() {
                   View comprehensive reports about your museum's {card.relation}
                   s.
                 </p>
-                <Link href={`/dashboard/${card.relation}`}>
+                <Link href={`/dashboard/${card.relation}-report`}>
                   <button className="button">Access Report</button>
                 </Link>
               </div>
