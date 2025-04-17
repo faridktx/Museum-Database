@@ -151,7 +151,7 @@ export function DepartmentReport() {
 
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", "employee_report.csv");
+    link.setAttribute("download", "department_overlook.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

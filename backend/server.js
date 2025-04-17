@@ -1030,3 +1030,20 @@ app.get("/api/department-report", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/employee-report", async (_, res) => {
+  const query = `
+    SELECT 
+      employee_id,
+      employee_name,
+      role,
+      phone_number,
+      work_email,
+      hiring_date,
+      salary
+    FROM employees
+    ORDER BY employee_id;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
