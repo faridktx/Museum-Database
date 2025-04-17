@@ -1059,3 +1059,18 @@ app.get("/api/exhibits", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/artists-list", async (_, res) => {
+  const query = `
+    SELECT 
+      artist_id,
+      artist_name,
+      birth_date,
+      death_date,
+      nationality
+    FROM artists
+    ORDER BY artist_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
