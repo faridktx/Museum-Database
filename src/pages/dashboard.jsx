@@ -25,14 +25,16 @@ export function Dashboard() {
       },
     ],
     admin: [
+
       {
-        reportTitle: "Employee Report",
-        relation: "employee",
+        dataTitle: "Update Departments",
+        reportTitle: "Department Overlook",
+        relation: "department",
       },
       {
         dataTitle: "Update Employees",
-        reportTitle: "Department Overlook",
-        relation: "department",
+        reportTitle: "Employee Report",
+        relation: "employee",
       },
       {
         dataTitle: "Update Guests",
