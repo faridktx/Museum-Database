@@ -996,7 +996,7 @@ app.get("/api/artifact-report", async (_, res) => {
   res.status(200).json(data);
 });
 
-app.get("/api/employee-report", async (_, res) => {
+app.get("/api/department-report", async (_, res) => {
   const query = `
   SELECT
     e.exhibit_name,

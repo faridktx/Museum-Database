@@ -26,9 +26,13 @@ export function Dashboard() {
     ],
     admin: [
       {
-        dataTitle: "Update Employees",
-        reportTitle: "Employees Overview",
+        reportTitle: "Employee Report",
         relation: "employee",
+      },
+      {
+        dataTitle: "Update Employees",
+        reportTitle: "Department Overlook",
+        relation: "department",
       },
       {
         dataTitle: "Update Guests",
@@ -116,8 +120,8 @@ export function Dashboard() {
                     {card.relation}
                     s.
                   </p>
-                  <Link href={`/dashboard/${card.relation}-report`}>
-                    <button className="button">Access Report</button>
+                  <Link href={`/dashboard/${card.relation}/modify`}>
+                    <button className="button">Modify Data</button>
                   </Link>
                 </div>
               );

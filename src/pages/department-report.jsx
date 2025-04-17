@@ -28,14 +28,14 @@ ChartJS.register(
   Legend,
 );
 
-export function EmployeeReport() {
+export function DepartmentReport() {
   const { user } = useUser();
   const [, navigate] = useLocation();
   const [reportData, setReportData] = useState([]);
 
   useEffect(() => {
     const loadReportData = async () => {
-      const response = await apiFetch("/api/employee-report/", "GET", user.id);
+      const response = await apiFetch("/api/department-report/", "GET", user.id);
       setReportData(response.data);
     };
     loadReportData();
@@ -238,7 +238,7 @@ export function EmployeeReport() {
     <div className="reports-page">
       <div className="container">
         <div className="dashboard-header">
-          <h1>Employee Staffing Report</h1>
+          <h1>Department Overlook</h1>
         </div>
 
         <div className="report-controls-simplified">
