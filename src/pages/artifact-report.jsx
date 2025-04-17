@@ -296,6 +296,7 @@ export function ArtifactReport() {
                     <tr>
                       <th>Artifact ID</th>
                       <th>Artifact Name</th>
+                      <th>Artifact Description</th>
                       <th>Value</th>
                       <th>Artist</th>
                       <th>Nationality</th>
@@ -306,6 +307,7 @@ export function ArtifactReport() {
                       <tr key={index}>
                         <td>{item.Artifact_ID}</td>
                         <td>{item.Artifact_Name}</td>
+                        <td>{item.description}</td>
                         <td>${Number(item.Value).toLocaleString()}</td>
                         <td>{item.Artist_Name}</td>
                         <td>{item.Nationality}</td>

@@ -1000,7 +1000,8 @@ app.get("/api/artifact-report", async (_, res) => {
   const query = `
           SELECT 
             a.Artifact_ID, 
-            a.Artifact_Name, 
+            a.Artifact_Name,
+            a.description, 
             a.Value, 
             ar.Artist_Name, 
             ar.Nationality
