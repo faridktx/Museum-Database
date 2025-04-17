@@ -980,7 +980,7 @@ app.post("/api/resolve-alert", async (req, res) => {
   res.json({ success: true });
 });
 
-app.get("/api/artifact-report", async (_, res) => {
+app.get("/api/artifact-graph", async (_, res) => {
   const query = `
   SELECT
     YEAR(a.acquisition_date) AS acquisition_year,
@@ -995,6 +995,23 @@ app.get("/api/artifact-report", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/artifact-report", async (_, res) => {
+  const query = `
+          SELECT 
+            a.Artifact_ID, 
+            a.Artifact_Name, 
+            a.Value, 
+            ar.Artist_Name, 
+            ar.Nationality
+          FROM artifacts a
+          JOIN artists ar ON a.Artist_ID = ar.Artist_ID
+          ORDER BY a.Artifact_ID;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
 
 app.get("/api/department-report", async (_, res) => {
   const query = `

@@ -17,6 +17,7 @@ export function Dashboard() {
       },
       {
         dataTitle: "Update Artists",
+        reportTitle: "Artist List",
         relation: "artist",
       },
       {

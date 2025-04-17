@@ -25,9 +25,16 @@ ChartJS.register(
 
 export function ArtifactReport() {
   const { user } = useUser();
+  const [graphData, setGraphData] = useState([]);
   const [reportData, setReportData] = useState([]);
 
   useEffect(() => {
+    const loadGraphData = async () => {
+      const response = await apiFetch("/api/artifact-graph/", "GET", user.id);
+      setGraphData(response.data);
+    };
+    loadGraphData();
+
     const loadReportData = async () => {
       const response = await apiFetch("/api/artifact-report/", "GET", user.id);
       setReportData(response.data);
@@ -36,9 +43,9 @@ export function ArtifactReport() {
   }, []);
 
   const prepareChartData = () => {
-    const years = [...new Set(reportData.map((item) => item.acquisition_year))];
+    const years = [...new Set(graphData.map((item) => item.acquisition_year))];
     const nationalities = [
-      ...new Set(reportData.map((item) => item.nationality)),
+      ...new Set(graphData.map((item) => item.nationality)),
     ];
 
     const datasets = nationalities.map((nationality, index) => {
@@ -61,7 +68,7 @@ export function ArtifactReport() {
       ];
 
       const data = years.map((year) => {
-        const entry = reportData.find(
+        const entry = graphData.find(
           (item) =>
             item.acquisition_year === year && item.nationality === nationality,
         );
@@ -84,9 +91,9 @@ export function ArtifactReport() {
   };
 
   const prepareValueChartData = () => {
-    const years = [...new Set(reportData.map((item) => item.acquisition_year))];
+    const years = [...new Set(graphData.map((item) => item.acquisition_year))];
     const nationalities = [
-      ...new Set(reportData.map((item) => item.nationality)),
+      ...new Set(graphData.map((item) => item.nationality)),
     ];
 
     const datasets = nationalities.map((nationality, index) => {
@@ -109,7 +116,7 @@ export function ArtifactReport() {
       ];
 
       const data = years.map((year) => {
-        const entry = reportData.find(
+        const entry = graphData.find(
           (item) =>
             item.acquisition_year === year && item.nationality === nationality,
         );
@@ -138,7 +145,7 @@ export function ArtifactReport() {
       "total_artifacts",
       "value",
     ];
-    const rows = reportData.map((item) => [
+    const rows = graphData.map((item) => [
       item.acquisition_year,
       item.nationality,
       item.total_artifacts,
@@ -284,22 +291,24 @@ export function ArtifactReport() {
               </div>
 
               <div className="report-table-container">
-                <table className="report-table">
+              <table className="report-table">
                   <thead>
                     <tr>
-                      <th>Acquisition Year</th>
+                      <th>Artifact ID</th>
+                      <th>Artifact Name</th>
+                      <th>Value</th>
+                      <th>Artist</th>
                       <th>Nationality</th>
-                      <th>Total Artifacts</th>
-                      <th>Total Value</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reportData.map((item, index) => (
                       <tr key={index}>
-                        <td>{item.acquisition_year}</td>
-                        <td>{item.nationality}</td>
-                        <td>{item.total_artifacts}</td>
-                        <td>${Number(item.total_value).toLocaleString()}</td>
+                        <td>{item.Artifact_ID}</td>
+                        <td>{item.Artifact_Name}</td>
+                        <td>${Number(item.Value).toLocaleString()}</td>
+                        <td>{item.Artist_Name}</td>
+                        <td>{item.Nationality}</td>
                       </tr>
                     ))}
                   </tbody>
