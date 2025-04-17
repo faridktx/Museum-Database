@@ -22,6 +22,7 @@ import { GuestOperations } from "./pages/guest";
 import { ExhibitOperations } from "./pages/exhibits";
 import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
+import { EmployeeReport } from "./pages/employee-report";
 import {
   AddArtifact,
   ModifyArtifact,
@@ -96,6 +97,7 @@ const routes = [
   { route: "/support-report", component: SupportReport },
   { route: "/dashboard/artifact-report", component: ArtifactReport },
   { route: "/dashboard/department-report", component: DepartmentReport },
+  { route: "/dashboard/employee-report", component: EmployeeReport },
 ];
 
 export function App() {

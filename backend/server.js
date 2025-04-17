@@ -1031,18 +1031,30 @@ app.get("/api/department-report", async (_, res) => {
   res.status(200).json(data);
 });
 
-app.get("/api/employee-report", async (_, res) => {
+app.get("/api/employees", async (_, res) => {
   const query = `
     SELECT 
-      employee_id,
-      employee_name,
-      role,
-      phone_number,
-      work_email,
-      hiring_date,
-      salary
-    FROM employees
-    ORDER BY employee_id;
+      e.employee_id,
+      e.employee_name,
+      e.role,
+      ex.exhibit_name AS department,
+      e.phone_number,
+      e.work_email,
+      e.hiring_date,
+      e.salary
+    FROM employees e
+    LEFT JOIN exhibits ex ON e.exhibit_id = ex.exhibit_id
+    ORDER BY e.employee_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/exhibits", async (_, res) => {
+  const query = `
+    SELECT exhibit_id, exhibit_name 
+    FROM exhibits
+    ORDER BY exhibit_name;
   `;
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);

@@ -1977,3 +1977,110 @@
   gap: var(--spacing);
   margin-bottom: calc(var(--spacing) * 2);
 }
+
+.filters-container-horizontal {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  flex: 1 1 auto;
+  min-width: 150px;
+}
+
+.rounded-input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.rounded-input:focus {
+  outline: none;
+  border-color: #4a6fa5;
+  box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-input {
+  min-width: 140px;
+}
+
+.date-separator {
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.rounded-button {
+  padding: 10px 20px;
+  background: #4a6fa5;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.rounded-button:hover {
+  background: #3a5a8f;
+}
+
+.clear-filters {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.clear-filters:hover {
+  background: #dee2e6;
+}
+
+/* Make selects match other inputs */
+select.rounded-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filter-item {
+    min-width: 100%;
+  }
+  
+  .date-range {
+    flex-wrap: wrap;
+  }
+  
+  .date-input {
+    min-width: calc(50% - 4px);
+  }
+}
