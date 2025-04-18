@@ -123,12 +123,7 @@ export function TicketMembership() {
             <div className="order-line">
               <span>{capitalize(membership)} Membership</span>
               <span>
-                $
-                {
-                  membershipOptions.find(
-                    (opt) => opt.membership_type === membership
-                  )?.price
-                }
+                ${membershipOptions.find(opt => opt.membership_type === membership)?.price}
               </span>
             </div>
           )}
@@ -136,8 +131,7 @@ export function TicketMembership() {
           <div className="order-line" style={{ fontWeight: "600" }}>
             <span>Total</span>
             <span>
-              $
-              {(
+              ${(
                 Object.entries(tickets).reduce(
                   (sum, [type, count]) => sum + count * ticketPrices[type],
                   0
@@ -147,7 +141,7 @@ export function TicketMembership() {
                   0
                 ) +
                 (membership
-                  ? membershipOptions.find((opt) => opt.membership_type === membership)?.price || 0
+                  ? membershipOptions.find(opt => opt.membership_type === membership)?.price || 0
                   : 0)
               ).toFixed(2)}
             </span>

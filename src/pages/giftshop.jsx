@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "../pages/sheets/Style.giftshop.css";
 import { useUser } from "@clerk/clerk-react";
-import { apiFetch, fetchWithBody, compileErrors } from "../components/utils";
+import { apiFetch } from "../components/utils";
 import { useLocation } from "wouter";
 
 export function GiftShop() {
@@ -54,12 +54,22 @@ export function GiftShop() {
       .toFixed(2);
   };
 
-  const uniqueValues = (field) => {
-    return [...new Set(shopItems.map((item) => item[field]))];
-  };
+  const uniqueValues = (field) => [...new Set(shopItems.map((item) => item[field]))];
 
   const clearFilters = () => {
     setFilters({ category: "", color: "", size: "", price: "" });
+  };
+
+  const handleRedirectToCart = () => {
+    const giftshopItems = Object.entries(cart).reduce((acc, [itemId, quantity]) => {
+      const item = shopItems.find((i) => i.item_id === parseInt(itemId));
+      if (item && quantity > 0) {
+        acc[itemId] = { count: quantity, price: parseFloat(item.unit_price) };
+      }
+      return acc;
+    }, {});
+    localStorage.setItem("cart_data", JSON.stringify({ giftshop: giftshopItems }));
+    navigate("/dashboard/cart");
   };
 
   return (
@@ -90,9 +100,7 @@ export function GiftShop() {
               <input type="number" placeholder="Max Price" value={filters.price} onChange={(e) => setFilters(f => ({ ...f, price: e.target.value }))} />
             </div>
           </div>
-          <button onClick={clearFilters} className="clear-filters">
-            Clear Filters
-          </button>
+          <button onClick={clearFilters} className="clear-filters">Clear Filters</button>
         </div>
 
         <div className="cart-summary-box">
@@ -114,7 +122,7 @@ export function GiftShop() {
                 <span>Total</span>
                 <span>${calculateCartTotal()}</span>
               </div>
-              <button className="checkout-button" onClick={() => navigate("/dashboard/cart")}>Checkout</button>
+              <button className="checkout-button" onClick={handleRedirectToCart}>Checkout</button>
             </>
           )}
         </div>

@@ -8,6 +8,7 @@ export function Cart() {
   const { user } = useUser();
   const [tickets, setTickets] = useState({});
   const [exhibits, setExhibits] = useState({});
+  const [giftshop, setGiftshop] = useState({});
   const [membership, setMembership] = useState(null);
   const [membershipData, setMembershipData] = useState(null);
   const [formValid, setFormValid] = useState(false);
@@ -20,6 +21,7 @@ export function Cart() {
       setTickets(data.tickets || {});
       setExhibits(data.exhibits || {});
       setMembership(data.membership || null);
+      setGiftshop(data.giftshop || {});
     }
   }, []);
 
@@ -27,17 +29,14 @@ export function Cart() {
     async function loadMembershipDetails() {
       if (membership) {
         try {
-          const res = await fetch("/api/getmemberships/", {
-            method: "GET",
-            headers: { "x-user-id": user.id },
-          });
-          const text = await res.text();
-          if (!text) return;
-          const json = JSON.parse(text);
-          const match = json.data.find((m) => m.membership_type === membership);
-          setMembershipData(match);
+            const res = await fetch("/api/getmemberships/");
+            const text = await res.text();
+            if (!text) return;
+            const json = JSON.parse(text);
+            const match = json.data.find((m) => m.membership_type === membership);
+            setMembershipData(match);
         } catch (error) {
-          console.error("Failed to fetch membership data:", error);
+            console.error("Failed to fetch membership data:", error);
         }
       }
     }
@@ -56,6 +55,7 @@ export function Cart() {
     let subtotal = 0;
     for (const key in tickets) subtotal += tickets[key].count * tickets[key].price;
     for (const key in exhibits) subtotal += exhibits[key].count * exhibits[key].price;
+    for (const key in giftshop) subtotal += giftshop[key].count * giftshop[key].price;
     if (membershipData) subtotal += membershipData.price;
     return subtotal;
   };
@@ -109,6 +109,12 @@ export function Cart() {
           {Object.entries(exhibits).map(([name, item]) => (
             <div key={name} className="order-line">
               <span>{name}</span>
+              <span>{item.count} × ${item.price.toFixed(2)}</span>
+            </div>
+          ))}
+          {Object.entries(giftshop).map(([id, item]) => (
+            <div key={id} className="order-line">
+              <span>Gift Shop Item #{id}</span>
               <span>{item.count} × ${item.price.toFixed(2)}</span>
             </div>
           ))}

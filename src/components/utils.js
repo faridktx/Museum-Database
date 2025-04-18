@@ -55,3 +55,13 @@ export function capitalize(str) {
 export function compileErrors(arr) {
   return arr.join("\n");
 }
+
+export async function postGiftShopOrder(data) {
+  const res = await fetch("/api/giftshop", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  return res.json();
+}
