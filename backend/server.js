@@ -1074,3 +1074,19 @@ app.get("/api/artists-list", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/giftshop-inventory", async (_, res) => {
+  const query = `
+    SELECT 
+      item_id,
+      item_name,
+      description,
+      category,
+      quantity,
+      unit_price
+    FROM gift_shop_inventory
+    ORDER BY item_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});

@@ -24,6 +24,7 @@ import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
 import { ArtistList } from "./pages/artist-list";
+import { InventoryReport } from "./pages/inventory-report";
 import {
   AddArtifact,
   ModifyArtifact,
@@ -100,6 +101,7 @@ const routes = [
   { route: "/dashboard/department-report", component: DepartmentReport },
   { route: "/dashboard/employee-report", component: EmployeeReport },
   { route: "/dashboard/artist-report", component: ArtistList },
+  { route: "/dashboard/inventory-report", component: InventoryReport },
 ];
 
 export function App() {

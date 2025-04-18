@@ -2055,7 +2055,32 @@
   background: #dee2e6;
 }
 
+/* Quantity range specific styles */
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.range-separator {
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Value columns styling */
+.report-table td:nth-child(6),
+.report-table td:nth-child(7),
+.report-table th:nth-child(6),
+.report-table th:nth-child(7) {
+  text-align: right;
+}
+
+/* Low quantity warning */
+.low-quantity {
+  color: #ff0000;
+  font-weight: bold;
+}
 
 /* Make selects match other inputs */
 select.rounded-input {
