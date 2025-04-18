@@ -1059,3 +1059,62 @@ app.get("/api/exhibits", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/artists-list", async (_, res) => {
+  const query = `
+    SELECT 
+      artist_id,
+      artist_name,
+      birth_date,
+      death_date,
+      nationality
+    FROM artists
+    ORDER BY artist_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/giftshop-inventory", async (_, res) => {
+  const query = `
+    SELECT 
+      item_id,
+      item_name,
+      description,
+      category,
+      quantity,
+      unit_price
+    FROM gift_shop_inventory
+    ORDER BY item_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/giftshop-sales", async (_, res) => {
+  const query = `
+    SELECT 
+      sale_id,
+      item_id,
+      guest_id,
+      sale_date,
+      quantity,
+      total_cost
+    FROM gift_shop_sales
+    ORDER BY sale_date DESC;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+// for sales report
+app.get("/api/giftshop-names", async (_, res) => {
+  const query = `
+    SELECT 
+      item_id,
+      item_name,
+      category
+    FROM gift_shop_inventory;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});

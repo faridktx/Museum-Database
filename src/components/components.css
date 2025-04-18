@@ -1279,6 +1279,33 @@
   background: #dee2e6;
 }
 
+/* Quantity range specific styles */
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.range-separator {
+  color: #666;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+/* Value columns styling */
+.report-table td:nth-child(6),
+.report-table td:nth-child(7),
+.report-table th:nth-child(6),
+.report-table th:nth-child(7) {
+  text-align: right;
+}
+
+/* Low quantity warning */
+.low-quantity {
+  color: #ff0000;
+  font-weight: bold;
+}
+
 /* Make selects match other inputs */
 select.rounded-input {
   appearance: none;
@@ -1307,4 +1334,17 @@ select.rounded-input {
   .date-input {
     min-width: calc(50% - 4px);
   }
+}
+/* Chart container styling */
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+}
+
+/* Date column styling */
+.report-table td:nth-child(5) {
+  white-space: nowrap;
 }
