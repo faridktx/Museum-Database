@@ -1,143 +1,155 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
-import { Bar, Line } from "react-chartjs-2";
 import { apiFetch } from "../components/utils";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Download } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import "../components/components.css";
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-);
 
 export function EmployeeReport() {
   const { user } = useUser();
-  const [reportData, setReportData] = useState([]);
+  const [, navigate] = useLocation();
+  const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [departments, setExhibits] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter states
+  const [nameSearch, setNameSearch] = useState("");
+  const [idSearch, setIdSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState("All");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [hiringDateStart, setHiringDateStart] = useState("");
+  const [hiringDateEnd, setHiringDateEnd] = useState("");
 
   useEffect(() => {
-    const loadReportData = async () => {
-      const response = await apiFetch("/api/employee-report/", "GET", user.id);
-      setReportData(response.data);
-    };
-    loadReportData();
-  }, []);
+    const fetchData = async () => {
+      try {
+        const [empRes, exRes] = await Promise.all([
+          apiFetch("/api/employees", "GET", user.id),
+          apiFetch("/api/exhibits", "GET", user.id),
+        ]);
 
-  const prepareChartData = () => {
-    const exhibits = [...new Set(reportData.map((item) => item.exhibit_name))];
-    const roles = [...new Set(reportData.map((item) => item.role))];
+        const empData = empRes.data;
+        const exData = exRes.data;
 
-    const colors = {
-      Curator: "rgba(74, 111, 165, 1)",
-      Educator: "rgba(108, 195, 213, 1)",
-      Reception: "rgba(227, 119, 104, 1)",
-      Custodian: "rgba(118, 169, 125, 1)",
-      Administrator: "rgba(124, 148, 207, 1)",
-      Development: "rgba(201, 184, 102, 1)",
-      Security: "rgba(92, 135, 39, 1)",
-      Retail: "rgba(183, 146, 104, 1)",
-    };
+        // Extract unique roles and exhibits
+        const uniqueRoles = [...new Set(empData.map((emp) => emp.role))].filter(
+          Boolean,
+        );
 
-    const backgroundColors = {
-      Curator: "rgba(74, 111, 165, 0.1)",
-      Educator: "rgba(108, 195, 213, 0.1)",
-      Reception: "rgba(227, 119, 104, 0.1)",
-      Custodian: "rgba(118, 169, 125, 0.1)",
-      Administrator: "rgba(124, 148, 207, 0.1)",
-      Development: "rgba(201, 184, 102, 0.1)",
-      Security: "rgba(92, 135, 39, 0.1)",
-      Retail: "rgba(183, 146, 104, 0.1)",
+        setEmployees(empData);
+        setFilteredEmployees(empData);
+        setRoles(["All", ...uniqueRoles]);
+        setExhibits(["All", ...exData.map((ex) => ex.exhibit_name)]);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
     };
 
-    const datasets = roles.map((role) => {
-      return {
-        label: role,
-        data: exhibits.map((exhibit) => {
-          const match = reportData.find(
-            (item) => item.exhibit_name === exhibit && item.role === role,
-          );
-          return match ? match.active_employees : 0;
-        }),
-        borderColor: colors[role] || colors["Other"],
-        backgroundColor: backgroundColors[role] || backgroundColors["Other"],
-        fill: true,
-        tension: 0.3,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        borderWidth: 2,
-      };
-    });
+    fetchData();
+  }, [user.id]);
 
-    return {
-      labels: exhibits,
-      datasets,
-    };
+  useEffect(() => {
+    applyFilters();
+  }, [
+    employees,
+    nameSearch,
+    idSearch,
+    selectedRole,
+    selectedDepartment,
+    hiringDateStart,
+    hiringDateEnd,
+  ]);
+
+  const applyFilters = () => {
+    let filtered = [...employees];
+
+    // Name filter
+    if (nameSearch) {
+      filtered = filtered.filter((emp) =>
+        emp.employee_name.toLowerCase().includes(nameSearch.toLowerCase()),
+      );
+    }
+
+    // ID filter
+    if (idSearch) {
+      filtered = filtered.filter((emp) =>
+        emp.employee_id.toString().includes(idSearch),
+      );
+    }
+
+    // Role filter
+    if (selectedRole && selectedRole !== "All") {
+      filtered = filtered.filter((emp) => emp.role === selectedRole);
+    }
+
+    // Department filter
+    if (selectedDepartment && selectedDepartment !== "All") {
+      filtered = filtered.filter(
+        (emp) => emp.department === selectedDepartment,
+      );
+    }
+
+    // Date range filter
+    if (hiringDateStart) {
+      filtered = filtered.filter(
+        (emp) => new Date(emp.hiring_date) >= new Date(hiringDateStart),
+      );
+    }
+
+    if (hiringDateEnd) {
+      filtered = filtered.filter(
+        (emp) => new Date(emp.hiring_date) <= new Date(hiringDateEnd),
+      );
+    }
+
+    setFilteredEmployees(filtered);
   };
 
-  const prepareSalaryChartData = () => {
-    const exhibits = [...new Set(reportData.map((item) => item.exhibit_name))];
-    const roles = [...new Set(reportData.map((item) => item.role))];
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
 
-    const colors = {
-      Curator: "rgba(74, 111, 165, 1)",
-      Educator: "rgba(108, 195, 213, 1)",
-      Reception: "rgba(227, 119, 104, 1)",
-      Custodian: "rgba(118, 169, 125, 1)",
-      Administrator: "rgba(124, 148, 207, 1)",
-      Development: "rgba(201, 184, 102, 1)",
-      Security: "rgba(92, 135, 39, 1)",
-      Retail: "rgba(183, 146, 104, 1)",
-    };
+  const formatPhone = (phone) => {
+    if (!phone) return "N/A";
+    return phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+  };
 
-    const datasets = roles.map((role) => {
-      return {
-        label: role,
-        data: exhibits.map((exhibit) => {
-          const match = reportData.find(
-            (item) => item.exhibit_name === exhibit && item.role === role,
-          );
-          return match ? match.average_salary : 0;
-        }),
-        backgroundColor: colors[role] || colors["Other"],
-      };
-    });
-
-    return {
-      labels: exhibits,
-      datasets,
-    };
+  const handleClearFilters = () => {
+    setNameSearch("");
+    setIdSearch("");
+    setSelectedRole("All");
+    setSelectedDepartment("All");
+    setHiringDateStart("");
+    setHiringDateEnd("");
   };
 
   const exportToCsv = () => {
     const headers = [
-      "exhibit_name",
-      "role",
-      "total_employees",
-      "active_employees",
-      "average_salary",
+      "ID",
+      "Name",
+      "Role",
+      "Department",
+      "Phone",
+      "Work Email",
+      "Hire Date",
+      "Salary",
     ];
-    const rows = reportData.map((item) => [
-      item.exhibit_name,
-      item.role,
-      item.total_employees,
-      item.active_employees,
-      item.average_salary,
+
+    const rows = filteredEmployees.map((emp) => [
+      emp.employee_id,
+      emp.employee_name,
+      emp.role,
+      emp.department,
+      emp.phone_number,
+      emp.work_email,
+      emp.hiring_date,
+      emp.salary,
     ]);
 
     const csvContent = [headers, ...rows]
@@ -155,88 +167,13 @@ export function EmployeeReport() {
     document.body.removeChild(link);
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: "Active Employees by Exhibit and Role",
-        padding: {
-          top: 10,
-          bottom: 20,
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: false,
-        title: {
-          display: true,
-          text: "Exhibit",
-        },
-      },
-      y: {
-        stacked: false,
-        title: {
-          display: true,
-          text: "Number of Employees",
-        },
-        ticks: {
-          stepSize: 1,
-          precision: 0,
-        },
-      },
-    },
-  };
-
-  const salaryChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: "Average Salary by Exhibit and Role ($)",
-        padding: {
-          top: 10,
-          bottom: 20,
-        },
-      },
-    },
-    scales: {
-      x: {
-        stacked: false,
-        title: {
-          display: true,
-          text: "Exhibit",
-        },
-      },
-      y: {
-        stacked: false,
-        title: {
-          display: true,
-          text: "Average Salary ($)",
-        },
-        ticks: {
-          callback: function (value) {
-            return "$" + Number(value).toLocaleString();
-          },
-        },
-      },
-    },
-  };
+  if (loading) return <div className="loading">Loading employee data...</div>;
 
   return (
     <div className="reports-page">
       <div className="container">
         <div className="dashboard-header">
-          <h1>Employee Staffing Report</h1>
+          <h1>Employee Directory</h1>
         </div>
 
         <div className="report-controls-simplified">
@@ -251,64 +188,132 @@ export function EmployeeReport() {
           </div>
 
           <div className="report-results">
-            <div className="report-header">
-              <h2>Exhibit Staffing Analysis by Role</h2>
-              <span className="report-date">
-                Generated on {new Date().toLocaleDateString()}
-              </span>
+            <div className="filters-container-horizontal">
+              <div className="filter-row">
+                {/* Name Search */}
+                <div className="filter-item">
+                  <input
+                    id="name-search"
+                    type="text"
+                    placeholder="Name"
+                    value={nameSearch}
+                    onChange={(e) => setNameSearch(e.target.value)}
+                    className="rounded-input"
+                  />
+                </div>
+
+                {/* ID Search */}
+                <div className="filter-item">
+                  <input
+                    id="id-search"
+                    type="text"
+                    placeholder="Employee ID"
+                    value={idSearch}
+                    onChange={(e) => setIdSearch(e.target.value)}
+                    className="rounded-input"
+                  />
+                </div>
+
+                {/* Role Filter */}
+                <div className="filter-item">
+                  <select
+                    id="role-filter"
+                    value={selectedRole}
+                    onChange={(e) => setSelectedRole(e.target.value)}
+                    className="rounded-input"
+                  >
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Department Filter */}
+                <div className="filter-item">
+                  <select
+                    id="dept-filter"
+                    value={selectedDepartment}
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                    className="rounded-input"
+                  >
+                    {departments.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Hiring Date Range */}
+                <div className="filter-item date-range">
+                  <input
+                    type="date"
+                    placeholder="Start date"
+                    value={hiringDateStart}
+                    onChange={(e) => setHiringDateStart(e.target.value)}
+                    className="rounded-input date-input"
+                  />
+                  <span className="date-separator">to</span>
+                  <input
+                    type="date"
+                    placeholder="End date"
+                    value={hiringDateEnd}
+                    onChange={(e) => setHiringDateEnd(e.target.value)}
+                    className="rounded-input date-input"
+                  />
+                </div>
+
+                {/* Clear Filters Button */}
+                <div className="filter-item">
+                  <button
+                    className="clear-filters rounded-button"
+                    onClick={handleClearFilters}
+                  >
+                    Clear Filters
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <div className="report-content">
-              <div className="custom-legend">
-                {prepareChartData().datasets.map((dataset, index) => (
-                  <div key={index} className="legend-item">
-                    <div
-                      className="legend-color"
-                      style={{
-                        backgroundColor:
-                          dataset.borderColor || dataset.backgroundColor,
-                      }}
-                    ></div>
-                    <span>{dataset.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="chart-container">
-                <Line data={prepareChartData()} options={chartOptions} />
-              </div>
-
-              <div className="chart-container">
-                <Bar
-                  data={prepareSalaryChartData()}
-                  options={salaryChartOptions}
-                />
-              </div>
-
-              <div className="report-table-container">
-                <table className="report-table">
-                  <thead>
-                    <tr>
-                      <th>Exhibit</th>
-                      <th>Role</th>
-                      <th>Total Employees</th>
-                      <th>Active Employees</th>
-                      <th>Average Salary</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {reportData.map((item, index) => (
-                      <tr key={index}>
-                        <td>{item.exhibit_name}</td>
-                        <td>{item.role}</td>
-                        <td>{item.total_employees}</td>
-                        <td>{item.active_employees}</td>
-                        <td>${Number(item.average_salary).toLocaleString()}</td>
+            <div className="report-table-container">
+              <table className="report-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Phone</th>
+                    <th>Work Email</th>
+                    <th>Hire Date</th>
+                    <th>Salary</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredEmployees.length > 0 ? (
+                    filteredEmployees.map((emp) => (
+                      <tr key={emp.employee_id}>
+                        <td>{emp.employee_id}</td>
+                        <td>{emp.employee_name}</td>
+                        <td>{emp.role}</td>
+                        <td>{emp.department || "N/A"}</td>
+                        <td>{formatPhone(emp.phone_number)}</td>
+                        <td>{emp.work_email || "N/A"}</td>
+                        <td>{formatDate(emp.hiring_date)}</td>
+                        <td>${emp.salary.toLocaleString()}</td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="no-results">
+                        No employees match the current filters
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -980,7 +980,7 @@ app.post("/api/resolve-alert", async (req, res) => {
   res.json({ success: true });
 });
 
-app.get("/api/artifact-report", async (_, res) => {
+app.get("/api/artifact-graph", async (_, res) => {
   const query = `
   SELECT
     YEAR(a.acquisition_date) AS acquisition_year,
@@ -996,7 +996,24 @@ app.get("/api/artifact-report", async (_, res) => {
   res.status(200).json(data);
 });
 
-app.get("/api/employee-report", async (_, res) => {
+app.get("/api/artifact-report", async (_, res) => {
+  const query = `
+          SELECT 
+            a.Artifact_ID, 
+            a.Artifact_Name,
+            a.description, 
+            a.Value, 
+            ar.Artist_Name, 
+            ar.Nationality
+          FROM artifacts a
+          JOIN artists ar ON a.Artist_ID = ar.Artist_ID
+          ORDER BY a.Artifact_ID;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/department-report", async (_, res) => {
   const query = `
   SELECT
     e.exhibit_name,
@@ -1013,22 +1030,30 @@ app.get("/api/employee-report", async (_, res) => {
   res.status(200).json(data);
 });
 
-app.get("/api/sales-report", async (_, res) => {
+app.get("/api/employees", async (_, res) => {
   const query = `
-  SELECT 
-      i.category,
-      s.sale_date,
-      SUM(s.quantity) AS total_items_sold,
-      SUM(s.total_cost) AS total_revenue,
-      COUNT(DISTINCT s.guest_id) AS unique_customers
-  FROM 
-      gift_shop_sales s
-  JOIN 
-      gift_shop_inventory i ON s.item_id = i.item_id
-  GROUP BY 
-      i.category, s.sale_date
-  ORDER BY 
-      s.sale_date, i.category;
+    SELECT 
+      e.employee_id,
+      e.employee_name,
+      e.role,
+      ex.exhibit_name AS department,
+      e.phone_number,
+      e.work_email,
+      e.hiring_date,
+      e.salary
+    FROM employees e
+    LEFT JOIN exhibits ex ON e.exhibit_id = ex.exhibit_id
+    ORDER BY e.employee_name;
+  `;
+  const data = await executeSQLReturn(res, query);
+  res.status(200).json(data);
+});
+
+app.get("/api/exhibits", async (_, res) => {
+  const query = `
+    SELECT exhibit_id, exhibit_name 
+    FROM exhibits
+    ORDER BY exhibit_name;
   `;
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
