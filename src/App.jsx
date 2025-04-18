@@ -7,7 +7,7 @@ import { Dashboard } from "./pages/dashboard";
 import { DashboardHeader } from "./components/dashboard/header";
 import { NotFound } from "./pages/not-found";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
-import { Tickets } from "./pages/tickets";
+import { TicketMembership } from "./pages/TicketMembership";
 import { SupportDocumentation } from "./pages/SupportDocumentation";
 import { SupportCenter } from "./pages/SupportCenter";
 import { SupportAccount } from "./pages/SupportAccount";
@@ -23,6 +23,8 @@ import { ExhibitOperations } from "./pages/exhibits";
 import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
+import { Cart } from "./pages/cart";
+
 import {
   AddArtifact,
   ModifyArtifact,
@@ -55,9 +57,7 @@ import { SalesOperations } from "./pages/sales";
 import { AddSale, ModifySale, DeleteSale } from "./components/sales-ops";
 
 const routes = [
-  { route: "/tickets", component: Tickets },
   { route: "/gift-shop", component: GiftShop },
-  { route: "/memberships", component: Memberships },
   { route: "/dashboard", component: Dashboard },
   { route: "/dashboard/sales", component: SalesOperations },
   { route: "/dashboard/inventory", component: InventoryOperations },
@@ -98,6 +98,8 @@ const routes = [
   { route: "/dashboard/artifact-report", component: ArtifactReport },
   { route: "/dashboard/department-report", component: DepartmentReport },
   { route: "/dashboard/employee-report", component: EmployeeReport },
+  { route: "/tickets-memberships", component: TicketMembership },
+  { route: "/dashboard/cart", component: Cart },
 ];
 
 export function App() {

@@ -50,8 +50,7 @@ export function DashboardHeader() {
         </div>
 
         <nav className="nav-links">
-          <Link href="/tickets">Tickets</Link>
-          <Link href="/memberships">Memberships</Link>
+          <Link href="/tickets-memberships">Tickets & Memberships</Link>
           <Link href="/gift-shop">Gift Shop</Link>
           <Link href="/dashboard">Dashboard Home</Link>
 
