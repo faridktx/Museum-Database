@@ -27,20 +27,111 @@ export function ArtifactReport() {
   const { user } = useUser();
   const [graphData, setGraphData] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const [filteredReportData, setFilteredReportData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter states
+  const [idSearch, setIdSearch] = useState('');
+  const [nameSearch, setNameSearch] = useState('');
+  const [selectedNationalities, setSelectedNationalities] = useState([]);
+  const [selectedArtists, setSelectedArtists] = useState([]);
+  const [valueMin, setValueMin] = useState('');
+  const [valueMax, setValueMax] = useState('');
+  const [yearMin, setYearMin] = useState('');
+  const [yearMax, setYearMax] = useState('');
 
   useEffect(() => {
-    const loadGraphData = async () => {
-      const response = await apiFetch("/api/artifact-graph/", "GET", user.id);
-      setGraphData(response.data);
+    const loadData = async () => {
+      try {
+        const [graphRes, reportRes] = await Promise.all([
+          apiFetch("/api/artifact-graph/", "GET", user.id),
+          apiFetch("/api/artifact-report/", "GET", user.id)
+        ]);
+        
+        setGraphData(graphRes.data);
+        setReportData(reportRes.data);
+        setFilteredReportData(reportRes.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
     };
-    loadGraphData();
-
-    const loadReportData = async () => {
-      const response = await apiFetch("/api/artifact-report/", "GET", user.id);
-      setReportData(response.data);
-    };
-    loadReportData();
+    loadData();
   }, []);
+
+  useEffect(() => {
+    applyFilters();
+  }, [reportData, idSearch, nameSearch, selectedNationalities, selectedArtists, valueMin, valueMax, yearMin, yearMax]);
+
+  const applyFilters = () => {
+    let filtered = [...reportData];
+
+    // ID filter
+    if (idSearch) {
+      filtered = filtered.filter(item => 
+        item.Artifact_ID.toString().includes(idSearch)
+      );
+    }
+
+    // Name filter
+    if (nameSearch) {
+      filtered = filtered.filter(item => 
+        item.Artifact_Name.toLowerCase().includes(nameSearch.toLowerCase())
+      );
+    }
+
+    // Nationality filter
+    if (selectedNationalities.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedNationalities.includes(item.Nationality)
+      );
+    }
+
+    // Artist filter
+    if (selectedArtists.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedArtists.includes(item.Artist_Name)
+      );
+    }
+
+    // Value range filter
+    if (valueMin) {
+      filtered = filtered.filter(item => 
+        item.Value >= Number(valueMin)
+      );
+    }
+    if (valueMax) {
+      filtered = filtered.filter(item => 
+        item.Value <= Number(valueMax)
+      );
+    }
+
+    // Year range filter
+    if (yearMin) {
+      filtered = filtered.filter(item => 
+        new Date(item.acquisition_year) >= new Date(yearMin)
+      );
+    }
+    if (yearMax) {
+      filtered = filtered.filter(item => 
+        new Date(item.acquisition_year) <= new Date(yearMax)
+      );
+    }
+
+    setFilteredReportData(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setIdSearch('');
+    setNameSearch('');
+    setSelectedNationalities([]);
+    setSelectedArtists([]);
+    setValueMin('');
+    setValueMax('');
+    setYearMin('');
+    setYearMax('');
+  };
 
   const prepareChartData = () => {
     const years = [...new Set(graphData.map((item) => item.acquisition_year))];
@@ -140,20 +231,26 @@ export function ArtifactReport() {
 
   const exportToCsv = () => {
     const headers = [
-      "acquisition_year",
-      "nationality",
-      "total_artifacts",
-      "value",
+      "Artifact ID",
+      "Artifact Name",
+      "Description",
+      "Value",
+      "Artist",
+      "Nationality",
+      "Acquisition Year"
     ];
-    const rows = graphData.map((item) => [
-      item.acquisition_year,
-      item.nationality,
-      item.total_artifacts,
-      item.total_value,
+    const rows = filteredReportData.map(item => [
+      item.Artifact_ID,
+      item.Artifact_Name,
+      item.Artifact_Description,
+      item.Value,
+      item.Artist_Name,
+      item.Nationality,
+      item.acquisition_year || ''
     ]);
 
     const csvContent = [headers, ...rows]
-      .map((row) => row.join(","))
+      .map(row => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -240,6 +337,13 @@ export function ArtifactReport() {
     },
   };
 
+  // Get unique values for filters
+  const nationalities = [...new Set(reportData.map(item => item.Nationality))].filter(Boolean);
+  const artists = [...new Set(reportData.map(item => item.Artist_Name))].filter(Boolean);
+  const years = [...new Set(reportData.map(item => item.acquisition_year))].filter(Boolean).sort();
+
+  if (loading) return <div className="loading">Loading artifact data...</div>;
+
   return (
     <div className="reports-page">
       <div className="container">
@@ -259,6 +363,127 @@ export function ArtifactReport() {
           </div>
 
           <div className="report-results">
+            {/* Filters Section */}
+            <div className="filters-container">
+              <div className="filter-row">
+                {/* ID Search */}
+                <div className="filter-group">
+                  <label>Artifact ID:</label>
+                  <input
+                    type="text"
+                    placeholder="Search by ID"
+                    value={idSearch}
+                    onChange={(e) => setIdSearch(e.target.value)}
+                    className="filter-input"
+                  />
+                </div>
+
+                {/* Name Search */}
+                <div className="filter-group">
+                  <label>Artifact Name:</label>
+                  <input
+                    type="text"
+                    placeholder="Search by name"
+                    value={nameSearch}
+                    onChange={(e) => setNameSearch(e.target.value)}
+                    className="filter-input"
+                  />
+                </div>
+
+                {/* Nationality Filter */}
+                <div className="filter-group">
+                  <label>Nationality:</label>
+                  <select
+                    multiple
+                    value={selectedNationalities}
+                    onChange={(e) => setSelectedNationalities(
+                      Array.from(e.target.selectedOptions, option => option.value)
+                    )}
+                    className="filter-select"
+                  >
+                    {nationalities.map(nationality => (
+                      <option key={nationality} value={nationality}>{nationality}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Artist Filter */}
+                <div className="filter-group">
+                  <label>Artist:</label>
+                  <select
+                    multiple
+                    value={selectedArtists}
+                    onChange={(e) => setSelectedArtists(
+                      Array.from(e.target.selectedOptions, option => option.value)
+                    )}
+                    className="filter-select"
+                  >
+                    {artists.map(artist => (
+                      <option key={artist} value={artist}>{artist}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Value Range */}
+                <div className="filter-group">
+                  <label>Value Range ($):</label>
+                  <div className="range-inputs">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={valueMin}
+                      onChange={(e) => setValueMin(e.target.value)}
+                      className="filter-input"
+                      min="0"
+                    />
+                    <span>to</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={valueMax}
+                      onChange={(e) => setValueMax(e.target.value)}
+                      className="filter-input"
+                      min="0"
+                    />
+                  </div>
+                </div>
+
+                {/* Year Range */}
+                <div className="filter-group">
+                  <label>Year Range:</label>
+                  <div className="range-inputs">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={yearMin}
+                      onChange={(e) => setYearMin(e.target.value)}
+                      className="filter-input"
+                      min={years[0]}
+                      max={years[years.length - 1]}
+                    />
+                    <span>to</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={yearMax}
+                      onChange={(e) => setYearMax(e.target.value)}
+                      className="filter-input"
+                      min={years[0]}
+                      max={years[years.length - 1]}
+                    />
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <button 
+                  className="clear-filters"
+                  onClick={handleClearFilters}
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+
             <div className="report-header">
               <h2>Artifact Acquisition Analysis by Year and Nationality</h2>
               <span className="report-date">
@@ -291,23 +516,23 @@ export function ArtifactReport() {
               </div>
 
               <div className="report-table-container">
-              <table className="report-table">
+                <table className="report-table">
                   <thead>
                     <tr>
                       <th>Artifact ID</th>
                       <th>Artifact Name</th>
-                      <th>Artifact Description</th>
+                      <th>Description</th>
                       <th>Value</th>
                       <th>Artist</th>
                       <th>Nationality</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.map((item, index) => (
+                    {filteredReportData.map((item, index) => (
                       <tr key={index}>
                         <td>{item.Artifact_ID}</td>
                         <td>{item.Artifact_Name}</td>
-                        <td>{item.description}</td>
+                        <td>{item.Artifact_Description}</td>
                         <td>${Number(item.Value).toLocaleString()}</td>
                         <td>{item.Artist_Name}</td>
                         <td>{item.Nationality}</td>

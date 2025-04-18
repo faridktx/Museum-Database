@@ -1348,3 +1348,78 @@ select.rounded-input {
 .report-table td:nth-child(5) {
   white-space: nowrap;
 }
+
+/* Filters Section */
+.filters-container {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  min-height: 100px;
+}
+
+.filter-select[multiple] option {
+  padding: 8px 12px;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-inputs input {
+  flex: 1;
+}
+
+.clear-filters {
+  background: none;
+  border: none;
+  color: #4a6fa5;
+  cursor: pointer;
+  font-size: 0.9rem;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.clear-filters:hover {
+  text-decoration: underline;
+}
+
+/* Highlight selected options in multi-select */
+.filter-select option:checked {
+  background-color: #4a6fa5;
+  color: white;
+}
