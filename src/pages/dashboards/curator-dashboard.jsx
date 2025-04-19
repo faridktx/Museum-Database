@@ -136,7 +136,6 @@ export function CuratorDashboard() {
         });
         const data = await response.json();
         setArtifacts(data.data);
-        console.log(data.data);
       } catch (err) {
         console.log(err);
       }
@@ -430,13 +429,10 @@ export function CuratorDashboard() {
     setEditFormData({
       title: artifact.title,
       artistId: artifact.artistId,
-      exhibitName: artifact.exhibitName,
+      exhibitId: artifact.exhibitId,
       year: artifact.year,
       medium: artifact.medium,
-      dimensions: artifact.dimensions,
-      acquisitionDate: artifact.acquisitionDate,
       condition: artifact.condition,
-      needsRestoration: artifact.needsRestoration,
     });
   };
 
@@ -696,8 +692,6 @@ export function CuratorDashboard() {
       needsRestoration: false,
     });
     setShowNewArtifactForm(false);
-
-    console.log("New artifact added successfully");
   };
 
   // Function to cancel adding a new artifact
@@ -1851,17 +1845,19 @@ export function CuratorDashboard() {
                                 <input
                                   type="text"
                                   name="title"
-                                  value={editFormData.title || ""}
+                                  value={editFormData.title}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 />
                               </td>
                               <td>
                                 <select
                                   name="artistId"
-                                  value={editFormData.artistId || ""}
+                                  value={editFormData.artistId}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 >
                                   {artists.map((artist) => (
                                     <option key={artist.id} value={artist.id}>
@@ -1892,10 +1888,11 @@ export function CuratorDashboard() {
                               </td>
                               <td>
                                 <select
-                                  name="exhibitName"
-                                  value={editFormData.exhibitName || ""}
+                                  name="exhibitId"
+                                  value={editFormData.exhibitId}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 >
                                   {exhibitsMap.map((exhibit) => (
                                     <option key={exhibit.id} value={exhibit.id}>
@@ -1907,9 +1904,10 @@ export function CuratorDashboard() {
                               <td>
                                 <select
                                   name="condition"
-                                  value={editFormData.condition || ""}
+                                  value={editFormData.condition}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 >
                                   <option disabled selected value="">
                                     Select a condition
