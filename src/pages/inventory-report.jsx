@@ -10,29 +10,35 @@ export function InventoryReport() {
   const [filteredInventory, setFilteredInventory] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter states
-  const [nameSearch, setNameSearch] = useState('');
-  const [idSearch, setIdSearch] = useState('');
+  const [nameSearch, setNameSearch] = useState("");
+  const [idSearch, setIdSearch] = useState("");
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [quantityMin, setQuantityMin] = useState('');
-  const [quantityMax, setQuantityMax] = useState('');
+  const [quantityMin, setQuantityMin] = useState("");
+  const [quantityMax, setQuantityMax] = useState("");
 
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await apiFetch("/api/giftshop-inventory", "GET", user.id);
+        const response = await apiFetch(
+          "/api/giftshop-inventory",
+          "GET",
+          user.id,
+        );
         const data = response.data;
-        
+
         // Extract unique categories from inventory data
-        const uniqueCategories = [...new Set(data.map(item => item.category))].filter(Boolean);
-        
+        const uniqueCategories = [
+          ...new Set(data.map((item) => item.category)),
+        ].filter(Boolean);
+
         setInventory(data);
         setFilteredInventory(data);
-        setCategories(['All', ...uniqueCategories]);
+        setCategories(["All", ...uniqueCategories]);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching inventory data:', error);
+        console.error("Error fetching inventory data:", error);
         setLoading(false);
       }
     };
@@ -42,41 +48,48 @@ export function InventoryReport() {
 
   useEffect(() => {
     applyFilters();
-  }, [inventory, nameSearch, idSearch, selectedCategories, quantityMin, quantityMax]);
+  }, [
+    inventory,
+    nameSearch,
+    idSearch,
+    selectedCategories,
+    quantityMin,
+    quantityMax,
+  ]);
 
   const applyFilters = () => {
     let filtered = [...inventory];
 
     // Name filter
     if (nameSearch) {
-      filtered = filtered.filter(item => 
-        item.item_name.toLowerCase().includes(nameSearch.toLowerCase())
+      filtered = filtered.filter((item) =>
+        item.item_name.toLowerCase().includes(nameSearch.toLowerCase()),
       );
     }
 
     // ID filter
     if (idSearch) {
-      filtered = filtered.filter(item => 
-        item.item_id.toString().includes(idSearch)
+      filtered = filtered.filter((item) =>
+        item.item_id.toString().includes(idSearch),
       );
     }
 
     // Category filter
-    if (selectedCategories.length > 0 && !selectedCategories.includes('All')) {
-      filtered = filtered.filter(item => 
-        selectedCategories.includes(item.category)
+    if (selectedCategories.length > 0 && !selectedCategories.includes("All")) {
+      filtered = filtered.filter((item) =>
+        selectedCategories.includes(item.category),
       );
     }
 
     // Quantity range filter
     if (quantityMin) {
-      filtered = filtered.filter(item => 
-        item.quantity >= Number(quantityMin)
+      filtered = filtered.filter(
+        (item) => item.quantity >= Number(quantityMin),
       );
     }
     if (quantityMax) {
-      filtered = filtered.filter(item => 
-        item.quantity <= Number(quantityMax)
+      filtered = filtered.filter(
+        (item) => item.quantity <= Number(quantityMax),
       );
     }
 
@@ -84,11 +97,11 @@ export function InventoryReport() {
   };
 
   const handleClearFilters = () => {
-    setNameSearch('');
-    setIdSearch('');
+    setNameSearch("");
+    setIdSearch("");
     setSelectedCategories([]);
-    setQuantityMin('');
-    setQuantityMax('');
+    setQuantityMin("");
+    setQuantityMax("");
   };
 
   const exportToCsv = () => {
@@ -99,21 +112,21 @@ export function InventoryReport() {
       "Category",
       "Quantity",
       "Unit Price",
-      "Total Value"
+      "Total Value",
     ];
-    
-    const rows = filteredInventory.map(item => [
+
+    const rows = filteredInventory.map((item) => [
       item.item_id,
       item.item_name,
       item.description,
       item.category,
       item.quantity,
       `$${item.unit_price.toFixed(2)}`,
-      `$${(item.quantity * item.unit_price).toFixed(2)}`
+      `$${(item.quantity * item.unit_price).toFixed(2)}`,
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.join(","))
+      .map((row) => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -182,7 +195,10 @@ export function InventoryReport() {
                     multiple
                     value={selectedCategories}
                     onChange={(e) => {
-                      const options = Array.from(e.target.selectedOptions, option => option.value);
+                      const options = Array.from(
+                        e.target.selectedOptions,
+                        (option) => option.value,
+                      );
                       setSelectedCategories(options);
                     }}
                     className="rounded-input multi-select"
@@ -227,7 +243,7 @@ export function InventoryReport() {
 
                 {/* Clear Filters Button */}
                 <div className="filter-item">
-                  <button 
+                  <button
                     className="clear-filters rounded-button"
                     onClick={handleClearFilters}
                   >
@@ -253,11 +269,14 @@ export function InventoryReport() {
                 <tbody>
                   {filteredInventory.length > 0 ? (
                     filteredInventory.map((item) => (
-                        <tr key={item.item_id} className={item.quantity < 65 ? "low-quantity" : ""}>
+                      <tr
+                        key={item.item_id}
+                        className={item.quantity < 65 ? "low-quantity" : ""}
+                      >
                         <td>{item.item_id}</td>
                         <td>{item.item_name}</td>
-                        <td>{item.description || 'N/A'}</td>
-                        <td>{item.category || 'N/A'}</td>
+                        <td>{item.description || "N/A"}</td>
+                        <td>{item.category || "N/A"}</td>
                         <td>{item.quantity}</td>
                         <td>${item.unit_price.toFixed(2)}</td>
                         <td>${(item.quantity * item.unit_price).toFixed(2)}</td>

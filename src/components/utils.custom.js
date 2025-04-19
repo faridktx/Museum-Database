@@ -20,7 +20,10 @@ async function parseFetchError(res) {
  */
 export async function apiFetch(path, method = "GET") {
   const apiResponse = { success: true, errors: [], data: [] };
-  const url = new URL(path, process.env.REACT_APP_BACKEND_URL || window.location.origin);
+  const url = new URL(
+    path,
+    process.env.REACT_APP_BACKEND_URL || window.location.origin,
+  );
 
   try {
     const response = await fetch(url.toString(), { method });
@@ -43,7 +46,7 @@ export async function fetchWithBody(path, method = "POST", formData = {}) {
     const res = await fetch(path, {
       method,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
 
     await parseJSON(res, apiResponse);
@@ -70,7 +73,7 @@ export async function postGiftShopOrder(data) {
   const res = await fetch("/api/custom/giftshop/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   });
 
   const text = await res.text();

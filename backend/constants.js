@@ -9,6 +9,27 @@ export const ROLES = [
   "Security",
   "Retail",
 ];
+export const SHOPCATEGORIES = [
+  "Books",
+  "Apparel",
+  "Home",
+  "Collectibles",
+  "Games",
+];
+export const CONDITIONS = ["Excellent", "Good", "Fair", "Poor", "Critical"];
+
+export const ARTMOVEMENTS = [
+  "Impressionism",
+  "Expressionism",
+  "Cubism",
+  "Surrealism",
+  "Abstract",
+  "Baroque",
+  "Renaissance",
+  "Pop Art",
+  "Realism",
+  "Minimalism",
+];
 
 export const NATIONALITIES = [
   "American",

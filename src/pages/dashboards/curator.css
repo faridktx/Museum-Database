@@ -1,0 +1,159 @@
+/* Inline Detail View Styles */
+.detail-row {
+  background-color: #f9f9f9;
+}
+
+.detail-row td {
+  padding: 0 !important;
+  border-top: none !important;
+}
+
+.inline-detail-view {
+  padding: 1rem 1.5rem;
+  border-left: 3px solid #4a6fa5;
+  margin: 0;
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.inline-detail-view h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #4a6fa5;
+  margin-bottom: 0.7rem;
+  font-family: "Playfair Display", serif;
+}
+
+.inline-detail-view .detail-content {
+  margin-left: 0.5rem;
+}
+
+.inline-detail-view h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.6rem;
+  color: #333;
+}
+
+.inline-detail-view p {
+  margin: 0.35rem 0;
+  font-size: 0.95rem;
+}
+
+.inline-detail-view .artist-detail-section {
+  margin-top: 0.7rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.6rem;
+}
+
+.inline-detail-view .artist-detail-section h5 {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 0.3rem;
+}
+
+.inline-detail-view .artist-detail-section ul {
+  margin: 0.3rem 0;
+  padding-left: 1.5rem;
+}
+
+.inline-detail-view .artist-detail-section li {
+  font-size: 0.9rem;
+  margin-bottom: 0.2rem;
+}
+
+.inline-detail-view .restoration-actions {
+  margin-top: 1rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.text-danger {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+.restoration-status-banner {
+  background-color: #fff8f8;
+  border: 1px solid #ffcccc;
+  border-left: 3px solid #dc3545;
+  padding: 0.5rem 1rem;
+  margin: 0.5rem 0 0.7rem 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #dc3545;
+}
+
+.restoration-status-banner .restoration-flag {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.condition-warning-banner {
+  background-color: #fff8e8;
+  border: 1px solid #ffddaa;
+  border-left: 3px solid #ff9800;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1.2rem 0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+  color: #d03b01;
+}
+
+.warning-icon {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.warning-text {
+  font-weight: 500;
+}
+
+/* Restoration Legend Styles */
+.legend-container {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.table-legend {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.legend-item {
+  font-size: 0.85rem;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.restoration-flag {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 0.3rem;
+}
+
+.no-artifacts-flag {
+  color: #dc3545;
+  font-weight: bold;
+  margin-left: 0.3rem;
+}

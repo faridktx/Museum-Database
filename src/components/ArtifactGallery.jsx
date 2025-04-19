@@ -18,11 +18,15 @@ export function ArtifactGallery() {
     loadArtifacts();
   }, [user]);
 
-  const themes = ["All", ...new Set(artifacts.map((a) => a.theme || "Unknown"))];
+  const themes = [
+    "All",
+    ...new Set(artifacts.map((a) => a.theme || "Unknown")),
+  ];
 
-  const filtered = selectedFilter === "All"
-    ? artifacts
-    : artifacts.filter((a) => a.theme === selectedFilter);
+  const filtered =
+    selectedFilter === "All"
+      ? artifacts
+      : artifacts.filter((a) => a.theme === selectedFilter);
 
   return (
     <section className="artifact-gallery-section">
@@ -52,7 +56,9 @@ export function ArtifactGallery() {
               className="artifact-img"
             />
             <h3>{artifact.artifact_name}</h3>
-            <p className="artifact-theme">{artifact.theme || "Unknown Theme"}</p>
+            <p className="artifact-theme">
+              {artifact.theme || "Unknown Theme"}
+            </p>
           </div>
         ))}
       </div>

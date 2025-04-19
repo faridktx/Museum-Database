@@ -13,14 +13,14 @@ export function Home() {
     <main>
       <Hero />
       <section id="featured">
-  <ExhibitCarousel />
-</section>
+        <ExhibitCarousel />
+      </section>
       <TestimonialsSlider />
       <MembershipPerks />
       <EventsList />
       <Features />
       <Overview />
-      
+
       <Contact />
     </main>
   );
