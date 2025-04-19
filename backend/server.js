@@ -9,7 +9,8 @@ import { clerkClient } from "@clerk/clerk-sdk-node";
 dotenv.config();
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
+
 
 const PORT = process.env.PORT || 5001;
 
@@ -642,67 +643,6 @@ app.post(
   },
 );
 
-app.post("/api/tickets", async (req, res) => {
-  const { id } = req.body;
-  if (!id) {
-    return res.status(401).json({ errors: ["Do not have authorized access"] });
-  }
-
-  const ticketsPurchased = req.body;
-  const exhibits = ticketsPurchased.exhibits;
-  const tickets = ticketsPurchased.tickets;
-
-  const insertQuery = `
-    INSERT INTO tickets (guest_id, purchase_date, ticket_type, quantity)
-  `;
-  const purchases = { ...tickets, ...exhibits };
-  if (
-    Object.keys(purchases).reduce((total, qty) => total + purchases[qty], 0)
-  ) {
-    let values = [];
-    let fields = [];
-
-    for (const purchase of Object.keys(purchases)) {
-      if (purchases[purchase] > 0) {
-        values.push("(?, ?, ?, ?)");
-        fields.push(
-          id,
-          new Date().toISOString().split("T")[0],
-          purchase,
-          purchases[purchase],
-        );
-      }
-    }
-    const query = `${insertQuery} VALUES ${values.join(", ")}`;
-    await executeSQLQuery(res, query, fields);
-  }
-});
-
-app.post("/api/giftshop", async (req, res) => {
-  const { id, cart } = req.body;
-  if (!id) {
-    return res.status(401).json({ errors: ["Do not have authorized access"] });
-  }
-
-  let values = [];
-  let fields = [];
-  const insertQuery = `
-    INSERT INTO gift_shop_sales (item_id, guest_id, sale_date, quantity, total_cost)
-  `;
-  Object.keys(cart).forEach((itemId) => {
-    values.push("(?, ?, ?, ?, ?)");
-    fields.push(
-      parseInt(itemId),
-      id,
-      new Date().toISOString().split("T")[0],
-      cart[itemId],
-      1,
-    );
-  });
-  const query = `${insertQuery} VALUES ${values.join(", ")}`;
-  await executeSQLQuery(res, query, fields);
-});
-
 app.get("/api/gettickets/", async (req, res) => {
   const id = req.query.id;
   if (!id) {
@@ -1117,4 +1057,260 @@ app.get("/api/giftshop-names", async (_, res) => {
   `;
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
+});
+
+// GET - Gift Shop Inventory
+app.get("/api/custom/giftshop-items", async (req, res) => {
+  try {
+    const [rows] = await promisePool.query(`SELECT * FROM gift_shop_inventory`);
+    res.status(200).json({ success: true, data: rows });
+  } catch (err) {
+    console.error("Error fetching gift shop items:", err);
+    res.status(500).json({ success: false, errors: [err.message || "Server error"] });
+  }
+});
+
+// GET - Ticket Types
+app.get("/api/custom/ticket-types", async (req, res) => {
+  try {
+    const [rows] = await promisePool.query(`SELECT * FROM ticket_types`);
+    res.status(200).json({ success: true, data: rows });
+  } catch (err) {
+    console.error("Error fetching ticket types:", err);
+    res.status(500).json({ success: false, errors: [err.message || "Server error"] });
+  }
+});
+
+// GET - Exhibits
+app.get("/api/custom/exhibit-names", async (req, res) => {
+  try {
+    const [rows] = await promisePool.query(`SELECT DISTINCT exhibit_name FROM exhibits`);
+    const exhibits = rows.map(row => ({ exhibit_name: row.exhibit_name }));
+    res.status(200).json({ success: true, data: exhibits });
+  } catch (err) {
+    console.error("Error fetching exhibits:", err);
+    res.status(500).json({ success: false, errors: [err.message || "Server error"] });
+  }
+});
+
+// GET - Membership Plans
+app.get("/api/custom/memberships", async (req, res) => {
+  try {
+    const [rows] = await promisePool.query(`SELECT * FROM membership_types`);
+    res.status(200).json({ success: true, data: rows });
+  } catch (err) {
+    console.error("Error fetching membership options:", err);
+    res.status(500).json({ success: false, errors: [err.message || "Server error"] });
+  }
+});
+
+
+app.post("/api/combined-sales", async (req, res) => {
+  const { accountId, sales } = req.body;
+
+  if (!accountId || !Array.isArray(sales) || sales.length === 0) {
+    return res.status(400).json({ success: false, errors: ["Invalid sale submission"] });
+  }
+
+  try {
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
+
+    let [idRows] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+    let nextId = (idRows[0]?.max || 0) + 1;
+
+    for (const sale of sales) {
+      await connection.query(
+        `INSERT INTO combined_sales (
+          sale_id, account_id, item_id, qty_sold, ticket_type, quantity, purchase_date, sale_cost
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          nextId++,
+          accountId,
+          sale.item_id || null,
+          sale.qty_sold || null,
+          sale.ticket_type || null,
+          sale.quantity || null,
+          sale.purchase_date || new Date().toISOString().split("T")[0],
+          sale.sale_cost
+        ]
+      );
+    }
+
+    await connection.commit();
+    connection.release();
+    res.status(200).json({ success: true, message: "Sales recorded successfully" });
+  } catch (err) {
+    console.error("Combined sales insert error:", err);
+    res.status(500).json({ success: false, errors: ["Failed to insert combined sales"] });
+  }
+});
+
+app.post("/api/account-id", async (req, res) => {
+  const { email, phone } = req.body;
+
+  if (!email && !phone) {
+    return res.status(400).json({ success: false, errors: ["Missing email or phone"] });
+  }
+
+  try {
+    const [rows] = await promisePool.query(
+      `SELECT account_id FROM users WHERE email = ? OR phone_number = ? LIMIT 1`,
+      [email?.trim(), phone?.trim()]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, errors: ["Account not found"] });
+    }
+
+    res.status(200).json({ success: true, accountId: rows[0].account_id });
+  } catch (err) {
+    console.error("Account lookup error:", err);
+    res.status(500).json({ success: false, errors: ["Database error"] });
+  }
+});
+
+app.post("/api/register-account", async (req, res) => {
+  const { name, email, phone } = req.body;
+
+  if (!name || (!email && !phone)) {
+    return res.status(400).json({ success: false, errors: ["Missing name and email or phone"] });
+  }
+
+  try {
+    const firstName = name.trim().split(" ")[0];
+    const lastName = name.trim().split(" ").slice(1).join(" ") || "N/A";
+
+    const userId = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await promisePool.query(
+      `INSERT INTO users (user_id, email, phone_number, first_name, last_name)
+       VALUES (?, ?, ?, ?, ?)`,
+      [userId, email || null, phone || null, firstName, lastName]
+    );
+
+    const [rows] = await promisePool.query(
+      `SELECT account_id FROM users WHERE user_id = ? LIMIT 1`,
+      [userId]
+    );
+
+    const accountId = rows[0]?.account_id;
+    res.status(201).json({ success: true, accountId });
+  } catch (err) {
+    console.error("Register account error:", err);
+    res.status(500).json({ success: false, errors: ["Failed to register account"] });
+  }
+});
+
+app.post("/api/custom/checkout", async (req, res) => {
+  const { accountId, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
+
+  if (!accountId) {
+    return res.status(400).json({ success: false, errors: ["Missing accountId"] });
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const saleIds = [];
+
+  try {
+    const connection = await promisePool.getConnection();
+    await connection.beginTransaction();
+
+    const [maxRow] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+    let nextSaleId = (maxRow[0].max || 0) + 1;
+
+    const insert = async (data) => {
+      const {
+        item_id = null,
+        ticket_type = null,
+        quantity = null,
+        sale_cost = 0,
+      } = data;
+
+      await connection.query(
+        `INSERT INTO combined_sales (sale_id, account_id, item_id, ticket_type, quantity, sale_cost, purchase_date)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [nextSaleId, accountId, item_id, ticket_type, quantity, sale_cost, today]
+      );
+      saleIds.push(nextSaleId++);
+    };
+
+    // Tickets
+    for (const [type, count] of Object.entries(tickets)) {
+      if (count > 0) {
+        const [[ticket]] = await connection.query(
+          `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
+          [type]
+        );
+        if (ticket) {
+          await insert({
+            ticket_type: type,
+            quantity: count,
+            sale_cost: ticket.price * count,
+          });
+        }
+      }
+    }
+
+    // Exhibits
+    for (const [name, count] of Object.entries(exhibits)) {
+      if (count > 0) {
+        const [[exhibit]] = await connection.query(
+          `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
+          [name]
+        );
+        if (exhibit) {
+          await insert({
+            ticket_type: name,
+            quantity: count,
+            sale_cost: exhibit.price * count,
+          });
+        }
+      }
+    }
+
+    // Membership
+    if (membership) {
+      const [[member]] = await connection.query(
+        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+        [membership]
+      );
+      if (member) {
+        await insert({
+          ticket_type: membership,
+          quantity: 1,
+          sale_cost: member.price,
+        });
+      }
+    }
+
+    // Gift Shop
+    for (const [itemId, count] of Object.entries(giftshop)) {
+      if (count > 0) {
+        const [[item]] = await connection.query(
+          `SELECT unit_price FROM gift_shop_inventory WHERE item_id = ? LIMIT 1`,
+          [itemId]
+        );
+        if (item) {
+          await insert({
+            item_id: itemId,
+            quantity: count,
+            sale_cost: item.unit_price * count,
+          });
+        }
+      }
+    }
+
+    await connection.commit();
+    connection.release();
+
+    if (saleIds.length === 0) {
+      return res.status(400).json({ success: false, errors: ["No valid items to checkout"] });
+    }
+
+    res.status(200).json({ success: true, saleIds });
+  } catch (err) {
+    console.error("❌ Checkout insert failed:", err);
+    res.status(500).json({ success: false, errors: [err.message || "Checkout error"] });
+  }
 });

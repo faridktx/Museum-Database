@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 import "../pages/sheets/Style.giftshop.css";
 import { useUser } from "@clerk/clerk-react";
-import { apiFetch } from "../components/utils";
 import { useLocation } from "wouter";
+import { apiFetch, capitalize } from "../components/utils.custom";
 
 export function GiftShop() {
   const { user } = useUser();
   const [, navigate] = useLocation();
+
   const [cart, setCart] = useState({});
   const [shopItems, setShopItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [filters, setFilters] = useState({ category: "", color: "", size: "", price: "" });
+  const [filters, setFilters] = useState({
+    category: "", color: "", size: "", price: ""
+  });
 
   useEffect(() => {
     const loadGiftShopItems = async () => {
-      const response = await apiFetch("/api/getgiftshopitems/", "GET", user.id);
-      setShopItems(response.data);
-      setFilteredItems(response.data);
+      const response = await apiFetch("/api/custom/giftshop-items", "GET", user?.id);
+      setShopItems(response.data || []);
+      setFilteredItems(response.data || []);
     };
-    loadGiftShopItems();
-  }, []);
+    if (user?.id) loadGiftShopItems();
+  }, [user]);
 
   useEffect(() => {
     let filtered = shopItems.filter((item) => {
@@ -36,20 +39,29 @@ export function GiftShop() {
   const handleQuantityChange = (itemId, newQuantity) => {
     if (newQuantity < 0) return;
     setCart((prevCart) => {
+      const item = shopItems.find(i => i.item_id === parseInt(itemId));
+      if (!item) return prevCart;
+
       if (newQuantity === 0) {
         const newCart = { ...prevCart };
         delete newCart[itemId];
         return newCart;
       }
-      return { ...prevCart, [itemId]: newQuantity };
+
+      return {
+        ...prevCart,
+        [itemId]: {
+          count: newQuantity,
+          price: parseFloat(item.unit_price)
+        }
+      };
     });
   };
 
   const calculateCartTotal = () => {
     return Object.entries(cart)
-      .reduce((total, [itemId, quantity]) => {
-        const item = shopItems.find((item) => item.item_id === parseInt(itemId));
-        return total + parseFloat(item.unit_price) * parseInt(quantity);
+      .reduce((total, [itemId, { count, price }]) => {
+        return total + count * price;
       }, 0)
       .toFixed(2);
   };
@@ -61,14 +73,17 @@ export function GiftShop() {
   };
 
   const handleRedirectToCart = () => {
-    const giftshopItems = Object.entries(cart).reduce((acc, [itemId, quantity]) => {
-      const item = shopItems.find((i) => i.item_id === parseInt(itemId));
-      if (item && quantity > 0) {
-        acc[itemId] = { count: quantity, price: parseFloat(item.unit_price) };
-      }
-      return acc;
-    }, {});
-    localStorage.setItem("cart_data", JSON.stringify({ giftshop: giftshopItems }));
+    if (!user?.id) {
+      alert("Please log in to checkout.");
+      navigate("/sign-in");
+      return;
+    }
+
+    const existing = localStorage.getItem("museum_cart");
+    const parsed = existing ? JSON.parse(existing) : {};
+    const merged = { ...parsed, giftshop: cart, guestId: user.id };
+
+    localStorage.setItem("museum_cart", JSON.stringify(merged));
     navigate("/dashboard/cart");
   };
 
@@ -97,7 +112,12 @@ export function GiftShop() {
               </select>
             </div>
             <div className="filter-item">
-              <input type="number" placeholder="Max Price" value={filters.price} onChange={(e) => setFilters(f => ({ ...f, price: e.target.value }))} />
+              <input
+                type="number"
+                placeholder="Max Price"
+                value={filters.price}
+                onChange={(e) => setFilters(f => ({ ...f, price: e.target.value }))}
+              />
             </div>
           </div>
           <button onClick={clearFilters} className="clear-filters">Clear Filters</button>
@@ -109,12 +129,12 @@ export function GiftShop() {
             <p className="empty-cart-msg">Your cart is empty.</p>
           ) : (
             <>
-              {Object.entries(cart).map(([itemId, quantity]) => {
+              {Object.entries(cart).map(([itemId, { count, price }]) => {
                 const item = shopItems.find(i => i.item_id === parseInt(itemId));
                 return (
                   <div key={itemId} className="cart-line">
-                    <span>{item.item_name} × {quantity}</span>
-                    <span>${(item.unit_price * quantity).toFixed(2)}</span>
+                    <span>{item?.item_name} × {count}</span>
+                    <span>${(price * count).toFixed(2)}</span>
                   </div>
                 );
               })}
@@ -122,7 +142,12 @@ export function GiftShop() {
                 <span>Total</span>
                 <span>${calculateCartTotal()}</span>
               </div>
-              <button className="checkout-button" onClick={handleRedirectToCart}>Checkout</button>
+              <button
+                className="checkout-button"
+                onClick={handleRedirectToCart}
+              >
+                Checkout
+              </button>
             </>
           )}
         </div>
@@ -146,9 +171,16 @@ export function GiftShop() {
                 <p className="product-price">${item.unit_price.toFixed(2)}</p>
               </div>
               <div className="product-actions">
-                <button className="quantity-btn" onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id] || 0) - 1)} disabled={!cart[item.item_id]}>-</button>
-                <span className="quantity">{cart[item.item_id] || 0}</span>
-                <button className="quantity-btn" onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id] || 0) + 1)}>+</button>
+                <button
+                  className="quantity-btn"
+                  onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id]?.count || 0) - 1)}
+                  disabled={!cart[item.item_id]}
+                >-</button>
+                <span className="quantity">{cart[item.item_id]?.count || 0}</span>
+                <button
+                  className="quantity-btn"
+                  onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id]?.count || 0) + 1)}
+                >+</button>
               </div>
             </div>
           ))}

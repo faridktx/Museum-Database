@@ -24,6 +24,7 @@ import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
 import { Cart } from "./pages/cart";
+import { ReceiptPage } from "./pages/ReceiptPage";
 
 import { ArtistList } from "./pages/artist-list";
 import { InventoryReport } from "./pages/inventory-report";
@@ -106,6 +107,7 @@ const routes = [
   { route: "/dashboard/artist-report", component: ArtistList },
   { route: "/dashboard/inventory-report", component: InventoryReport },
   { route: "/dashboard/sales-report", component: SalesReport },
+  { route: "/receipt", component: ReceiptPage },
 ];
 
 export function App() {

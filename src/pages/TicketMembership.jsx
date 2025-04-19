@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import "../pages/sheets/Style.TicketMembership.css";
 import { useUser } from "@clerk/clerk-react";
-import { apiFetch, capitalize } from "../components/utils";
 import { useLocation } from "wouter";
+import {
+  apiFetch,
+  capitalize
+} from "../components/utils.custom";
 
 export function TicketMembership() {
   const { user } = useUser();
   const [, navigate] = useLocation();
 
-  const [ticketPrices, setTicketPrices] = useState({});
-  const [exhibitPrices, setExhibitPrices] = useState({});
   const [tickets, setTickets] = useState({});
   const [exhibits, setExhibits] = useState({});
   const [membership, setMembership] = useState(null);
@@ -19,66 +20,79 @@ export function TicketMembership() {
   useEffect(() => {
     async function fetchAll() {
       const [ticketsRes, exhibitsRes, membershipsRes] = await Promise.all([
-        apiFetch("/api/gettickets/", "GET", user.id),
-        apiFetch("/api/getexhibitnames/", "GET", user.id),
-        apiFetch("/api/getmemberships/", "GET", user.id),
+        apiFetch("/api/custom/ticket-types", "GET", user?.id),
+        apiFetch("/api/custom/exhibit-names", "GET", user?.id),
+        apiFetch("/api/custom/memberships", "GET", user?.id),
       ]);
 
-      const ticketQty = {}, ticketPrice = {};
-      ticketsRes.data.sort((a, b) => a.price - b.price).forEach(t => {
-        ticketQty[t.ticket_type] = 0;
-        ticketPrice[t.ticket_type] = t.price;
+      const ticketCart = {};
+      (ticketsRes.data || []).forEach(t => {
+        ticketCart[t.ticket_type] = { count: 0, price: t.price };
       });
 
-      const exhibitQty = {}, exhibitPrice = {};
-      exhibitsRes.data.forEach(e => {
-        exhibitQty[e.exhibit_name] = 0;
-        exhibitPrice[e.exhibit_name] = 15;
+      const exhibitCart = {};
+      (exhibitsRes.data || []).forEach(e => {
+        exhibitCart[e.exhibit_name] = { count: 0, price: 15 }; // assume 15 or fetch dynamically if needed
       });
 
-      setTickets(ticketQty);
-      setTicketPrices(ticketPrice);
-      setExhibits(exhibitQty);
-      setExhibitPrices(exhibitPrice);
-      setMembershipOptions(membershipsRes.data.sort((a, b) => a.price - b.price));
+      setTickets(ticketCart);
+      setExhibits(exhibitCart);
+      setMembershipOptions((membershipsRes.data || []).sort((a, b) => a.price - b.price));
     }
 
-    fetchAll();
-  }, [user.id]);
+    if (user?.id) fetchAll();
+  }, [user]);
 
-  const handleRedirectToCart = () => {
-    const ticketItems = Object.entries(tickets).reduce((acc, [type, count]) => {
-      if (count > 0) acc[type] = { count, price: ticketPrices[type] };
-      return acc;
-    }, {});
+  const handleRedirectToCart = async () => {
+    if (!user?.id) {
+      alert("Please log in to proceed.");
+      navigate("/sign-in");
+      return;
+    }
 
-    const exhibitItems = Object.entries(exhibits).reduce((acc, [name, count]) => {
-      if (count > 0) acc[name] = { count, price: exhibitPrices[name] };
-      return acc;
-    }, {});
+    const ticketItems = {};
+    for (const [type, { count, price }] of Object.entries(tickets)) {
+      if (count > 0) ticketItems[type] = { count, price };
+    }
 
-    localStorage.setItem("cart_data", JSON.stringify({ tickets: ticketItems, exhibits: exhibitItems, membership }));
+    const exhibitItems = {};
+    for (const [name, { count, price }] of Object.entries(exhibits)) {
+      if (count > 0) exhibitItems[name] = { count, price };
+    }
+
+    localStorage.setItem("museum_cart", JSON.stringify({
+      guestId: user.id,
+      tickets: ticketItems,
+      exhibits: exhibitItems,
+      membership
+    }));
+
     navigate("/dashboard/cart");
   };
 
   return (
     <div className="page-layout">
-      {/* LEFT: TICKETS + EXHIBITS + SUMMARY */}
       <div className="ticket-wrapper">
         <h2>General Admissions</h2>
         <div className="ticket-info">
-          Tickets grant access to our museum’s core collection. Additional access to exclusive and rotating special exhibits requires separate admission unless a membership is purchased.
+          Tickets grant access to our museum’s core collection...
         </div>
 
         <div className="ticket-box">
           <h3>Tickets</h3>
-          {Object.keys(tickets).map(type => (
+          {Object.entries(tickets).map(([type, item]) => (
             <div key={type} className="ticket-option">
-              <span>{capitalize(type)} - ${ticketPrices[type]}</span>
+              <span>{capitalize(type)} - ${item.price}</span>
               <div className="quantity-selector">
-                <button onClick={() => setTickets(p => ({ ...p, [type]: Math.max(0, p[type] - 1) }))}>-</button>
-                <span className="qty-count">{tickets[type]}</span>
-                <button onClick={() => setTickets(p => ({ ...p, [type]: p[type] + 1 }))}>+</button>
+                <button onClick={() => setTickets(p => ({
+                  ...p,
+                  [type]: { ...p[type], count: Math.max(0, p[type].count - 1) }
+                }))}>-</button>
+                <span className="qty-count">{item.count}</span>
+                <button onClick={() => setTickets(p => ({
+                  ...p,
+                  [type]: { ...p[type], count: p[type].count + 1 }
+                }))}>+</button>
               </div>
             </div>
           ))}
@@ -86,13 +100,19 @@ export function TicketMembership() {
 
         <div className="ticket-box">
           <h3>Special Exhibit Access</h3>
-          {Object.keys(exhibits).map(name => (
+          {Object.entries(exhibits).map(([name, item]) => (
             <div key={name} className="ticket-option">
-              <span>{name} - ${exhibitPrices[name]}</span>
+              <span>{name} - ${item.price}</span>
               <div className="quantity-selector">
-                <button onClick={() => setExhibits(p => ({ ...p, [name]: Math.max(0, p[name] - 1) }))}>-</button>
-                <span className="qty-count">{exhibits[name]}</span>
-                <button onClick={() => setExhibits(p => ({ ...p, [name]: p[name] + 1 }))}>+</button>
+                <button onClick={() => setExhibits(p => ({
+                  ...p,
+                  [name]: { ...p[name], count: Math.max(0, p[name].count - 1) }
+                }))}>-</button>
+                <span className="qty-count">{item.count}</span>
+                <button onClick={() => setExhibits(p => ({
+                  ...p,
+                  [name]: { ...p[name], count: p[name].count + 1 }
+                }))}>+</button>
               </div>
             </div>
           ))}
@@ -101,22 +121,22 @@ export function TicketMembership() {
         <div className="order-summary-box">
           <h3>Order Summary</h3>
 
-          {Object.entries(tickets).map(([type, count]) =>
-            count > 0 ? (
+          {Object.entries(tickets).map(([type, item]) =>
+            item.count > 0 && (
               <div key={type} className="order-line">
                 <span>{capitalize(type)} Tickets</span>
-                <span>${(count * ticketPrices[type]).toFixed(2)}</span>
+                <span>${(item.count * item.price).toFixed(2)}</span>
               </div>
-            ) : null
+            )
           )}
 
-          {Object.entries(exhibits).map(([name, count]) =>
-            count > 0 ? (
+          {Object.entries(exhibits).map(([name, item]) =>
+            item.count > 0 && (
               <div key={name} className="order-line">
                 <span>{name} Exhibit</span>
-                <span>${(count * exhibitPrices[name]).toFixed(2)}</span>
+                <span>${(item.count * item.price).toFixed(2)}</span>
               </div>
-            ) : null
+            )
           )}
 
           {membership && (
@@ -132,17 +152,9 @@ export function TicketMembership() {
             <span>Total</span>
             <span>
               ${(
-                Object.entries(tickets).reduce(
-                  (sum, [type, count]) => sum + count * ticketPrices[type],
-                  0
-                ) +
-                Object.entries(exhibits).reduce(
-                  (sum, [name, count]) => sum + count * exhibitPrices[name],
-                  0
-                ) +
-                (membership
-                  ? membershipOptions.find(opt => opt.membership_type === membership)?.price || 0
-                  : 0)
+                Object.values(tickets).reduce((sum, item) => sum + item.count * item.price, 0) +
+                Object.values(exhibits).reduce((sum, item) => sum + item.count * item.price, 0) +
+                (membership ? membershipOptions.find(opt => opt.membership_type === membership)?.price || 0 : 0)
               ).toFixed(2)}
             </span>
           </div>
@@ -153,11 +165,10 @@ export function TicketMembership() {
         </div>
       </div>
 
-      {/* RIGHT: MEMBERSHIPS */}
       <div className="membership-section">
         <h2>Membership Plans</h2>
         <div className="ticket-info" style={{ marginTop: "-0.5rem" }}>
-          All memberships include unlimited access to all special exhibit areas and exclusive member benefits throughout the year.
+          All memberships include unlimited access to all special exhibits...
         </div>
 
         {membershipOptions.map(option => {
