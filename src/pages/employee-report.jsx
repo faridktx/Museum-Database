@@ -1,48 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../components/utils";
-import { ArrowLeft, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import "../components/components.css";
 
 export function EmployeeReport() {
   const { user } = useUser();
-  const [, navigate] = useLocation();
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
   const [departments, setExhibits] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter states
-  const [nameSearch, setNameSearch] = useState('');
-  const [idSearch, setIdSearch] = useState('');
-  const [selectedRole, setSelectedRole] = useState('All');
-  const [selectedDepartment, setSelectedDepartment] = useState('All');
-  const [hiringDateStart, setHiringDateStart] = useState('');
-  const [hiringDateEnd, setHiringDateEnd] = useState('');
+  const [nameSearch, setNameSearch] = useState("");
+  const [idSearch, setIdSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState("All");
+  const [selectedDepartment, setSelectedDepartment] = useState("All");
+  const [hiringDateStart, setHiringDateStart] = useState("");
+  const [hiringDateEnd, setHiringDateEnd] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [empRes, exRes] = await Promise.all([
           apiFetch("/api/employees", "GET", user.id),
-          apiFetch("/api/exhibits", "GET", user.id)
         ]);
-        
+
         const empData = empRes.data;
         const exData = exRes.data;
-        
+
         // Extract unique roles and exhibits
-        const uniqueRoles = [...new Set(empData.map(emp => emp.role))].filter(Boolean);
-        
+        const uniqueRoles = [...new Set(empData.map((emp) => emp.role))].filter(
+          Boolean,
+        );
+
         setEmployees(empData);
         setFilteredEmployees(empData);
-        setRoles(['All', ...uniqueRoles]);
-        setExhibits(['All', ...exData.map(ex => ex.exhibit_name)]);
+        setRoles(["All", ...uniqueRoles]);
+        setExhibits(["All", ...exData.map((ex) => ex.exhibit_name)]);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -52,8 +51,15 @@ export function EmployeeReport() {
 
   useEffect(() => {
     applyFilters();
-  }, [employees, nameSearch, idSearch, selectedRole, selectedDepartment, hiringDateStart, hiringDateEnd]);
-
+  }, [
+    employees,
+    nameSearch,
+    idSearch,
+    selectedRole,
+    selectedDepartment,
+    hiringDateStart,
+    hiringDateEnd,
+  ]);
   const applyFilters = () => {
     let filtered = [...employees];
 
@@ -134,13 +140,6 @@ export function EmployeeReport() {
     ];
     
     const rows = filteredEmployees.map(emp => [
-      emp.employee_id,
-      emp.employee_name,
-      emp.role,
-      emp.department,
-      emp.phone_number,
-      emp.work_email,
-      emp.hiring_date,
       emp.salary
     ]);
 

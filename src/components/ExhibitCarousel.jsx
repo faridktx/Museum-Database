@@ -9,18 +9,18 @@ export function ExhibitCarousel() {
     {
       exhibit_name: "Roman Empire",
       description: "Weapons, architecture, busts",
-      image: "https://images.unsplash.com/photo-1568132930457-20ac2189f20b"
+      image: "https://images.unsplash.com/photo-1568132930457-20ac2189f20b",
     },
     {
       exhibit_name: "Medieval Europe",
       description: "Swords, armor, castles",
-      image: "https://images.unsplash.com/photo-1725404436765-dc3b1cb968b3"
+      image: "https://images.unsplash.com/photo-1725404436765-dc3b1cb968b3",
     },
     {
       exhibit_name: "Ancient Egypt",
       description: "Mummies and pyramids",
-      image: "https://images.unsplash.com/photo-1566288592443-0a0d6853dddc"
-    }
+      image: "https://images.unsplash.com/photo-1566288592443-0a0d6853dddc",
+    },
   ]);
 
   const settings = {
@@ -33,8 +33,8 @@ export function ExhibitCarousel() {
     autoplaySpeed: 4000,
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 2 } },
-      { breakpoint: 768, settings: { slidesToShow: 1 } }
-    ]
+      { breakpoint: 768, settings: { slidesToShow: 1 } },
+    ],
   };
 
   return (

@@ -10,31 +10,33 @@ export function ArtistList() {
   const [filteredArtists, setFilteredArtists] = useState([]);
   const [nationalities, setNationalities] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter states
-  const [nameSearch, setNameSearch] = useState('');
-  const [idSearch, setIdSearch] = useState('');
-  const [selectedNationality, setSelectedNationality] = useState('All');
-  const [birthDateStart, setBirthDateStart] = useState('');
-  const [birthDateEnd, setBirthDateEnd] = useState('');
-  const [deathDateStart, setDeathDateStart] = useState('');
-  const [deathDateEnd, setDeathDateEnd] = useState('');
+  const [nameSearch, setNameSearch] = useState("");
+  const [idSearch, setIdSearch] = useState("");
+  const [selectedNationality, setSelectedNationality] = useState("All");
+  const [birthDateStart, setBirthDateStart] = useState("");
+  const [birthDateEnd, setBirthDateEnd] = useState("");
+  const [deathDateStart, setDeathDateStart] = useState("");
+  const [deathDateEnd, setDeathDateEnd] = useState("");
 
   useEffect(() => {
     const fetchArtists = async () => {
       try {
         const response = await apiFetch("/api/artists-list", "GET", user.id);
         const data = response.data;
-        
+
         // Extract unique nationalities from artist data
-        const uniqueNationalities = [...new Set(data.map(artist => artist.nationality))].filter(Boolean);
-        
+        const uniqueNationalities = [
+          ...new Set(data.map((artist) => artist.nationality)),
+        ].filter(Boolean);
+
         setArtists(data);
         setFilteredArtists(data);
-        setNationalities(['All', ...uniqueNationalities]);
+        setNationalities(["All", ...uniqueNationalities]);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching artist data:', error);
+        console.error("Error fetching artist data:", error);
         setLoading(false);
       }
     };
@@ -44,53 +46,70 @@ export function ArtistList() {
 
   useEffect(() => {
     applyFilters();
-  }, [artists, nameSearch, idSearch, selectedNationality, birthDateStart, birthDateEnd, deathDateStart, deathDateEnd]);
+  }, [
+    artists,
+    nameSearch,
+    idSearch,
+    selectedNationality,
+    birthDateStart,
+    birthDateEnd,
+    deathDateStart,
+    deathDateEnd,
+  ]);
 
   const applyFilters = () => {
     let filtered = [...artists];
 
     // Name filter
     if (nameSearch) {
-      filtered = filtered.filter(artist => 
-        artist.artist_name.toLowerCase().includes(nameSearch.toLowerCase())
+      filtered = filtered.filter((artist) =>
+        artist.artist_name.toLowerCase().includes(nameSearch.toLowerCase()),
       );
     }
 
     // ID filter
     if (idSearch) {
-      filtered = filtered.filter(artist => 
-        artist.artist_id.toString().includes(idSearch)
+      filtered = filtered.filter((artist) =>
+        artist.artist_id.toString().includes(idSearch),
       );
     }
 
     // Nationality filter
-    if (selectedNationality && selectedNationality !== 'All') {
-      filtered = filtered.filter(artist => 
-        artist.nationality === selectedNationality
+    if (selectedNationality && selectedNationality !== "All") {
+      filtered = filtered.filter(
+        (artist) => artist.nationality === selectedNationality,
       );
     }
 
     // Birth date range filter
     if (birthDateStart) {
-      filtered = filtered.filter(artist => 
-        artist.birth_date && new Date(artist.birth_date) >= new Date(birthDateStart)
+      filtered = filtered.filter(
+        (artist) =>
+          artist.birth_date &&
+          new Date(artist.birth_date) >= new Date(birthDateStart),
       );
     }
     if (birthDateEnd) {
-      filtered = filtered.filter(artist => 
-        artist.birth_date && new Date(artist.birth_date) <= new Date(birthDateEnd)
+      filtered = filtered.filter(
+        (artist) =>
+          artist.birth_date &&
+          new Date(artist.birth_date) <= new Date(birthDateEnd),
       );
     }
 
     // Death date range filter
     if (deathDateStart) {
-      filtered = filtered.filter(artist => 
-        artist.death_date && new Date(artist.death_date) >= new Date(deathDateStart)
+      filtered = filtered.filter(
+        (artist) =>
+          artist.death_date &&
+          new Date(artist.death_date) >= new Date(deathDateStart),
       );
     }
     if (deathDateEnd) {
-      filtered = filtered.filter(artist => 
-        artist.death_date && new Date(artist.death_date) <= new Date(deathDateEnd)
+      filtered = filtered.filter(
+        (artist) =>
+          artist.death_date &&
+          new Date(artist.death_date) <= new Date(deathDateEnd),
       );
     }
 
@@ -98,34 +117,37 @@ export function ArtistList() {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
   const calculateAge = (birthDate, deathDate) => {
-    if (!birthDate) return 'N/A';
+    if (!birthDate) return "N/A";
     const birth = new Date(birthDate);
     const death = deathDate ? new Date(deathDate) : new Date();
-    
+
     let age = death.getFullYear() - birth.getFullYear();
     const monthDiff = death.getMonth() - birth.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && death.getDate() < birth.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && death.getDate() < birth.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   };
 
   const handleClearFilters = () => {
-    setNameSearch('');
-    setIdSearch('');
-    setSelectedNationality('All');
-    setBirthDateStart('');
-    setBirthDateEnd('');
-    setDeathDateStart('');
-    setDeathDateEnd('');
+    setNameSearch("");
+    setIdSearch("");
+    setSelectedNationality("All");
+    setBirthDateStart("");
+    setBirthDateEnd("");
+    setDeathDateStart("");
+    setDeathDateEnd("");
   };
 
   const exportToCsv = () => {
@@ -135,20 +157,20 @@ export function ArtistList() {
       "Nationality",
       "Birth Date",
       "Death Date",
-      "Age"
+      "Age",
     ];
-    
-    const rows = filteredArtists.map(artist => [
+
+    const rows = filteredArtists.map((artist) => [
       artist.artist_id,
       artist.artist_name,
       artist.nationality,
-      artist.birth_date || 'N/A',
-      artist.death_date || 'N/A',
-      calculateAge(artist.birth_date, artist.death_date)
+      artist.birth_date || "N/A",
+      artist.death_date || "N/A",
+      calculateAge(artist.birth_date, artist.death_date),
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.join(","))
+      .map((row) => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -267,7 +289,7 @@ export function ArtistList() {
 
                 {/* Clear Filters Button */}
                 <div className="filter-item">
-                  <button 
+                  <button
                     className="clear-filters rounded-button"
                     onClick={handleClearFilters}
                   >
@@ -295,10 +317,12 @@ export function ArtistList() {
                       <tr key={artist.artist_id}>
                         <td>{artist.artist_id}</td>
                         <td>{artist.artist_name}</td>
-                        <td>{artist.nationality || 'N/A'}</td>
+                        <td>{artist.nationality || "N/A"}</td>
                         <td>{formatDate(artist.birth_date)}</td>
                         <td>{formatDate(artist.death_date)}</td>
-                        <td>{calculateAge(artist.birth_date, artist.death_date)}</td>
+                        <td>
+                          {calculateAge(artist.birth_date, artist.death_date)}
+                        </td>
                       </tr>
                     ))
                   ) : (

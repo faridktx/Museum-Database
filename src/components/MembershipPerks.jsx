@@ -1,5 +1,12 @@
 import "./MembershipPerks.css";
-import { FaGift, FaClock, FaUserFriends, FaTags, FaCrown, FaStar } from "react-icons/fa";
+import {
+  FaGift,
+  FaClock,
+  FaUserFriends,
+  FaTags,
+  FaCrown,
+  FaStar,
+} from "react-icons/fa";
 
 export function MembershipPerks() {
   const perks = [

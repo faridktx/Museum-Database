@@ -3,21 +3,10 @@ import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../components/utils";
 import { Download } from "lucide-react";
 import { Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  Title
-} from 'chart.js';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from "chart.js";
 import "../components/components.css";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  Title
-);
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 export function SalesReport() {
   const { user } = useUser();
@@ -25,40 +14,40 @@ export function SalesReport() {
   const [filteredSales, setFilteredSales] = useState([]);
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Filter states
-  const [itemSearch, setItemSearch] = useState('');
-  const [saleIdSearch, setSaleIdSearch] = useState('');
-  const [dateStart, setDateStart] = useState('');
-  const [dateEnd, setDateEnd] = useState('');
+  const [itemSearch, setItemSearch] = useState("");
+  const [saleIdSearch, setSaleIdSearch] = useState("");
+  const [dateStart, setDateStart] = useState("");
+  const [dateEnd, setDateEnd] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [salesRes, inventoryRes] = await Promise.all([
           apiFetch("/api/giftshop-sales", "GET", user.id),
-          apiFetch("/api/giftshop-inventory", "GET", user.id)
+          apiFetch("/api/giftshop-inventory", "GET", user.id),
         ]);
-        
+
         const salesData = salesRes.data;
         const inventoryData = inventoryRes.data;
-        
+
         // Map item names to sales
-        const salesWithItemNames = salesData.map(sale => {
-          const item = inventoryData.find(i => i.item_id === sale.item_id);
+        const salesWithItemNames = salesData.map((sale) => {
+          const item = inventoryData.find((i) => i.item_id === sale.item_id);
           return {
             ...sale,
-            item_name: item?.item_name || 'Unknown',
-            category: item?.category || 'Uncategorized'
+            item_name: item?.item_name || "Unknown",
+            category: item?.category || "Uncategorized",
           };
         });
-        
+
         setSales(salesWithItemNames);
         setFilteredSales(salesWithItemNames);
         setInventory(inventoryData);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -75,27 +64,27 @@ export function SalesReport() {
 
     // Item name filter
     if (itemSearch) {
-      filtered = filtered.filter(sale => 
-        sale.item_name.toLowerCase().includes(itemSearch.toLowerCase())
+      filtered = filtered.filter((sale) =>
+        sale.item_name.toLowerCase().includes(itemSearch.toLowerCase()),
       );
     }
 
     // Sale ID filter
     if (saleIdSearch) {
-      filtered = filtered.filter(sale => 
-        sale.sale_id.toString().includes(saleIdSearch)
+      filtered = filtered.filter((sale) =>
+        sale.sale_id.toString().includes(saleIdSearch),
       );
     }
 
     // Date range filter
     if (dateStart) {
-      filtered = filtered.filter(sale => 
-        new Date(sale.sale_date) >= new Date(dateStart)
+      filtered = filtered.filter(
+        (sale) => new Date(sale.sale_date) >= new Date(dateStart),
       );
     }
     if (dateEnd) {
-      filtered = filtered.filter(sale => 
-        new Date(sale.sale_date) <= new Date(dateEnd)
+      filtered = filtered.filter(
+        (sale) => new Date(sale.sale_date) <= new Date(dateEnd),
       );
     }
 
@@ -104,10 +93,11 @@ export function SalesReport() {
 
   const prepareChartData = () => {
     const salesByCategory = {};
-    
-    filteredSales.forEach(sale => {
-      const category = sale.category || 'Uncategorized';
-      salesByCategory[category] = (salesByCategory[category] || 0) + sale.total_cost;
+
+    filteredSales.forEach((sale) => {
+      const category = sale.category || "Uncategorized";
+      salesByCategory[category] =
+        (salesByCategory[category] || 0) + sale.total_cost;
     });
 
     const categories = Object.keys(salesByCategory);
@@ -115,31 +105,33 @@ export function SalesReport() {
 
     // Generate distinct colors for each category
     const backgroundColors = categories.map((_, i) => {
-      const hue = (i * 360 / categories.length) % 360;
+      const hue = ((i * 360) / categories.length) % 360;
       return `hsl(${hue}, 70%, 60%)`;
     });
 
     return {
       labels: categories,
-      datasets: [{
-        data: totals,
-        backgroundColor: backgroundColors,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          data: totals,
+          backgroundColor: backgroundColors,
+          borderWidth: 1,
+        },
+      ],
     };
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
   const handleClearFilters = () => {
-    setItemSearch('');
-    setSaleIdSearch('');
-    setDateStart('');
-    setDateEnd('');
+    setItemSearch("");
+    setSaleIdSearch("");
+    setDateStart("");
+    setDateEnd("");
   };
 
   const exportToCsv = () => {
@@ -150,21 +142,21 @@ export function SalesReport() {
       "Guest ID",
       "Date",
       "Quantity",
-      "Total Cost"
+      "Total Cost",
     ];
-    
-    const rows = filteredSales.map(sale => [
+
+    const rows = filteredSales.map((sale) => [
       sale.sale_id,
       sale.item_name,
       sale.category,
       sale.guest_id,
       sale.sale_date,
       sale.quantity,
-      sale.total_cost.toFixed(2)
+      sale.total_cost.toFixed(2),
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.join(","))
+      .map((row) => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -247,7 +239,7 @@ export function SalesReport() {
 
                 {/* Clear Filters Button */}
                 <div className="filter-item">
-                  <button 
+                  <button
                     className="clear-filters rounded-button"
                     onClick={handleClearFilters}
                   >
@@ -258,8 +250,11 @@ export function SalesReport() {
             </div>
 
             {/* Pie Chart */}
-            <div className="chart-container" style={{ height: '400px', marginBottom: '2rem' }}>
-              <Pie 
+            <div
+              className="chart-container"
+              style={{ height: "400px", marginBottom: "2rem" }}
+            >
+              <Pie
                 data={prepareChartData()}
                 options={{
                   responsive: true,
@@ -267,19 +262,19 @@ export function SalesReport() {
                   plugins: {
                     title: {
                       display: true,
-                      text: 'Sales by Category',
+                      text: "Sales by Category",
                       font: {
-                        size: 16
-                      }
+                        size: 16,
+                      },
                     },
                     tooltip: {
                       callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                           return `${context.label}: $${context.raw.toFixed(2)}`;
-                        }
-                      }
-                    }
-                  }
+                        },
+                      },
+                    },
+                  },
                 }}
               />
             </div>

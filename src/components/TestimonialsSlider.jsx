@@ -7,7 +7,8 @@ export function TestimonialsSlider() {
   const testimonials = [
     {
       name: "Ava R.",
-      quote: "Absolutely loved the Ancient Egypt exhibit. The details blew my mind!",
+      quote:
+        "Absolutely loved the Ancient Egypt exhibit. The details blew my mind!",
     },
     {
       name: "Michael B.",

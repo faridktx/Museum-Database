@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import "../pages/sheets/Style.giftshop.css";
 import { useUser } from "@clerk/clerk-react";
 import { useLocation } from "wouter";
-import { apiFetch, capitalize } from "../components/utils.custom";
+import { apiFetch } from "../components/utils.custom";
 
 export function GiftShop() {
   const { user } = useUser();
@@ -12,12 +12,19 @@ export function GiftShop() {
   const [shopItems, setShopItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [filters, setFilters] = useState({
-    category: "", color: "", size: "", price: ""
+    category: "",
+    color: "",
+    size: "",
+    price: "",
   });
 
   useEffect(() => {
     const loadGiftShopItems = async () => {
-      const response = await apiFetch("/api/custom/giftshop-items", "GET", user?.id);
+      const response = await apiFetch(
+        "/api/custom/giftshop-items",
+        "GET",
+        user?.id,
+      );
       setShopItems(response.data || []);
       setFilteredItems(response.data || []);
     };
@@ -39,7 +46,7 @@ export function GiftShop() {
   const handleQuantityChange = (itemId, newQuantity) => {
     if (newQuantity < 0) return;
     setCart((prevCart) => {
-      const item = shopItems.find(i => i.item_id === parseInt(itemId));
+      const item = shopItems.find((i) => i.item_id === parseInt(itemId));
       if (!item) return prevCart;
 
       if (newQuantity === 0) {
@@ -52,8 +59,8 @@ export function GiftShop() {
         ...prevCart,
         [itemId]: {
           count: newQuantity,
-          price: parseFloat(item.unit_price)
-        }
+          price: parseFloat(item.unit_price),
+        },
       };
     });
   };
@@ -66,7 +73,9 @@ export function GiftShop() {
       .toFixed(2);
   };
 
-  const uniqueValues = (field) => [...new Set(shopItems.map((item) => item[field]))];
+  const uniqueValues = (field) => [
+    ...new Set(shopItems.map((item) => item[field])),
+  ];
 
   const clearFilters = () => {
     setFilters({ category: "", color: "", size: "", price: "" });
@@ -94,21 +103,42 @@ export function GiftShop() {
           <h3>Filters</h3>
           <div className="filter-row">
             <div className="filter-item">
-              <select onChange={(e) => setFilters(f => ({ ...f, category: e.target.value }))} value={filters.category}>
+              <select
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, category: e.target.value }))
+                }
+                value={filters.category}
+              >
                 <option value="">All Categories</option>
-                {uniqueValues("category").map((cat) => <option key={cat}>{cat}</option>)}
+                {uniqueValues("category").map((cat) => (
+                  <option key={cat}>{cat}</option>
+                ))}
               </select>
             </div>
             <div className="filter-item">
-              <select onChange={(e) => setFilters(f => ({ ...f, color: e.target.value }))} value={filters.color}>
+              <select
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, color: e.target.value }))
+                }
+                value={filters.color}
+              >
                 <option value="">All Colors</option>
-                {uniqueValues("color").map((color) => <option key={color}>{color}</option>)}
+                {uniqueValues("color").map((color) => (
+                  <option key={color}>{color}</option>
+                ))}
               </select>
             </div>
             <div className="filter-item">
-              <select onChange={(e) => setFilters(f => ({ ...f, size: e.target.value }))} value={filters.size}>
+              <select
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, size: e.target.value }))
+                }
+                value={filters.size}
+              >
                 <option value="">All Sizes</option>
-                {uniqueValues("size").map((size) => <option key={size}>{size}</option>)}
+                {uniqueValues("size").map((size) => (
+                  <option key={size}>{size}</option>
+                ))}
               </select>
             </div>
             <div className="filter-item">
@@ -116,11 +146,15 @@ export function GiftShop() {
                 type="number"
                 placeholder="Max Price"
                 value={filters.price}
-                onChange={(e) => setFilters(f => ({ ...f, price: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, price: e.target.value }))
+                }
               />
             </div>
           </div>
-          <button onClick={clearFilters} className="clear-filters">Clear Filters</button>
+          <button onClick={clearFilters} className="clear-filters">
+            Clear Filters
+          </button>
         </div>
 
         <div className="cart-summary-box">
@@ -130,10 +164,14 @@ export function GiftShop() {
           ) : (
             <>
               {Object.entries(cart).map(([itemId, { count, price }]) => {
-                const item = shopItems.find(i => i.item_id === parseInt(itemId));
+                const item = shopItems.find(
+                  (i) => i.item_id === parseInt(itemId),
+                );
                 return (
                   <div key={itemId} className="cart-line">
-                    <span>{item?.item_name} × {count}</span>
+                    <span>
+                      {item?.item_name} × {count}
+                    </span>
                     <span>${(price * count).toFixed(2)}</span>
                   </div>
                 );
@@ -162,7 +200,13 @@ export function GiftShop() {
                 {item.image_url ? (
                   <img src={item.image_url} alt={item.item_name} />
                 ) : (
-                  <div style={{ height: "100%", width: "100%", backgroundColor: "#f1f5f9" }}></div>
+                  <div
+                    style={{
+                      height: "100%",
+                      width: "100%",
+                      backgroundColor: "#f1f5f9",
+                    }}
+                  ></div>
                 )}
               </div>
               <div className="product-info">
@@ -173,14 +217,30 @@ export function GiftShop() {
               <div className="product-actions">
                 <button
                   className="quantity-btn"
-                  onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id]?.count || 0) - 1)}
+                  onClick={() =>
+                    handleQuantityChange(
+                      item.item_id,
+                      (cart[item.item_id]?.count || 0) - 1,
+                    )
+                  }
                   disabled={!cart[item.item_id]}
-                >-</button>
-                <span className="quantity">{cart[item.item_id]?.count || 0}</span>
+                >
+                  -
+                </button>
+                <span className="quantity">
+                  {cart[item.item_id]?.count || 0}
+                </span>
                 <button
                   className="quantity-btn"
-                  onClick={() => handleQuantityChange(item.item_id, (cart[item.item_id]?.count || 0) + 1)}
-                >+</button>
+                  onClick={() =>
+                    handleQuantityChange(
+                      item.item_id,
+                      (cart[item.item_id]?.count || 0) + 1,
+                    )
+                  }
+                >
+                  +
+                </button>
               </div>
             </div>
           ))}

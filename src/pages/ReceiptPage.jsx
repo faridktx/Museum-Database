@@ -40,8 +40,9 @@ export function ReceiptPage() {
   }, [ids]);
 
   const total = [...ticketSales, ...giftSales].reduce(
-    (sum, item) => sum + parseFloat(item.unit_price || 0) * parseInt(item.quantity || 0),
-    0
+    (sum, item) =>
+      sum + parseFloat(item.unit_price || 0) * parseInt(item.quantity || 0),
+    0,
   );
 
   return (
@@ -52,8 +53,12 @@ export function ReceiptPage() {
         <p>Loading receipt...</p>
       ) : (
         <>
-          <p><strong>Guest ID:</strong> {guestId}</p>
-          <p><strong>Date:</strong> {purchaseDate}</p>
+          <p>
+            <strong>Guest ID:</strong> {guestId}
+          </p>
+          <p>
+            <strong>Date:</strong> {purchaseDate}
+          </p>
 
           {ticketSales.length > 0 && (
             <div className="receipt-section">
@@ -61,11 +66,16 @@ export function ReceiptPage() {
               {ticketSales.map((t, i) => (
                 <div key={i} className="receipt-line">
                   <span>{t.ticket_type}</span>
-                  <span>{t.quantity} × ${parseFloat(t.unit_price).toFixed(2)}</span>
+                  <span>
+                    {t.quantity} × ${parseFloat(t.unit_price).toFixed(2)}
+                  </span>
                 </div>
               ))}
               <div className="qr-container">
-                <QRCode value={`https://museum.com/verify?id=${guestId}`} size={100} />
+                <QRCode
+                  value={`https://museum.com/verify?id=${guestId}`}
+                  size={100}
+                />
                 <p>Scan to verify</p>
               </div>
             </div>
@@ -77,7 +87,9 @@ export function ReceiptPage() {
               {giftSales.map((g, i) => (
                 <div key={i} className="receipt-line">
                   <span>{g.item_name}</span>
-                  <span>{g.quantity} × ${parseFloat(g.unit_price).toFixed(2)}</span>
+                  <span>
+                    {g.quantity} × ${parseFloat(g.unit_price).toFixed(2)}
+                  </span>
                 </div>
               ))}
             </div>
