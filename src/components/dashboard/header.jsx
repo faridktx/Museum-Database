@@ -53,6 +53,7 @@ export function DashboardHeader() {
           <Link href="/tickets-memberships">Tickets & Memberships</Link>
           <Link href="/gift-shop">Gift Shop</Link>
           <Link href="/dashboard">Dashboard Home</Link>
+          <Link href="/dashboard/notifications">Notifications</Link>
 
           <SignedOut>
             <SignInButton>
@@ -63,7 +64,7 @@ export function DashboardHeader() {
           <SignedIn>
             <OnSignUp />
             <span style={{ marginRight: "1rem" }}>
-              Welcome,{" "}
+              Welcome, {" "}
               {user?.fullName ||
                 user?.username ||
                 user?.emailAddresses[0]?.emailAddress}

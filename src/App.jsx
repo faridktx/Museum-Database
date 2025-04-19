@@ -24,6 +24,7 @@ import { ReceiptPage } from "./pages/ReceiptPage";
 import { ArtistList } from "./pages/artist-list";
 import { InventoryReport } from "./pages/inventory-report";
 import { SalesReport } from "./pages/sales-report";
+import { AdminNotifications } from "./pages/AdminNotifications";
 import { Memberships } from "./pages/memberships";
 import { useEffect } from "react";
 import { CuratorDashboard } from "./pages/dashboards/curator-dashboard";
@@ -59,6 +60,7 @@ const routes = [
   { route: "/dashboard/inventory-report", component: InventoryReport },
   { route: "/dashboard/sales-report", component: SalesReport },
   { route: "/receipt", component: ReceiptPage },
+  { route: "/dashboard/notifications", component: AdminNotifications },
 ];
 
 export function App() {
