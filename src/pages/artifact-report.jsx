@@ -31,29 +31,29 @@ export function ArtifactReport() {
   const [loading, setLoading] = useState(true);
 
   // Filter states
-  const [idSearch, setIdSearch] = useState('');
-  const [nameSearch, setNameSearch] = useState('');
+  const [idSearch, setIdSearch] = useState("");
+  const [nameSearch, setNameSearch] = useState("");
   const [selectedNationalities, setSelectedNationalities] = useState([]);
   const [selectedArtists, setSelectedArtists] = useState([]);
-  const [valueMin, setValueMin] = useState('');
-  const [valueMax, setValueMax] = useState('');
-  const [yearMin, setYearMin] = useState('');
-  const [yearMax, setYearMax] = useState('');
+  const [valueMin, setValueMin] = useState("");
+  const [valueMax, setValueMax] = useState("");
+  const [yearMin, setYearMin] = useState("");
+  const [yearMax, setYearMax] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
       try {
         const [graphRes, reportRes] = await Promise.all([
           apiFetch("/api/artifact-graph/", "GET", user.id),
-          apiFetch("/api/artifact-report/", "GET", user.id)
+          apiFetch("/api/artifact-report/", "GET", user.id),
         ]);
-        
+
         setGraphData(graphRes.data);
         setReportData(reportRes.data);
         setFilteredReportData(reportRes.data);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -62,60 +62,66 @@ export function ArtifactReport() {
 
   useEffect(() => {
     applyFilters();
-  }, [reportData, idSearch, nameSearch, selectedNationalities, selectedArtists, valueMin, valueMax, yearMin, yearMax]);
+  }, [
+    reportData,
+    idSearch,
+    nameSearch,
+    selectedNationalities,
+    selectedArtists,
+    valueMin,
+    valueMax,
+    yearMin,
+    yearMax,
+  ]);
 
   const applyFilters = () => {
     let filtered = [...reportData];
 
     // ID filter
     if (idSearch) {
-      filtered = filtered.filter(item => 
-        item.Artifact_ID.toString().includes(idSearch)
+      filtered = filtered.filter((item) =>
+        item.Artifact_ID.toString().includes(idSearch),
       );
     }
 
     // Name filter
     if (nameSearch) {
-      filtered = filtered.filter(item => 
-        item.Artifact_Name.toLowerCase().includes(nameSearch.toLowerCase())
+      filtered = filtered.filter((item) =>
+        item.Artifact_Name.toLowerCase().includes(nameSearch.toLowerCase()),
       );
     }
 
     // Nationality filter
     if (selectedNationalities.length > 0) {
-      filtered = filtered.filter(item => 
-        selectedNationalities.includes(item.Nationality)
+      filtered = filtered.filter((item) =>
+        selectedNationalities.includes(item.Nationality),
       );
     }
 
     // Artist filter
     if (selectedArtists.length > 0) {
-      filtered = filtered.filter(item => 
-        selectedArtists.includes(item.Artist_Name)
+      filtered = filtered.filter((item) =>
+        selectedArtists.includes(item.Artist_Name),
       );
     }
 
     // Value range filter
     if (valueMin) {
-      filtered = filtered.filter(item => 
-        item.Value >= Number(valueMin)
-      );
+      filtered = filtered.filter((item) => item.Value >= Number(valueMin));
     }
     if (valueMax) {
-      filtered = filtered.filter(item => 
-        item.Value <= Number(valueMax)
-      );
+      filtered = filtered.filter((item) => item.Value <= Number(valueMax));
     }
 
     // Year range filter
     if (yearMin) {
-      filtered = filtered.filter(item => 
-        new Date(item.acquisition_year) >= new Date(yearMin)
+      filtered = filtered.filter(
+        (item) => new Date(item.acquisition_year) >= new Date(yearMin),
       );
     }
     if (yearMax) {
-      filtered = filtered.filter(item => 
-        new Date(item.acquisition_year) <= new Date(yearMax)
+      filtered = filtered.filter(
+        (item) => new Date(item.acquisition_year) <= new Date(yearMax),
       );
     }
 
@@ -123,14 +129,14 @@ export function ArtifactReport() {
   };
 
   const handleClearFilters = () => {
-    setIdSearch('');
-    setNameSearch('');
+    setIdSearch("");
+    setNameSearch("");
     setSelectedNationalities([]);
     setSelectedArtists([]);
-    setValueMin('');
-    setValueMax('');
-    setYearMin('');
-    setYearMax('');
+    setValueMin("");
+    setValueMax("");
+    setYearMin("");
+    setYearMax("");
   };
 
   const prepareChartData = () => {
@@ -237,20 +243,20 @@ export function ArtifactReport() {
       "Value",
       "Artist",
       "Nationality",
-      "Acquisition Year"
+      "Acquisition Year",
     ];
-    const rows = filteredReportData.map(item => [
+    const rows = filteredReportData.map((item) => [
       item.Artifact_ID,
       item.Artifact_Name,
       item.Artifact_Description,
       item.Value,
       item.Artist_Name,
       item.Nationality,
-      item.acquisition_year || ''
+      item.acquisition_year || "",
     ]);
 
     const csvContent = [headers, ...rows]
-      .map(row => row.join(","))
+      .map((row) => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -338,9 +344,15 @@ export function ArtifactReport() {
   };
 
   // Get unique values for filters
-  const nationalities = [...new Set(reportData.map(item => item.Nationality))].filter(Boolean);
-  const artists = [...new Set(reportData.map(item => item.Artist_Name))].filter(Boolean);
-  const years = [...new Set(reportData.map(item => item.acquisition_year))].filter(Boolean).sort();
+  const nationalities = [
+    ...new Set(reportData.map((item) => item.Nationality)),
+  ].filter(Boolean);
+  const artists = [
+    ...new Set(reportData.map((item) => item.Artist_Name)),
+  ].filter(Boolean);
+  const years = [...new Set(reportData.map((item) => item.acquisition_year))]
+    .filter(Boolean)
+    .sort();
 
   if (loading) return <div className="loading">Loading artifact data...</div>;
 
@@ -396,13 +408,20 @@ export function ArtifactReport() {
                   <select
                     multiple
                     value={selectedNationalities}
-                    onChange={(e) => setSelectedNationalities(
-                      Array.from(e.target.selectedOptions, option => option.value)
-                    )}
+                    onChange={(e) =>
+                      setSelectedNationalities(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value,
+                        ),
+                      )
+                    }
                     className="filter-select"
                   >
-                    {nationalities.map(nationality => (
-                      <option key={nationality} value={nationality}>{nationality}</option>
+                    {nationalities.map((nationality) => (
+                      <option key={nationality} value={nationality}>
+                        {nationality}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -413,13 +432,20 @@ export function ArtifactReport() {
                   <select
                     multiple
                     value={selectedArtists}
-                    onChange={(e) => setSelectedArtists(
-                      Array.from(e.target.selectedOptions, option => option.value)
-                    )}
+                    onChange={(e) =>
+                      setSelectedArtists(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value,
+                        ),
+                      )
+                    }
                     className="filter-select"
                   >
-                    {artists.map(artist => (
-                      <option key={artist} value={artist}>{artist}</option>
+                    {artists.map((artist) => (
+                      <option key={artist} value={artist}>
+                        {artist}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -475,10 +501,7 @@ export function ArtifactReport() {
                 </div>
 
                 {/* Clear Filters Button */}
-                <button 
-                  className="clear-filters"
-                  onClick={handleClearFilters}
-                >
+                <button className="clear-filters" onClick={handleClearFilters}>
                   Clear All Filters
                 </button>
               </div>
