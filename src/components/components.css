@@ -3647,6 +3647,18 @@
   background: linear-gradient(135deg, #795548 0%, #6d4c41 100%);
 }
 
+.status-badge.active {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #2e7d32;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-badge.inactive {
+  background-color: rgba(198, 40, 40, 0.1);
+  color: #c62828;
+  border: 1px solid rgba(198, 40, 40, 0.2);
+}
+
 /* Condition Badge */
 .condition-badge {
   display: inline-block;
@@ -3656,7 +3668,27 @@
   font-size: 0.8rem;
 }
 
-.condition-badge.needs-restoration {
+.condition-badge.condition-excellent {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.condition-badge.condition-good {
+  background-color: #f1f8e9;
+  color: #558b2f;
+}
+
+.condition-badge.condition-fair {
+  background-color: #fffde7;
+  color: #f9a825;
+}
+
+.condition-badge.condition-poor {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.condition-badge.condition-critical {
   background-color: #ffebee;
   color: #c62828;
 }
@@ -4720,9 +4752,9 @@
   text-transform: capitalize;
 }
 
-.status-badge.active {
+.status-badge.ongoing {
   background-color: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: #2e7d32;
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 

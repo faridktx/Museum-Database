@@ -8,7 +8,6 @@ import {
   DollarSign,
   X,
   Plus,
-  Lock,
   Settings as SettingsIcon,
 } from "lucide-react";
 import "../../components/components.css";
@@ -22,6 +21,8 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import { useUser } from "@clerk/clerk-react";
+import { SHOPCATEGORIES } from "../../components/constants.js";
 
 // Register Chart.js components
 ChartJS.register(
@@ -34,7 +35,7 @@ ChartJS.register(
 );
 
 export function GiftShopDashboard() {
-  // Tab state
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Filter states
@@ -57,12 +58,9 @@ export function GiftShopDashboard() {
 
   // Form states
   const [showSettings, setShowSettings] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showNewProductForm, setShowNewProductForm] = useState(false);
 
   // Selection states
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedSale, setSelectedSale] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProducts, setDeletingProducts] = useState([]);
 
@@ -76,172 +74,87 @@ export function GiftShopDashboard() {
     startDate: "",
   });
 
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
-
   const [newProductData, setNewProductData] = useState({
     name: "",
     category: "",
     description: "",
     price: "",
-    cost: "",
     inStock: 0,
-    minimumStock: 0,
     supplier: "",
   });
 
   const [editFormData, setEditFormData] = useState({});
-
-  // Mock employee data
   const [employeeData, setEmployeeData] = useState({
-    name: "Taylor Morgan",
-    title: "Gift Shop Manager",
-    email: "taylor.morgan@museum.org",
-    phone: "(555) 789-0123",
-    department: "Gift Shop",
-    startDate: "June 15, 2021",
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    department: "",
+    startDate: "",
   });
 
-  // Mock inventory data
-  const [inventory, setInventory] = useState([
-    {
-      id: 1,
-      name: "Art History Book",
-      category: "Books",
-      description: "Comprehensive guide to art movements throughout history",
-      price: 34.99,
-      cost: 17.5,
-      inStock: 25,
-      minimumStock: 5,
-      supplier: "Academic Publishers Inc.",
-    },
-    {
-      id: 2,
-      name: "Museum Logo T-Shirt",
-      category: "Apparel",
-      description: "Cotton t-shirt with embroidered museum logo",
-      price: 24.99,
-      cost: 8.75,
-      inStock: 48,
-      minimumStock: 10,
-      supplier: "Textile Creations Ltd.",
-    },
-    {
-      id: 3,
-      name: "Impressionist Prints Set",
-      category: "Prints",
-      description: "Set of 5 high-quality prints of impressionist masterpieces",
-      price: 45.99,
-      cost: 22.3,
-      inStock: 15,
-      minimumStock: 3,
-      supplier: "Fine Art Reproductions Co.",
-    },
-    {
-      id: 4,
-      name: "Artist Sketchbook",
-      category: "Art Supplies",
-      description: "Premium quality artist sketchbook with acid-free paper",
-      price: 18.99,
-      cost: 7.25,
-      inStock: 32,
-      minimumStock: 8,
-      supplier: "Creative Supplies Inc.",
-    },
-    {
-      id: 5,
-      name: "Museum Ceramic Mug",
-      category: "Homewares",
-      description: "Handcrafted ceramic mug with museum artwork print",
-      price: 22.5,
-      cost: 9.75,
-      inStock: 37,
-      minimumStock: 10,
-      supplier: "Artisan Ceramics LLC",
-    },
-    {
-      id: 6,
-      name: "Renaissance Magnet Set",
-      category: "Accessories",
-      description:
-        "Set of 8 decorative magnets featuring Renaissance paintings",
-      price: 15.99,
-      cost: 5.3,
-      inStock: 42,
-      minimumStock: 12,
-      supplier: "Heritage Gift Products",
-    },
-  ]);
+  useEffect(() => {
+    const getEmployeeInfo = async () => {
+      const url = new URL(
+        "/api/getgiftshop/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setEmployeeData({
+          ...data.data,
+          department: "Gift Shop",
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getEmployeeInfo();
+  }, []);
 
-  // Mock sales data
-  const [sales, setSales] = useState([
-    {
-      id: 101,
-      date: "2023-06-15",
-      products: [
-        { id: 1, name: "Art History Book", quantity: 2, price: 34.99 },
-        { id: 5, name: "Museum Ceramic Mug", quantity: 1, price: 22.5 },
-      ],
-      customer: "Sarah Johnson",
-      total: 92.48, // 2 * 34.99 + 1 * 22.5 = 92.48
-      paymentMethod: "Credit Card",
-      status: "Completed",
-    },
-    {
-      id: 102,
-      date: "2023-06-16",
-      products: [
-        { id: 2, name: "Museum Logo T-Shirt", quantity: 1, price: 24.99 },
-        { id: 6, name: "Renaissance Magnet Set", quantity: 2, price: 15.99 },
-      ],
-      customer: "Mike Thompson",
-      total: 56.97, // 1 * 24.99 + 2 * 15.99 = 56.97
-      paymentMethod: "Cash",
-      status: "Completed",
-    },
-    {
-      id: 103,
-      date: "2023-06-17",
-      products: [
-        { id: 3, name: "Impressionist Prints Set", quantity: 1, price: 45.99 },
-      ],
-      customer: "Emma Wilson",
-      total: 45.99, // 1 * 45.99 = 45.99
-      paymentMethod: "Credit Card",
-      status: "Completed",
-    },
-    {
-      id: 104,
-      date: "2023-06-18",
-      products: [
-        { id: 4, name: "Artist Sketchbook", quantity: 3, price: 18.99 },
-        { id: 2, name: "Museum Logo T-Shirt", quantity: 2, price: 24.99 },
-      ],
-      customer: "James Brown",
-      total: 106.95, // 3 * 18.99 + 2 * 24.99 = 56.97 + 49.98 = 106.95
-      paymentMethod: "Debit Card",
-      status: "Completed",
-    },
-    {
-      id: 105,
-      date: "2023-06-19",
-      products: [
-        { id: 1, name: "Art History Book", quantity: 1, price: 34.99 },
-        { id: 6, name: "Renaissance Magnet Set", quantity: 1, price: 15.99 },
-        { id: 5, name: "Museum Ceramic Mug", quantity: 2, price: 22.5 },
-      ],
-      customer: "Alex Martinez",
-      total: 95.98, // 1 * 34.99 + 1 * 15.99 + 2 * 22.5 = 95.98
-      paymentMethod: "Credit Card",
-      status: "Completed",
-    },
-  ]);
+  useEffect(() => {
+    const getInventory = async () => {
+      const url = new URL(
+        "/api/getinventory/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setInventory(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getInventory();
+  }, []);
+
+  const [inventory, setInventory] = useState([]);
+
+  useEffect(() => {
+    const getSales = async () => {
+      const url = new URL("/api/getsales/", process.env.REACT_APP_BACKEND_URL);
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setSales(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getSales();
+  }, []);
+  const [sales, setSales] = useState([]);
 
   // Update search query
   const updateSearchQuery = (query) => {
@@ -371,60 +284,26 @@ export function GiftShopDashboard() {
     });
   };
 
-  // Handle password form changes
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData({
-      ...passwordData,
-      [name]: value,
-    });
-  };
-
-  // Handle password form submission
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    setPasswordError("");
-
-    // Password validation
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters long");
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords don't match");
-      return;
-    }
-
-    // Mock successful password change
-    setPasswordSuccess(true);
-
-    // Reset form data
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setPasswordSuccess(false);
-      setShowPasswordForm(false);
-    }, 3000);
-  };
-
   // Handle saving profile settings
-  const handleSaveSettings = () => {
-    // Update employee data with form data - only name, email, and phone can be changed
-    setEmployeeData({
-      ...employeeData,
-      name: formData.name || employeeData.name,
-      email: formData.email || employeeData.email,
-      phone: formData.phone || employeeData.phone,
-    });
+  const handleSaveSettings = async () => {
+    setEmployeeData(formData);
 
     // Close settings form
     setShowSettings(false);
+    const url = new URL(
+      "/api/setemployeeinfo/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Handle new product form change
@@ -437,17 +316,28 @@ export function GiftShopDashboard() {
   };
 
   // Handle save new product
-  const handleSaveNewProduct = () => {
+  const handleSaveNewProduct = async () => {
     // Create new product with ID
-    const newId = Math.max(...inventory.map((p) => p.id), 0) + 1;
     const newProduct = {
       ...newProductData,
-      id: newId,
-      price: parseFloat(newProductData.price) || 0,
-      cost: parseFloat(newProductData.cost) || 0,
-      inStock: parseInt(newProductData.inStock) || 0,
-      minimumStock: parseInt(newProductData.minimumStock) || 0,
+      price: parseFloat(newProductData.price),
+      inStock: parseInt(newProductData.inStock),
     };
+
+    const url = new URL(
+      "/api/addinventory/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newProductData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
     // Add to inventory
     setInventory([...inventory, newProduct]);
@@ -458,9 +348,7 @@ export function GiftShopDashboard() {
       category: "",
       description: "",
       price: "",
-      cost: "",
       inStock: 0,
-      minimumStock: 0,
       supplier: "",
     });
 
@@ -476,9 +364,7 @@ export function GiftShopDashboard() {
       category: "",
       description: "",
       price: "",
-      cost: "",
       inStock: 0,
-      minimumStock: 0,
       supplier: "",
     });
 
@@ -494,7 +380,6 @@ export function GiftShopDashboard() {
       category: product.category,
       description: product.description,
       price: product.price,
-      cost: product.cost,
       inStock: product.inStock,
       minimumStock: product.minimumStock,
       supplier: product.supplier,
@@ -511,7 +396,7 @@ export function GiftShopDashboard() {
   };
 
   // Handle save product edit
-  const handleSaveProduct = () => {
+  const handleSaveProduct = async () => {
     // Update inventory with edited data
     setInventory(
       inventory.map((item) => {
@@ -521,16 +406,29 @@ export function GiftShopDashboard() {
             name: editFormData.name,
             category: editFormData.category,
             description: editFormData.description,
-            price: parseFloat(editFormData.price) || 0,
-            cost: parseFloat(editFormData.cost) || 0,
-            inStock: parseInt(editFormData.inStock) || 0,
-            minimumStock: parseInt(editFormData.minimumStock) || 0,
+            price: parseFloat(editFormData.price),
+            inStock: parseInt(editFormData.inStock),
             supplier: editFormData.supplier,
           };
         }
         return item;
       }),
     );
+
+    const url = new URL(
+      "/api/setinventory/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editFormData, id: editingProduct }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
     // Reset editing state
     setEditingProduct(null);
@@ -544,7 +442,7 @@ export function GiftShopDashboard() {
   };
 
   // Handle delete product
-  const handleDeleteProduct = (productId) => {
+  const handleDeleteProduct = async (productId) => {
     // Mark for deletion (visual effect)
     setDeletingProducts([...deletingProducts, productId]);
 
@@ -553,6 +451,21 @@ export function GiftShopDashboard() {
       setInventory(inventory.filter((product) => product.id !== productId));
       setDeletingProducts(deletingProducts.filter((id) => id !== productId));
     }, 300);
+
+    const url = new URL(
+      "/api/deleteinventory/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemId: productId }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Initialize form data when showing settings
@@ -982,31 +895,9 @@ export function GiftShopDashboard() {
                   <h2>Personal Information</h2>
                   <div className="profile-actions">
                     <button
-                      className={`action-button ${showPasswordForm ? "action-button-cancel" : ""}`}
-                      onClick={() => {
-                        setShowPasswordForm(!showPasswordForm);
-                        if (showSettings) setShowSettings(false);
-                        setPasswordError("");
-                        setPasswordSuccess(false);
-                      }}
-                    >
-                      {showPasswordForm ? (
-                        <>
-                          <X size={16} />
-                          <span>Cancel</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={16} />
-                          <span>Change Password</span>
-                        </>
-                      )}
-                    </button>
-                    <button
                       className={`action-button ${showSettings ? "action-button-cancel" : ""}`}
                       onClick={() => {
                         setShowSettings(!showSettings);
-                        if (showPasswordForm) setShowPasswordForm(false);
                       }}
                     >
                       {showSettings ? (
@@ -1023,79 +914,6 @@ export function GiftShopDashboard() {
                     </button>
                   </div>
                 </div>
-
-                {showPasswordForm ? (
-                  <div className="settings-form password-form">
-                    <h3>Change Password</h3>
-                    {passwordSuccess && (
-                      <div className="form-success-message">
-                        Password changed successfully!
-                      </div>
-                    )}
-                    {passwordError && (
-                      <div className="form-error-message">{passwordError}</div>
-                    )}
-                    <form onSubmit={handlePasswordSubmit}>
-                      <div className="form-group">
-                        <label htmlFor="currentPassword">
-                          Current Password
-                        </label>
-                        <input
-                          type="password"
-                          id="currentPassword"
-                          name="currentPassword"
-                          value={passwordData.currentPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="newPassword">New Password</label>
-                        <input
-                          type="password"
-                          id="newPassword"
-                          name="newPassword"
-                          value={passwordData.newPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="confirmPassword">
-                          Confirm New Password
-                        </label>
-                        <input
-                          type="password"
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          value={passwordData.confirmPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-actions">
-                        <button
-                          type="button"
-                          className="cancel-button"
-                          onClick={() => {
-                            setShowPasswordForm(false);
-                            setPasswordData({
-                              currentPassword: "",
-                              newPassword: "",
-                              confirmPassword: "",
-                            });
-                            setPasswordError("");
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button type="submit" className="save-button">
-                          Update Password
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                ) : null}
 
                 {showSettings ? (
                   <div className="settings-form">
@@ -1276,7 +1094,9 @@ export function GiftShopDashboard() {
                   >
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-name">Product Name</label>
+                        <label className="required" htmlFor="new-name">
+                          Product Name
+                        </label>
                         <input
                           type="text"
                           id="new-name"
@@ -1288,21 +1108,33 @@ export function GiftShopDashboard() {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="new-category">Category</label>
-                        <input
-                          type="text"
+                        <label className="required" htmlFor="new-category">
+                          Category
+                        </label>
+                        <select
                           id="new-category"
                           name="category"
                           value={newProductData.category}
                           onChange={handleNewProductChange}
                           required
-                        />
+                        >
+                          <option disabled selected value="">
+                            Select a category
+                          </option>
+                          {SHOPCATEGORIES.map((category, index) => (
+                            <option key={index} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-price">Price ($)</label>
+                        <label className="required" htmlFor="new-price">
+                          Price ($)
+                        </label>
                         <input
                           type="number"
                           id="new-price"
@@ -1314,16 +1146,17 @@ export function GiftShopDashboard() {
                           required
                         />
                       </div>
-
                       <div className="form-group">
-                        <label htmlFor="new-cost">Cost ($)</label>
+                        <label className="required" htmlFor="new-inStock">
+                          Current Stock
+                        </label>
                         <input
                           type="number"
-                          id="new-cost"
-                          name="cost"
-                          step="0.01"
+                          id="new-inStock"
+                          name="inStock"
                           min="0"
-                          value={newProductData.cost}
+                          step="1"
+                          value={newProductData.inStock}
                           onChange={handleNewProductChange}
                           required
                         />
@@ -1332,20 +1165,9 @@ export function GiftShopDashboard() {
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-inStock">Current Stock</label>
-                        <input
-                          type="number"
-                          id="new-inStock"
-                          name="inStock"
-                          min="0"
-                          value={newProductData.inStock}
-                          onChange={handleNewProductChange}
-                          required
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="new-supplier">Supplier</label>
+                        <label className="required" htmlFor="new-supplier">
+                          Supplier
+                        </label>
                         <input
                           type="text"
                           id="new-supplier"
@@ -1355,16 +1177,19 @@ export function GiftShopDashboard() {
                           required
                         />
                       </div>
+                      <div className="form-group"></div>
                     </div>
 
                     <div className="form-group">
-                      <label htmlFor="new-description">Description</label>
+                      <label className="required" htmlFor="new-description">
+                        Description
+                      </label>
                       <textarea
                         id="new-description"
                         name="description"
                         value={newProductData.description}
                         onChange={handleNewProductChange}
-                        rows={3}
+                        rows={2}
                         required
                       />
                     </div>
@@ -1411,19 +1236,9 @@ export function GiftShopDashboard() {
                       <React.Fragment key={`product-row-${product.id}`}>
                         <tr
                           className={`
-                            ${selectedProduct?.id === product.id ? "selected" : ""}
                             ${deletingProducts.includes(product.id) ? "deleting" : ""}
                             ${editingProduct === product.id ? "editing" : ""}
                           `}
-                          onClick={() => {
-                            if (editingProduct !== product.id) {
-                              setSelectedProduct(
-                                selectedProduct?.id === product.id
-                                  ? null
-                                  : product,
-                              );
-                            }
-                          }}
                         >
                           {editingProduct === product.id ? (
                             // Edit mode - show input fields
@@ -1432,19 +1247,26 @@ export function GiftShopDashboard() {
                                 <input
                                   type="text"
                                   name="name"
-                                  value={editFormData.name || ""}
+                                  value={editFormData.name}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 />
                               </td>
                               <td>
-                                <input
-                                  type="text"
+                                <select
                                   name="category"
-                                  value={editFormData.category || ""}
+                                  value={editFormData.category}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
-                                />
+                                  required
+                                >
+                                  {SHOPCATEGORIES.map((category, index) => (
+                                    <option key={index} value={category}>
+                                      {category}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td>
                                 <input
@@ -1452,9 +1274,10 @@ export function GiftShopDashboard() {
                                   name="price"
                                   step="0.01"
                                   min="0"
-                                  value={editFormData.price || ""}
+                                  value={editFormData.price}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 />
                               </td>
                               <td>
@@ -1462,18 +1285,21 @@ export function GiftShopDashboard() {
                                   type="number"
                                   name="inStock"
                                   min="0"
-                                  value={editFormData.inStock || ""}
+                                  step="1"
+                                  value={editFormData.inStock}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 />
                               </td>
                               <td>
                                 <input
                                   type="text"
                                   name="supplier"
-                                  value={editFormData.supplier || ""}
+                                  value={editFormData.supplier}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
+                                  required
                                 />
                               </td>
                               <td className="action-buttons">
@@ -1533,83 +1359,15 @@ export function GiftShopDashboard() {
                             </>
                           )}
                         </tr>
-                        {selectedProduct?.id === product.id && (
-                          <tr className="detail-row">
-                            <td colSpan="6">
-                              <div className="inline-detail-view">
-                                <h3>Product Details</h3>
-                                <div className="detail-content">
-                                  <h4>{selectedProduct.name}</h4>
-                                  <div className="artist-detail-section">
-                                    <h5>Category</h5>
-                                    <p>{selectedProduct.category}</p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Description</h5>
-                                    <p>{selectedProduct.description}</p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Pricing</h5>
-                                    <p>
-                                      <strong>Price:</strong> $
-                                      {selectedProduct.price.toFixed(2)}
-                                      <br />
-                                      <strong>Cost:</strong> $
-                                      {selectedProduct.cost.toFixed(2)}
-                                      <br />
-                                      <strong>Profit Margin:</strong> $
-                                      {(
-                                        selectedProduct.price -
-                                        selectedProduct.cost
-                                      ).toFixed(2)}
-                                      (
-                                      {Math.round(
-                                        ((selectedProduct.price -
-                                          selectedProduct.cost) /
-                                          selectedProduct.price) *
-                                          100,
-                                      )}
-                                      %)
-                                    </p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Inventory</h5>
-                                    <p>
-                                      <strong>Current Stock:</strong>{" "}
-                                      {selectedProduct.inStock}
-                                      <br />
-                                      <strong>Minimum Stock:</strong>{" "}
-                                      {selectedProduct.minimumStock}
-                                      <br />
-                                      <strong>Status:</strong>{" "}
-                                      {isLowStock(selectedProduct) ? (
-                                        <span className="text-danger">
-                                          Low Stock - Reorder Needed
-                                          {selectedProduct.inStock <=
-                                            lowInventoryThreshold &&
-                                            " (Below Global Threshold)"}
-                                          {selectedProduct.inStock <=
-                                            selectedProduct.minimumStock &&
-                                            " (Below Product Minimum)"}
-                                        </span>
-                                      ) : (
-                                        "In Stock"
-                                      )}
-                                    </p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Supplier Information</h5>
-                                    <p>{selectedProduct.supplier}</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
                       </React.Fragment>
                     ))}
                   </tbody>
                 </table>
+                {inventory.length === 0 && (
+                  <div className="empty-state">
+                    <p>No gift shop inventory items found.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1640,16 +1398,7 @@ export function GiftShopDashboard() {
                   <tbody>
                     {filterItems(sales, "sales").map((sale) => (
                       <React.Fragment key={`sale-row-${sale.id}`}>
-                        <tr
-                          className={
-                            selectedSale?.id === sale.id ? "selected" : ""
-                          }
-                          onClick={() => {
-                            setSelectedSale(
-                              selectedSale?.id === sale.id ? null : sale,
-                            );
-                          }}
-                        >
+                        <tr>
                           <td>#{sale.id}</td>
                           <td>{new Date(sale.date).toLocaleDateString()}</td>
                           <td>{sale.customer}</td>
@@ -1657,80 +1406,15 @@ export function GiftShopDashboard() {
                           <td>${sale.total.toFixed(2)}</td>
                           <td>{sale.paymentMethod}</td>
                         </tr>
-                        {selectedSale?.id === sale.id && (
-                          <tr className="detail-row">
-                            <td colSpan="6">
-                              <div className="inline-detail-view">
-                                <h3>Sale Details</h3>
-                                <div className="detail-content">
-                                  <h4>Order #{selectedSale.id}</h4>
-                                  <p>
-                                    <strong>Date:</strong>{" "}
-                                    {new Date(
-                                      selectedSale.date,
-                                    ).toLocaleDateString()}
-                                    <br />
-                                    <strong>Customer:</strong>{" "}
-                                    {selectedSale.customer}
-                                    <br />
-                                    <strong>Payment Method:</strong>{" "}
-                                    {selectedSale.paymentMethod}
-                                    <br />
-                                    <strong>Status:</strong>{" "}
-                                    {selectedSale.status}
-                                  </p>
-                                  <div className="artist-detail-section">
-                                    <h5>Items Purchased</h5>
-                                    <table className="nested-table">
-                                      <thead>
-                                        <tr>
-                                          <th>Product</th>
-                                          <th>Quantity</th>
-                                          <th>Price</th>
-                                          <th>Subtotal</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {selectedSale.products.map(
-                                          (item, index) => (
-                                            <tr key={`item-${index}`}>
-                                              <td>{item.name}</td>
-                                              <td>{item.quantity}</td>
-                                              <td>${item.price.toFixed(2)}</td>
-                                              <td>
-                                                $
-                                                {(
-                                                  item.price * item.quantity
-                                                ).toFixed(2)}
-                                              </td>
-                                            </tr>
-                                          ),
-                                        )}
-                                        <tr className="total-row">
-                                          <td
-                                            colSpan="3"
-                                            className="text-right"
-                                          >
-                                            <strong>Total:</strong>
-                                          </td>
-                                          <td>
-                                            <strong>
-                                              ${selectedSale.total.toFixed(2)}
-                                            </strong>
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
                       </React.Fragment>
                     ))}
                   </tbody>
                 </table>
+                {sales.length === 0 && (
+                  <div className="empty-state">
+                    <p>No gift shop item sales found.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

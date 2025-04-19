@@ -10,15 +10,40 @@ import {
   BarChart,
   Settings as SettingsIcon,
   X,
-  Lock,
 } from "lucide-react";
 import { CollectionGrowthCharts } from "../charts/curator-growth";
 import "../../components/components.css";
 import "./curator.css";
+import { useUser } from "@clerk/clerk-react";
+import {
+  ACQUISITIONTYPES,
+  ARTMOVEMENTS,
+  NATIONALITIES,
+  CONDITIONS,
+} from "../../components/constants.js";
+
+export function getConditionClass(condition) {
+  switch (condition) {
+    case "Excellent":
+      return "condition-excellent";
+    case "Good":
+      return "condition-good";
+    case "Fair":
+      return "condition-fair";
+    case "Poor":
+      return "condition-poor";
+    case "Critical":
+      return "condition-critical";
+    default:
+      return "";
+  }
+}
 
 export function CuratorDashboard() {
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
   const [showAdvancedFilter, setShowAdvancedFilter] = useState(false);
+  const [exhibitsMap, setExhibitsMap] = useState([]);
 
   // Keep track of artists being deleted (for animation)
   const [deletingArtists, setDeletingArtists] = useState([]);
@@ -38,6 +63,87 @@ export function CuratorDashboard() {
   // State for showing new artist form
   const [showNewArtistForm, setShowNewArtistForm] = useState(false);
 
+  useEffect(() => {
+    const getCuratorInfo = async () => {
+      const url = new URL(
+        "/api/getcurator/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setCuratorData(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getCuratorInfo();
+  }, []);
+
+  useEffect(() => {
+    const getExhibitsMap = async () => {
+      const url = new URL(
+        "/api/getexhibitsmap/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setExhibitsMap(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getExhibitsMap();
+  }, []);
+
+  useEffect(() => {
+    const getArtists = async () => {
+      const url = new URL(
+        "/api/getartists/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setArtists(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getArtists();
+  }, []);
+
+  useEffect(() => {
+    const getArtifacts = async () => {
+      const url = new URL(
+        "/api/getartifacts/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setArtifacts(data.data);
+        console.log(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getArtifacts();
+  }, []);
+
   // State for new artist form data
   const [newArtistData, setNewArtistData] = useState({
     name: "",
@@ -56,11 +162,14 @@ export function CuratorDashboard() {
   const [newArtifactData, setNewArtifactData] = useState({
     title: "",
     artistId: "",
-    year: "",
+    exhibitId: "",
+    createdYear: "",
     medium: "",
+    description: "",
     dimensions: "",
-    location: "",
-    condition: "Good",
+    condition: "",
+    acquisitionType: "",
+    acquisitionValue: "",
     acquisitionDate: "",
     needsRestoration: false,
   });
@@ -95,7 +204,7 @@ export function CuratorDashboard() {
       artist: "",
       year: "",
       medium: "",
-      location: "",
+      exhibitName: "",
       condition: "",
     },
   });
@@ -130,7 +239,7 @@ export function CuratorDashboard() {
             artifact.title.toLowerCase().includes(query) ||
             artistName.toLowerCase().includes(query) ||
             artifact.medium.toLowerCase().includes(query) ||
-            artifact.location.toLowerCase().includes(query) ||
+            artifact.exhibitName.toLowerCase().includes(query) ||
             artifact.condition.toLowerCase().includes(query)
           );
         });
@@ -159,7 +268,7 @@ export function CuratorDashboard() {
         );
       }
     } else if (type === "artifacts") {
-      const { title, artist, year, medium, location, condition } =
+      const { title, artist, year, medium, exhibitName, condition } =
         filters.artifacts;
 
       if (title) {
@@ -188,9 +297,11 @@ export function CuratorDashboard() {
         );
       }
 
-      if (location) {
+      if (exhibitName) {
         filteredItems = filteredItems.filter((artifact) =>
-          artifact.location.toLowerCase().includes(location.toLowerCase()),
+          artifact.exhibitName
+            .toLowerCase()
+            .includes(exhibitName.toLowerCase()),
         );
       }
 
@@ -203,183 +314,25 @@ export function CuratorDashboard() {
 
     return filteredItems;
   };
-  const [selectedArtist, setSelectedArtist] = useState(null);
-  const [selectedArtifact, setSelectedArtifact] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     title: "",
     email: "",
     phone: "",
-    department: "",
-    specialization: "",
-    bio: "",
   });
 
   const [curatorData, setCuratorData] = useState({
-    name: "Dr. Eleanor Mitchell",
-    title: "Senior Curator, Modern Art",
-    email: "eleanor.mitchell@museocore.org",
-    phone: "(555) 123-4567",
-    department: "Modern & Contemporary Art",
-    specialization: "Post-War Abstract Expressionism",
-    joinDate: "June 15, 2018",
-    bio: "Dr. Mitchell holds a Ph.D. in Art History from Columbia University. She has organized over 20 major exhibitions and published extensively on mid-century abstract art. Before joining MuseoCore, she served as Assistant Curator at the Whitney Museum of American Art.",
+    employeeId: "",
+    name: "",
+    title: "",
+    email: "",
+    phone: "",
+    joinDate: "",
   });
 
-  const [artists, setArtists] = useState([
-    {
-      id: 1,
-      name: "Jackson Pollock",
-      birthYear: 1912,
-      deathYear: 1956,
-      nationality: "American",
-      movement: "Abstract Expressionism",
-      notableWorks: "No. 5, 1948; Autumn Rhythm; Blue Poles",
-      biography:
-        "Paul Jackson Pollock was an influential American painter and a major figure in the abstract expressionist movement. Known for his unique style of drip painting.",
-    },
-    {
-      id: 2,
-      name: "Georgia O'Keeffe",
-      birthYear: 1887,
-      deathYear: 1986,
-      nationality: "American",
-      movement: "American Modernism",
-      notableWorks: "Black Iris, Cow's Skull: Red, White, and Blue",
-      biography:
-        "Georgia O'Keeffe was an American artist known for her paintings of enlarged flowers, New York skyscrapers, and New Mexico landscapes.",
-    },
-    {
-      id: 3,
-      name: "Frida Kahlo",
-      birthYear: 1907,
-      deathYear: 1954,
-      nationality: "Mexican",
-      movement: "Surrealism",
-      notableWorks:
-        "The Two Fridas, Self-Portrait with Thorn Necklace and Hummingbird",
-      biography:
-        "Frida Kahlo was a Mexican painter known for her many portraits, self-portraits, and works inspired by nature and artifacts of Mexico.",
-    },
-    {
-      id: 4,
-      name: "Gustav Klimt",
-      birthYear: 1862,
-      deathYear: 1918,
-      nationality: "Austrian",
-      movement: "Art Nouveau",
-      notableWorks:
-        "The Kiss, Portrait of Adele Bloch-Bauer I, The Tree of Life",
-      biography:
-        "Gustav Klimt was an Austrian symbolist painter and one of the most prominent members of the Vienna Secession movement. His primary subject was the female body.",
-    },
-    {
-      id: 5,
-      name: "Anonymous",
-      birthYear: -550,
-      deathYear: -500,
-      nationality: "Ancient Greek",
-      movement: "Greek Black-Figure Pottery",
-      notableWorks: "Various amphoras and vases from Athens region",
-      biography:
-        "An anonymous master potter and painter from ancient Athens known for distinctive black-figure pottery depicting mythological scenes and everyday life.",
-    },
-    {
-      id: 6,
-      name: "Sandro Botticelli",
-      birthYear: 1445,
-      deathYear: 1510,
-      nationality: "Italian",
-      movement: "Early Renaissance",
-      notableWorks: "The Birth of Venus; Primavera; Madonna of the Book",
-      biography:
-        "Alessandro di Mariano di Vanni Filipepi, known as Sandro Botticelli, was an Italian painter of the Early Renaissance particularly known for his mythological masterpieces.",
-    },
-  ]);
-
-  const [artifacts, setArtifacts] = useState([
-    {
-      id: 101,
-      title: "Convergence",
-      artistId: 1,
-      year: 1952,
-      medium: "Oil on canvas",
-      dimensions: "93.5 × 155 in",
-      location: "Gallery A, Section 3",
-      acquisitionDate: "March 12, 2010",
-      condition: "Good",
-      needsRestoration: false,
-    },
-    {
-      id: 102,
-      title: "Red Canna",
-      artistId: 2,
-      year: 1924,
-      medium: "Oil on canvas",
-      dimensions: "36 × 30 in",
-      location: "Gallery B, Section 1",
-      acquisitionDate: "November 5, 2005",
-      condition: "Excellent",
-      needsRestoration: false,
-    },
-    {
-      id: 103,
-      title: "The Broken Column",
-      artistId: 3,
-      year: 1944,
-      medium: "Oil on canvas",
-      dimensions: "15.7 × 12.6 in",
-      location: "Conservation Lab",
-      acquisitionDate: "June 23, 2015",
-      condition: "Poor",
-      needsRestoration: true,
-    },
-    {
-      id: 104,
-      title: "Autumn Rhythm",
-      artistId: 1,
-      year: 1950,
-      medium: "Enamel on canvas",
-      dimensions: "105 × 207 in",
-      location: "Storage Vault B",
-      acquisitionDate: "September 30, 2012",
-      condition: "Fair",
-      needsRestoration: true,
-    },
-    {
-      id: 105,
-      title: "Ancient Greek Amphora",
-      artistId: 5,
-      year: -520, // 520 BCE
-      medium: "Terracotta with black-figure decoration",
-      dimensions: "45 cm × 25 cm",
-      location: "Gallery D, Ancient Collection",
-      acquisitionDate: "October 5, 2022",
-      condition: "Poor",
-      needsRestoration: false,
-    },
-    {
-      id: 106,
-      title: "Madonna and Child",
-      artistId: 6,
-      year: 1495,
-      medium: "Tempera on panel",
-      dimensions: "67 cm × 51 cm",
-      location: "Renaissance Hall, Section 1",
-      acquisitionDate: "July 17, 2021",
-      condition: "Critical",
-      needsRestoration: false,
-    },
-  ]);
+  const [artists, setArtists] = useState([]);
+  const [artifacts, setArtifacts] = useState([]);
 
   // Function to handle editing an artist
   const handleEditArtist = (artist) => {
@@ -396,12 +349,10 @@ export function CuratorDashboard() {
       notableWorks: artist.notableWorks,
       biography: artist.biography,
     });
-
-    console.log("Editing artist:", artist);
   };
 
   // Function to save edited artist data
-  const handleSaveArtist = () => {
+  const handleSaveArtist = async () => {
     // Update the artists array with edited data
     setArtists(
       artists.map((artist) =>
@@ -409,11 +360,21 @@ export function CuratorDashboard() {
       ),
     );
 
+    const url = new URL("/api/setartist/", process.env.REACT_APP_BACKEND_URL);
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editFormData, id: editingArtist }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+
     // Exit edit mode
     setEditingArtist(null);
     setEditFormData({});
-
-    console.log("Artist updated successfully");
   };
 
   // Function to cancel editing
@@ -432,24 +393,31 @@ export function CuratorDashboard() {
   };
 
   // Function to handle deleting an artist
-  const handleDeleteArtist = (artistId) => {
+  const handleDeleteArtist = async (artistId) => {
     if (window.confirm("Are you sure you want to delete this artist?")) {
       // Add this artist to the deleting list (for animation)
       setDeletingArtists([...deletingArtists, artistId]);
-
-      // If the deleted artist was selected, clear the selection
-      if (selectedArtist && selectedArtist.id === artistId) {
-        setSelectedArtist(null);
-      }
 
       // Wait for animation to complete before removing from the array
       setTimeout(() => {
         setArtists(artists.filter((artist) => artist.id !== artistId));
         setDeletingArtists(deletingArtists.filter((id) => id !== artistId));
+      }, 300);
 
-        // Show a temporary success message (could be implemented with a toast)
-        console.log("Artist successfully deleted");
-      }, 300); // Match the CSS transition time
+      const url = new URL(
+        "/api/deleteartist/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ artistId: artistId }),
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -462,20 +430,18 @@ export function CuratorDashboard() {
     setEditFormData({
       title: artifact.title,
       artistId: artifact.artistId,
+      exhibitName: artifact.exhibitName,
       year: artifact.year,
       medium: artifact.medium,
       dimensions: artifact.dimensions,
-      location: artifact.location,
       acquisitionDate: artifact.acquisitionDate,
       condition: artifact.condition,
       needsRestoration: artifact.needsRestoration,
     });
-
-    console.log("Editing artifact:", artifact);
   };
 
   // Function to save edited artifact data
-  const handleSaveArtifact = () => {
+  const handleSaveArtifact = async () => {
     // Update the artifacts array with edited data
     setArtifacts(
       artifacts.map((artifact) =>
@@ -485,11 +451,21 @@ export function CuratorDashboard() {
       ),
     );
 
+    const url = new URL("/api/setartifact/", process.env.REACT_APP_BACKEND_URL);
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...editFormData, id: editingArtifact }),
+      });
+    } catch (err) {
+      console.log(err);
+    }
+
     // Exit edit mode
     setEditingArtifact(null);
     setEditFormData({});
-
-    console.log("Artifact updated successfully");
   };
 
   // Function to cancel editing artifact
@@ -499,15 +475,10 @@ export function CuratorDashboard() {
   };
 
   // Function to handle deleting an artifact
-  const handleDeleteArtifact = (artifactId) => {
+  const handleDeleteArtifact = async (artifactId) => {
     if (window.confirm("Are you sure you want to delete this artifact?")) {
       // Add this artifact to the deleting list (for animation)
       setDeletingArtifacts([...deletingArtifacts, artifactId]);
-
-      // If the deleted artifact was selected, clear the selection
-      if (selectedArtifact && selectedArtifact.id === artifactId) {
-        setSelectedArtifact(null);
-      }
 
       // Wait for animation to complete before removing from the array
       setTimeout(() => {
@@ -517,15 +488,69 @@ export function CuratorDashboard() {
         setDeletingArtifacts(
           deletingArtifacts.filter((id) => id !== artifactId),
         );
-
-        // Show a temporary success message (could be implemented with a toast)
-        console.log("Artifact successfully deleted");
       }, 300); // Match the CSS transition time
+      const url = new URL(
+        "/api/deleteartifact/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ artifactId: artifactId }),
+        });
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
   // Function to handle toggling restoration status
-  const handleToggleRestoration = (artifactId) => {
+  const handleToggleRestoration = async (artifactId) => {
+    const targetArtifact = artifacts.find(
+      (artifact) => artifact.id === artifactId,
+    );
+
+    // If not found, optionally handle the error or return early
+    if (targetArtifact && !targetArtifact.needsRestoration) {
+      const url = new URL(
+        "/api/addrestored/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: targetArtifact.id,
+            employeeId: curatorData.employeeId,
+          }),
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    } else if (targetArtifact && targetArtifact.needsRestoration) {
+      const url = new URL(
+        "/api/setrestored/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: targetArtifact.id,
+            employeeId: curatorData.employeeId,
+          }),
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    }
+
     setArtifacts(
       artifacts.map((artifact) =>
         artifact.id === artifactId
@@ -536,61 +561,23 @@ export function CuratorDashboard() {
   };
 
   // Function to handle saving settings changes
-  const handleSaveSettings = () => {
-    setCuratorData({
-      ...curatorData,
-      ...formData,
-    });
+  const handleSaveSettings = async () => {
+    setCuratorData(formData);
     setShowSettings(false);
-  };
-
-  // Handle password form field changes
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData({
-      ...passwordData,
-      [name]: value,
-    });
-  };
-
-  // Function to submit password change
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    setPasswordError("");
-    setPasswordSuccess(false);
-
-    // Validate password match
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords do not match");
-      return;
-    }
-
-    // Simulate checking current password (in a real app, this would verify against stored password)
-    if (passwordData.currentPassword !== "currentpassword") {
-      setPasswordError("Current password is incorrect");
-      return;
-    }
-
-    // Password validation (minimum requirements)
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters");
-      return;
-    }
-
-    // Simulate successful password change
-    console.log("Password updated successfully");
-    setPasswordSuccess(true);
-
-    // Reset form after short delay
-    setTimeout(() => {
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
+    const url = new URL(
+      "/api/setcuratorinfo/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      setShowPasswordForm(false);
-      setPasswordSuccess(false);
-    }, 2000);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Initialize form data when settings panel is opened
@@ -601,9 +588,6 @@ export function CuratorDashboard() {
         title: curatorData.title,
         email: curatorData.email,
         phone: curatorData.phone,
-        department: curatorData.department,
-        specialization: curatorData.specialization,
-        bio: curatorData.bio,
       });
     }
   }, [showSettings, curatorData]);
@@ -627,16 +611,21 @@ export function CuratorDashboard() {
   };
 
   // Function to save a new artist
-  const handleSaveNewArtist = () => {
-    // Create a new artist object with a unique ID
-    const maxId = Math.max(...artists.map((artist) => artist.id), 0);
-    const newArtist = {
-      id: maxId + 1,
-      ...newArtistData,
-    };
+  const handleSaveNewArtist = async () => {
+    const url = new URL("/api/addartist/", process.env.REACT_APP_BACKEND_URL);
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newArtistData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
     // Add to the artists array
-    setArtists([...artists, newArtist]);
+    setArtists([...artists, newArtistData]);
 
     // Reset form and hide it
     setNewArtistData({
@@ -649,8 +638,6 @@ export function CuratorDashboard() {
       biography: "",
     });
     setShowNewArtistForm(false);
-
-    console.log("New artist added successfully");
   };
 
   // Function to cancel adding a new artist
@@ -677,27 +664,34 @@ export function CuratorDashboard() {
   };
 
   // Function to save a new artifact
-  const handleSaveNewArtifact = () => {
-    // Create a new artifact object with a unique ID and set needsRestoration to false
-    const maxId = Math.max(...artifacts.map((artifact) => artifact.id), 0);
-    const newArtifact = {
-      id: maxId + 1,
-      ...newArtifactData,
-      needsRestoration: false, // Always set to false for new artifacts
-    };
+  const handleSaveNewArtifact = async () => {
+    const url = new URL("/api/addartifact/", process.env.REACT_APP_BACKEND_URL);
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newArtifactData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
 
     // Add to the artifacts array
-    setArtifacts([...artifacts, newArtifact]);
+    setArtifacts([...artifacts, newArtifactData]);
 
     // Reset form and hide it
     setNewArtifactData({
       title: "",
       artistId: "",
-      year: "",
+      exhibitId: "",
+      createdYear: "",
       medium: "",
+      description: "",
       dimensions: "",
-      location: "",
-      condition: "Good",
+      condition: "",
+      acquisitionType: "",
+      acquisitionValue: "",
       acquisitionDate: "",
       needsRestoration: false,
     });
@@ -712,11 +706,14 @@ export function CuratorDashboard() {
     setNewArtifactData({
       title: "",
       artistId: "",
-      year: "",
+      exhibitId: "",
+      createdYear: "",
       medium: "",
+      description: "",
       dimensions: "",
-      location: "",
-      condition: "Good",
+      condition: "",
+      acquisitionType: "",
+      acquisitionValue: "",
       acquisitionDate: "",
       needsRestoration: false,
     });
@@ -989,24 +986,6 @@ export function CuratorDashboard() {
                     />
                   </div>
                   <div className="filter-item">
-                    <label htmlFor="artifact-location">Location</label>
-                    <input
-                      type="text"
-                      id="artifact-location"
-                      placeholder="Filter by location"
-                      value={filters.artifacts.location}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          artifacts: {
-                            ...filters.artifacts,
-                            location: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="filter-item">
                     <label htmlFor="artifact-condition">Condition</label>
                     <input
                       type="text"
@@ -1036,7 +1015,6 @@ export function CuratorDashboard() {
                           artist: "",
                           year: "",
                           medium: "",
-                          location: "",
                           condition: "",
                         },
                       });
@@ -1100,31 +1078,9 @@ export function CuratorDashboard() {
                     style={{ textAlign: "left" }}
                   >
                     <button
-                      className={`action-button ${showPasswordForm ? "action-button-cancel" : ""}`}
-                      onClick={() => {
-                        setShowPasswordForm(!showPasswordForm);
-                        if (showSettings) setShowSettings(false);
-                        setPasswordError("");
-                        setPasswordSuccess(false);
-                      }}
-                    >
-                      {showPasswordForm ? (
-                        <>
-                          <X size={16} />
-                          <span>Cancel</span>
-                        </>
-                      ) : (
-                        <>
-                          <Lock size={16} />
-                          <span>Change Password</span>
-                        </>
-                      )}
-                    </button>
-                    <button
                       className={`action-button ${showSettings ? "action-button-cancel" : ""}`}
                       onClick={() => {
                         setShowSettings(!showSettings);
-                        if (showPasswordForm) setShowPasswordForm(false);
                       }}
                     >
                       {showSettings ? (
@@ -1141,80 +1097,6 @@ export function CuratorDashboard() {
                     </button>
                   </div>
                 </div>
-
-                {showPasswordForm ? (
-                  <div className="settings-form password-form">
-                    <h3>Change Password</h3>
-                    {passwordSuccess && (
-                      <div className="form-success-message">
-                        Password changed successfully!
-                      </div>
-                    )}
-                    {passwordError && (
-                      <div className="form-error-message">{passwordError}</div>
-                    )}
-                    <form onSubmit={handlePasswordSubmit}>
-                      <div className="form-group">
-                        <label htmlFor="currentPassword">
-                          Current Password
-                        </label>
-                        <input
-                          type="password"
-                          id="currentPassword"
-                          name="currentPassword"
-                          value={passwordData.currentPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="newPassword">New Password</label>
-                        <input
-                          type="password"
-                          id="newPassword"
-                          name="newPassword"
-                          value={passwordData.newPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="confirmPassword">
-                          Confirm New Password
-                        </label>
-                        <input
-                          type="password"
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          value={passwordData.confirmPassword}
-                          onChange={handlePasswordChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-actions">
-                        <button
-                          type="button"
-                          className="cancel-button"
-                          onClick={() => {
-                            setShowPasswordForm(false);
-                            setPasswordData({
-                              currentPassword: "",
-                              newPassword: "",
-                              confirmPassword: "",
-                            });
-                            setPasswordError("");
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button type="submit" className="save-button">
-                          Update Password
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                ) : null}
-
                 {showSettings ? (
                   <div className="settings-form">
                     <h3>Edit Profile Information</h3>
@@ -1353,7 +1235,9 @@ export function CuratorDashboard() {
                   >
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-name">Artist Name</label>
+                        <label className="required" htmlFor="new-name">
+                          Artist Name
+                        </label>
                         <input
                           type="text"
                           id="new-name"
@@ -1365,13 +1249,18 @@ export function CuratorDashboard() {
                       </div>
 
                       <div className="form-group years-group">
-                        <label htmlFor="new-birthYear">Birth Year</label>
+                        <label className="required" htmlFor="new-birthYear">
+                          Birth Year
+                        </label>
                         <input
                           type="number"
+                          min="100"
+                          step="1"
                           id="new-birthYear"
                           name="birthYear"
                           value={newArtistData.birthYear}
                           onChange={handleNewArtistChange}
+                          required
                         />
                       </div>
 
@@ -1379,51 +1268,71 @@ export function CuratorDashboard() {
                         <label htmlFor="new-deathYear">Death Year</label>
                         <input
                           type="number"
+                          min="100"
+                          step="1"
                           id="new-deathYear"
                           name="deathYear"
                           value={newArtistData.deathYear}
                           onChange={handleNewArtistChange}
-                          placeholder="Leave empty if alive"
                         />
                       </div>
                     </div>
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-nationality">Nationality</label>
-                        <input
-                          type="text"
+                        <label className="required" htmlFor="new-nationality">
+                          Nationality
+                        </label>
+                        <select
                           id="new-nationality"
                           name="nationality"
                           value={newArtistData.nationality}
                           onChange={handleNewArtistChange}
                           required
-                        />
+                        >
+                          <option disabled selected value="">
+                            Select an artist
+                          </option>
+                          {NATIONALITIES.map((nationality, index) => (
+                            <option key={index} value={nationality}>
+                              {nationality}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="new-movement">Movement/Style</label>
-                        <input
-                          type="text"
+                        <label className="required" htmlFor="new-movement">
+                          Movement/Style
+                        </label>
+                        <select
                           id="new-movement"
                           name="movement"
                           value={newArtistData.movement}
                           onChange={handleNewArtistChange}
                           required
+                        >
+                          <option disabled selected value="">
+                            Select a movement
+                          </option>
+                          {ARTMOVEMENTS.map((movement, index) => (
+                            <option key={index} value={movement}>
+                              {movement}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="new-notableWorks">Notable Works</label>
+                        <input
+                          type="text"
+                          id="new-notableWorks"
+                          name="notableWorks"
+                          value={newArtistData.notableWorks}
+                          onChange={handleNewArtistChange}
+                          placeholder="Separate works with semicolons"
                         />
                       </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="new-notableWorks">Notable Works</label>
-                      <input
-                        type="text"
-                        id="new-notableWorks"
-                        name="notableWorks"
-                        value={newArtistData.notableWorks}
-                        onChange={handleNewArtistChange}
-                        placeholder="Separate multiple works with semicolons"
-                      />
                     </div>
 
                     <div className="form-group">
@@ -1479,19 +1388,9 @@ export function CuratorDashboard() {
                         <tr
                           key={`artist-row-${artist.id}`}
                           className={`
-                            ${selectedArtist?.id === artist.id ? "selected" : ""}
                             ${deletingArtists.includes(artist.id) ? "deleting" : ""}
                             ${editingArtist === artist.id ? "editing" : ""}
                           `}
-                          onClick={() => {
-                            if (editingArtist !== artist.id) {
-                              setSelectedArtist(
-                                selectedArtist?.id === artist.id
-                                  ? null
-                                  : artist,
-                              );
-                            }
-                          }}
                         >
                           {editingArtist === artist.id ? (
                             // Edit mode - show input fields
@@ -1508,6 +1407,8 @@ export function CuratorDashboard() {
                               <td className="years-edit">
                                 <input
                                   type="number"
+                                  min="100"
+                                  step="1"
                                   name="birthYear"
                                   value={editFormData.birthYear || ""}
                                   onChange={handleEditFormChange}
@@ -1517,6 +1418,8 @@ export function CuratorDashboard() {
                                 <span>–</span>
                                 <input
                                   type="number"
+                                  min="100"
+                                  step="1"
                                   name="deathYear"
                                   value={editFormData.deathYear || ""}
                                   onChange={handleEditFormChange}
@@ -1525,22 +1428,32 @@ export function CuratorDashboard() {
                                 />
                               </td>
                               <td>
-                                <input
-                                  type="text"
+                                <select
                                   name="nationality"
                                   value={editFormData.nationality || ""}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
-                                />
+                                >
+                                  {NATIONALITIES.map((nationality, index) => (
+                                    <option key={index} value={nationality}>
+                                      {nationality}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td>
-                                <input
-                                  type="text"
+                                <select
                                   name="movement"
                                   value={editFormData.movement || ""}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
-                                />
+                                >
+                                  {ARTMOVEMENTS.map((movement, index) => (
+                                    <option key={index} value={movement}>
+                                      {movement}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td>
                                 <input
@@ -1615,56 +1528,6 @@ export function CuratorDashboard() {
                             </>
                           )}
                         </tr>
-                        {selectedArtist?.id === artist.id && (
-                          <tr
-                            key={`artist-detail-${artist.id}`}
-                            className="detail-row"
-                          >
-                            <td colSpan="6">
-                              <div className="inline-detail-view">
-                                <h3>Selected Artist Details</h3>
-                                <div className="detail-content">
-                                  <h4>{selectedArtist.name}</h4>
-                                  <p className="artist-years">
-                                    {selectedArtist.birthYear} –{" "}
-                                    {selectedArtist.deathYear || "Present"} •{" "}
-                                    {selectedArtist.nationality}
-                                  </p>
-                                  <p>
-                                    <span className="artist-movement">
-                                      {selectedArtist.movement}
-                                    </span>
-                                  </p>
-                                  <div className="artist-detail-section">
-                                    <h5>Biography</h5>
-                                    <p>{selectedArtist.biography}</p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Notable Works</h5>
-                                    <p>{selectedArtist.notableWorks}</p>
-                                  </div>
-                                  <div className="artist-detail-section">
-                                    <h5>Works in Collection</h5>
-                                    <ul>
-                                      {artifacts
-                                        .filter(
-                                          (artifact) =>
-                                            artifact.artistId ===
-                                            selectedArtist.id,
-                                        )
-                                        .map((artifact) => (
-                                          <li key={artifact.id}>
-                                            {artifact.title} ({artifact.year}) -{" "}
-                                            {artifact.medium}
-                                          </li>
-                                        ))}
-                                    </ul>
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
                       </>
                     ))}
                   </tbody>
@@ -1716,7 +1579,9 @@ export function CuratorDashboard() {
                   >
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-title">Artifact Title</label>
+                        <label className="required" htmlFor="new-title">
+                          Artifact Title
+                        </label>
                         <input
                           type="text"
                           id="new-title"
@@ -1728,7 +1593,9 @@ export function CuratorDashboard() {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="new-artistId">Artist</label>
+                        <label className="required" htmlFor="new-artistId">
+                          Artist
+                        </label>
                         <select
                           id="new-artistId"
                           name="artistId"
@@ -1736,29 +1603,54 @@ export function CuratorDashboard() {
                           onChange={handleNewArtifactChange}
                           required
                         >
-                          <option value="">Select an artist</option>
+                          <option disabled selected value="">
+                            Select an artist
+                          </option>
                           {artists.map((artist) => (
                             <option key={artist.id} value={artist.id}>
-                              {artist.name}
+                              {`${artist.name} (ID ${artist.id})`}
                             </option>
                           ))}
                         </select>
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="new-year">Creation Year</label>
-                        <input
-                          type="number"
-                          id="new-year"
-                          name="year"
-                          value={newArtifactData.year}
+                        <label className="required" htmlFor="new-exhibitId">
+                          Exhibit
+                        </label>
+                        <select
+                          id="new-exhibitId"
+                          name="exhibitId"
+                          value={newArtifactData.exhibitId}
                           onChange={handleNewArtifactChange}
                           required
-                        />
+                        >
+                          <option disabled selected value="">
+                            Select an exhibit
+                          </option>
+                          {exhibitsMap.map((exhibit) => (
+                            <option key={exhibit.id} value={exhibit.id}>
+                              {exhibit.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
                     <div className="form-row">
+                      <div className="form-group">
+                        <label htmlFor="new-createdYear">Created Year</label>
+                        <input
+                          type="number"
+                          min="100"
+                          step="1"
+                          id="new-createdYear"
+                          name="createdYear"
+                          value={newArtifactData.createdYear}
+                          onChange={handleNewArtifactChange}
+                        />
+                      </div>
+
                       <div className="form-group">
                         <label htmlFor="new-medium">Medium</label>
                         <input
@@ -1767,7 +1659,6 @@ export function CuratorDashboard() {
                           name="medium"
                           value={newArtifactData.medium}
                           onChange={handleNewArtifactChange}
-                          required
                         />
                       </div>
 
@@ -1780,30 +1671,64 @@ export function CuratorDashboard() {
                           value={newArtifactData.dimensions}
                           onChange={handleNewArtifactChange}
                           placeholder="e.g. 36 × 30 in"
-                          required
                         />
                       </div>
                     </div>
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-location">Location</label>
+                        <label
+                          className="required"
+                          htmlFor="new-acquisitionType"
+                        >
+                          Acquisition Type
+                        </label>
+                        <select
+                          id="new-acquisitionType"
+                          name="acquisitionType"
+                          value={newArtifactData.acquisitionType}
+                          onChange={handleNewArtifactChange}
+                          required
+                        >
+                          <option disabled selected value="">
+                            Select an acquisition type
+                          </option>
+                          {ACQUISITIONTYPES.map((acqType, index) => (
+                            <option key={index} value={acqType}>
+                              {acqType}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group">
+                        <label
+                          className="required"
+                          htmlFor="new-acquisitionValue"
+                        >
+                          Acquisition Value
+                        </label>
                         <input
-                          type="text"
-                          id="new-location"
-                          name="location"
-                          value={newArtifactData.location}
+                          type="number"
+                          min="0"
+                          step="1"
+                          id="new-acquisitionValue"
+                          name="acquisitionValue"
+                          value={newArtifactData.acquisitionValue}
                           onChange={handleNewArtifactChange}
                           required
                         />
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="new-acquisitionDate">
+                        <label
+                          className="required"
+                          htmlFor="new-acquisitionDate"
+                        >
                           Acquisition Date
                         </label>
                         <input
-                          type="text"
+                          type="date"
                           id="new-acquisitionDate"
                           name="acquisitionDate"
                           value={newArtifactData.acquisitionDate}
@@ -1812,9 +1737,13 @@ export function CuratorDashboard() {
                           required
                         />
                       </div>
+                    </div>
 
+                    <div className="form-row">
                       <div className="form-group">
-                        <label htmlFor="new-condition">Condition</label>
+                        <label className="required" htmlFor="new-condition">
+                          Condition
+                        </label>
                         <select
                           id="new-condition"
                           name="condition"
@@ -1822,13 +1751,29 @@ export function CuratorDashboard() {
                           onChange={handleNewArtifactChange}
                           required
                         >
-                          <option value="Excellent">Excellent</option>
-                          <option value="Good">Good</option>
-                          <option value="Fair">Fair</option>
-                          <option value="Poor">Poor</option>
-                          <option value="Critical">Critical</option>
+                          <option disabled selected value="">
+                            Select a condition
+                          </option>
+                          {CONDITIONS.map((condition, index) => (
+                            <option key={index} value={condition}>
+                              {condition}
+                            </option>
+                          ))}
                         </select>
                       </div>
+                      <div className="form-group"></div>
+                      <div className="form-group"></div>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="new-description">Description</label>
+                      <textarea
+                        id="new-description"
+                        name="description"
+                        value={newArtifactData.description}
+                        onChange={handleNewArtifactChange}
+                        rows={3}
+                      />
                     </div>
 
                     <div className="form-actions">
@@ -1884,7 +1829,7 @@ export function CuratorDashboard() {
                       <th>Artist</th>
                       <th>Year</th>
                       <th>Medium</th>
-                      <th>Location</th>
+                      <th>Exhibit Name</th>
                       <th>Condition</th>
                       <th className="actions-header">Actions</th>
                     </tr>
@@ -1895,19 +1840,9 @@ export function CuratorDashboard() {
                         <tr
                           key={`artifact-row-${artifact.id}`}
                           className={`
-                            ${selectedArtifact?.id === artifact.id ? "selected" : ""}
                             ${deletingArtifacts.includes(artifact.id) ? "deleting" : ""}
                             ${editingArtifact === artifact.id ? "editing" : ""}
                           `}
-                          onClick={() => {
-                            if (editingArtifact !== artifact.id) {
-                              setSelectedArtifact(
-                                selectedArtifact?.id === artifact.id
-                                  ? null
-                                  : artifact,
-                              );
-                            }
-                          }}
                         >
                           {editingArtifact === artifact.id ? (
                             // Edit mode - show input fields
@@ -1938,6 +1873,8 @@ export function CuratorDashboard() {
                               <td>
                                 <input
                                   type="number"
+                                  min="100"
+                                  step="1"
                                   name="year"
                                   value={editFormData.year || ""}
                                   onChange={handleEditFormChange}
@@ -1954,22 +1891,35 @@ export function CuratorDashboard() {
                                 />
                               </td>
                               <td>
-                                <input
-                                  type="text"
-                                  name="location"
-                                  value={editFormData.location || ""}
+                                <select
+                                  name="exhibitName"
+                                  value={editFormData.exhibitName || ""}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
-                                />
+                                >
+                                  {exhibitsMap.map((exhibit) => (
+                                    <option key={exhibit.id} value={exhibit.id}>
+                                      {exhibit.name}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td>
-                                <input
-                                  type="text"
+                                <select
                                   name="condition"
                                   value={editFormData.condition || ""}
                                   onChange={handleEditFormChange}
                                   onClick={(e) => e.stopPropagation()}
-                                />
+                                >
+                                  <option disabled selected value="">
+                                    Select a condition
+                                  </option>
+                                  {CONDITIONS.map((condition, index) => (
+                                    <option key={index} value={condition}>
+                                      {condition}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td className="action-buttons">
                                 <button
@@ -2007,10 +1957,10 @@ export function CuratorDashboard() {
                               </td>
                               <td>{artifact.year}</td>
                               <td>{artifact.medium}</td>
-                              <td>{artifact.location}</td>
+                              <td>{artifact.exhibitName}</td>
                               <td>
                                 <span
-                                  className={`condition-badge ${artifact.needsRestoration ? "needs-restoration" : ""}`}
+                                  className={`condition-badge ${getConditionClass(artifact.condition)}`}
                                 >
                                   {artifact.condition}
                                 </span>
@@ -2049,67 +1999,6 @@ export function CuratorDashboard() {
                             </>
                           )}
                         </tr>
-                        {selectedArtifact?.id === artifact.id && (
-                          <tr
-                            key={`artifact-detail-${artifact.id}`}
-                            className="detail-row"
-                          >
-                            <td colSpan="7">
-                              <div className="inline-detail-view">
-                                <h3>Selected Artifact Details</h3>
-                                {selectedArtifact.needsRestoration && (
-                                  <div className="restoration-status-banner">
-                                    <span className="restoration-flag">❗</span>{" "}
-                                    This artifact is currently undergoing
-                                    restoration
-                                  </div>
-                                )}
-                                <div className="detail-content">
-                                  <h4>
-                                    {selectedArtifact.title} (
-                                    {selectedArtifact.year})
-                                  </h4>
-                                  <p>
-                                    <strong>Artist:</strong>{" "}
-                                    {artists.find(
-                                      (a) => a.id === selectedArtifact.artistId,
-                                    )?.name || "Unknown"}
-                                  </p>
-                                  <p>
-                                    <strong>Medium:</strong>{" "}
-                                    {selectedArtifact.medium}
-                                  </p>
-                                  <p>
-                                    <strong>Dimensions:</strong>{" "}
-                                    {selectedArtifact.dimensions}
-                                  </p>
-                                  <p>
-                                    <strong>Location:</strong>{" "}
-                                    {selectedArtifact.location}
-                                  </p>
-                                  <p>
-                                    <strong>Acquisition Date:</strong>{" "}
-                                    {selectedArtifact.acquisitionDate}
-                                  </p>
-                                  <p>
-                                    <strong>Condition:</strong>{" "}
-                                    <span
-                                      className={
-                                        selectedArtifact.needsRestoration
-                                          ? "text-danger"
-                                          : ""
-                                      }
-                                    >
-                                      {selectedArtifact.condition}
-                                    </span>
-                                    {selectedArtifact.needsRestoration &&
-                                      " (Needs Restoration)"}
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
                       </>
                     ))}
                   </tbody>
@@ -2194,7 +2083,7 @@ export function CuratorDashboard() {
                       <th>Artist</th>
                       <th>Year</th>
                       <th>Medium</th>
-                      <th>Current Location</th>
+                      <th>Current Exhibit</th>
                       <th>Condition</th>
                       <th className="actions-header">Actions</th>
                     </tr>
@@ -2207,81 +2096,36 @@ export function CuratorDashboard() {
                           <tr
                             key={`restoration-row-${artifact.id}`}
                             className={`
-                              ${selectedArtifact?.id === artifact.id ? "selected" : ""}
                               ${deletingArtifacts.includes(artifact.id) ? "deleting" : ""}
                               ${editingArtifact === artifact.id ? "editing" : ""}
                             `}
-                            onClick={() => {
-                              if (editingArtifact !== artifact.id) {
-                                setSelectedArtifact(
-                                  selectedArtifact?.id === artifact.id
-                                    ? null
-                                    : artifact,
-                                );
-                              }
-                            }}
                           >
                             {editingArtifact === artifact.id ? (
                               // Edit mode - show input fields
                               <>
+                                <td>{artifact.title}</td>
                                 <td>
-                                  <input
-                                    type="text"
-                                    name="title"
-                                    value={editFormData.title || ""}
-                                    onChange={handleEditFormChange}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
+                                  {artists.find(
+                                    (a) => a.id === artifact.artistId,
+                                  )?.name || "Unknown"}
                                 </td>
+                                <td>{artifact.year}</td>
+                                <td>{artifact.medium}</td>
+                                <td>{artifact.exhibitName}</td>
                                 <td>
                                   <select
-                                    name="artistId"
-                                    value={editFormData.artistId || ""}
-                                    onChange={handleEditFormChange}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    {artists.map((artist) => (
-                                      <option key={artist.id} value={artist.id}>
-                                        {artist.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    name="year"
-                                    value={editFormData.year || ""}
-                                    onChange={handleEditFormChange}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    name="medium"
-                                    value={editFormData.medium || ""}
-                                    onChange={handleEditFormChange}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    name="location"
-                                    value={editFormData.location || ""}
-                                    onChange={handleEditFormChange}
-                                    onClick={(e) => e.stopPropagation()}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
+                                    id="new-condition"
                                     name="condition"
                                     value={editFormData.condition || ""}
                                     onChange={handleEditFormChange}
                                     onClick={(e) => e.stopPropagation()}
-                                  />
+                                  >
+                                    {CONDITIONS.map((condition, index) => (
+                                      <option key={index} value={condition}>
+                                        {condition}
+                                      </option>
+                                    ))}
+                                  </select>
                                 </td>
                                 <td className="action-buttons">
                                   <button
@@ -2318,9 +2162,11 @@ export function CuratorDashboard() {
                                 </td>
                                 <td>{artifact.year}</td>
                                 <td>{artifact.medium}</td>
-                                <td>{artifact.location}</td>
+                                <td>{artifact.exhibitName}</td>
                                 <td>
-                                  <span className="condition-badge needs-restoration">
+                                  <span
+                                    className={`condition-badge ${getConditionClass(artifact.condition)}`}
+                                  >
                                     {artifact.condition}
                                   </span>
                                 </td>
@@ -2343,96 +2189,10 @@ export function CuratorDashboard() {
                                   >
                                     Mark as Restored
                                   </button>
-                                  <button
-                                    className="button-small button-danger"
-                                    onClick={(e) => {
-                                      e.stopPropagation(); // Prevent row selection
-                                      handleDeleteArtifact(artifact.id);
-                                    }}
-                                  >
-                                    Delete
-                                  </button>
                                 </td>
                               </>
                             )}
                           </tr>
-                          {selectedArtifact?.id === artifact.id && (
-                            <tr
-                              key={`restoration-detail-${artifact.id}`}
-                              className="detail-row"
-                            >
-                              <td colSpan="7">
-                                <div className="inline-detail-view">
-                                  <h3>Restoration Details</h3>
-                                  <div className="restoration-status-banner">
-                                    <span className="restoration-flag">❗</span>{" "}
-                                    This artifact is currently undergoing
-                                    restoration
-                                  </div>
-                                  <div className="detail-content">
-                                    <h4>
-                                      {selectedArtifact.title} (
-                                      {selectedArtifact.year})
-                                    </h4>
-                                    <p>
-                                      <strong>Artist:</strong>{" "}
-                                      {artists.find(
-                                        (a) =>
-                                          a.id === selectedArtifact.artistId,
-                                      )?.name || "Unknown"}
-                                    </p>
-                                    <p>
-                                      <strong>Current Location:</strong>{" "}
-                                      {selectedArtifact.location}
-                                    </p>
-                                    <p>
-                                      <strong>Condition:</strong>{" "}
-                                      <span className="text-danger">
-                                        {selectedArtifact.condition}
-                                      </span>
-                                      {" (Needs Restoration)"}
-                                    </p>
-                                    <div className="artist-detail-section">
-                                      <h5>Restoration Requirements</h5>
-                                      <ul>
-                                        <li>
-                                          Assess physical condition of the
-                                          artwork
-                                        </li>
-                                        <li>
-                                          Document damage with high-resolution
-                                          photos
-                                        </li>
-                                        <li>
-                                          Formulate restoration plan with
-                                          conservation team
-                                        </li>
-                                        <li>
-                                          Prepare cost estimate and timeline
-                                        </li>
-                                        <li>
-                                          Request approval from curatorial
-                                          department
-                                        </li>
-                                      </ul>
-                                    </div>
-                                    <div className="restoration-actions">
-                                      <button
-                                        className="button-small button-success"
-                                        onClick={() =>
-                                          handleToggleRestoration(
-                                            selectedArtifact.id,
-                                          )
-                                        }
-                                      >
-                                        Mark as Restored
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                            </tr>
-                          )}
                         </>
                       ))}
                   </tbody>

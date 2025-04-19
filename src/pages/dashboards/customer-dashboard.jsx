@@ -6,29 +6,16 @@ import {
   Calendar,
   Settings as SettingsIcon,
   X,
-  Lock,
 } from "lucide-react";
 import "../../components/components.css";
+import { useUser } from "@clerk/clerk-react";
 
 export function CustomerDashboard() {
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
 
   // State for showing/hiding settings form
   const [showSettings, setShowSettings] = useState(false);
-
-  // State for showing/hiding password form
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-
-  // Password form data
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  // Password form error/success messages
-  const [passwordError, setPasswordError] = useState("");
-  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   // Profile form data
   const [formData, setFormData] = useState({
@@ -39,140 +26,111 @@ export function CustomerDashboard() {
     membershipType: "",
   });
 
-  // Mock customer data
+  useEffect(() => {
+    const getCustomerInfo = async () => {
+      const url = new URL(
+        "/api/getcustomer/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setCustomerData(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getCustomerInfo();
+  }, []);
+
   const [customerData, setCustomerData] = useState({
-    name: "Sarah Johnson",
-    email: "sarah.johnson@example.com",
-    phone: "(555) 234-5678",
-    address: "123 Maple Street, Springfield, IL 62701",
-    membershipType: "Annual Pass",
-    joinDate: "March 8, 2022",
-    membershipExpires: "March 8, 2023",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    membershipType: "",
+    joinDate: "",
+    membershipExpires: "",
   });
 
-  // Mock transaction history
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1001,
-      date: "2022-12-15",
-      type: "Gift Shop",
-      items: ["Art Book - Modern Masters", "Ceramic Mug"],
-      total: 47.95,
-      status: "Completed",
-    },
-    {
-      id: 1002,
-      date: "2022-11-30",
-      type: "Gift Shop",
-      items: ["Poster - Impressionist Collection", "T-shirt - Museum Logo"],
-      total: 35.5,
-      status: "Completed",
-    },
-    {
-      id: 1003,
-      date: "2022-10-22",
-      type: "Gift Shop",
-      items: ["Art Supplies Set", "Tote Bag"],
-      total: 42.75,
-      status: "Completed",
-    },
-  ]);
+  useEffect(() => {
+    const getTransactionInfo = async () => {
+      const url = new URL(
+        "/api/gettransactions/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setTransactions(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getTransactionInfo();
+  }, []);
 
-  // Mock museum tickets
-  const [museumTickets, setMuseumTickets] = useState([
-    {
-      id: 5001,
-      date: "2022-12-20",
-      type: "General Admission",
-      quantity: 2,
-      total: 30.0,
-      status: "Used",
-    },
-    {
-      id: 5002,
-      date: "2022-11-05",
-      type: "General Admission",
-      quantity: 4,
-      total: 60.0,
-      status: "Used",
-    },
-    {
-      id: 5003,
-      date: "2022-09-18",
-      type: "General Admission",
-      quantity: 1,
-      total: 15.0,
-      status: "Used",
-    },
-  ]);
+  const [transactions, setTransactions] = useState([]);
 
-  // Mock exhibit tickets
-  const [exhibitTickets, setExhibitTickets] = useState([
-    {
-      id: 7001,
-      date: "2022-12-20",
-      name: "Renaissance Masterpieces",
-      quantity: 2,
-      total: 50.0,
-      status: "Used",
-    },
-    {
-      id: 7002,
-      date: "2022-10-10",
-      name: "Modern Art Showcase",
-      quantity: 1,
-      total: 22.5,
-      status: "Used",
-    },
-    {
-      id: 7003,
-      date: "2022-08-05",
-      name: "Ancient Civilizations",
-      quantity: 2,
-      total: 45.0,
-      status: "Used",
-    },
-  ]);
+  useEffect(() => {
+    const getTicketInfo = async () => {
+      const url = new URL(
+        "/api/gettickets/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setMuseumTickets(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getTicketInfo();
+  }, []);
+  const [museumTickets, setMuseumTickets] = useState([]);
 
-  // Handle password change form submission
-  const handlePasswordSubmit = (e) => {
-    e.preventDefault();
-    setPasswordError("");
+  useEffect(() => {
+    const getExhibitTicketInfo = async () => {
+      const url = new URL(
+        "/api/getexhibittickets/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setExhibitTickets(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getExhibitTicketInfo();
+  }, []);
+  const [exhibitTickets, setExhibitTickets] = useState([]);
 
-    // Password validation
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError("New password must be at least 8 characters long");
-      return;
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords don't match");
-      return;
-    }
-
-    // Mock successful password change
-    setPasswordSuccess(true);
-    setPasswordData({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
-
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setPasswordSuccess(false);
-      setShowPasswordForm(false);
-    }, 3000);
-  };
-
-  // Handle password form input changes
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  function countTotalTickets(museumTickets, exhibitTickets) {
+    const museumCount = museumTickets.reduce(
+      (sum, ticket) => sum + ticket.quantity,
+      0,
+    );
+    const exhibitCount = exhibitTickets.reduce(
+      (sum, ticket) => sum + ticket.quantity,
+      0,
+    );
+    return museumCount + exhibitCount;
+  }
 
   // Handle edit profile form changes
   const handleFormChange = (e) => {
@@ -184,18 +142,24 @@ export function CustomerDashboard() {
   };
 
   // Handle saving profile settings
-  const handleSaveSettings = () => {
+  const handleSaveSettings = async () => {
     // Update customer data with form data
-    setCustomerData((prev) => ({
-      ...prev,
-      name: formData.name || prev.name,
-      email: formData.email || prev.email,
-      phone: formData.phone || prev.phone,
-      address: formData.address || prev.address,
-    }));
-
-    // Close settings form
+    setCustomerData(formData);
     setShowSettings(false);
+    const url = new URL(
+      "/api/setcustomerinfo/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      const response = await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // Initialize form data when showing settings
@@ -267,12 +231,16 @@ export function CustomerDashboard() {
                     </div>
                     <div className="profile-summary-details">
                       <h2>{customerData.name}</h2>
-                      <p className="curator-title">
-                        {customerData.membershipType} Member
-                      </p>
-                      <div className="curator-department">
-                        Member since {customerData.joinDate}
-                      </div>
+                      {customerData.joinDate && (
+                        <>
+                          <p className="curator-title">
+                            {customerData.membershipType} Member
+                          </p>
+                          <div className="curator-department">
+                            Member Since: <i>{customerData.joinDate}</i>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="profile-stats">
@@ -282,13 +250,15 @@ export function CustomerDashboard() {
                     </div>
                     <div className="profile-stat-item">
                       <span className="stat-number">
-                        {museumTickets.length + exhibitTickets.length}
+                        {countTotalTickets(museumTickets, exhibitTickets)}
                       </span>
                       <span className="stat-label">Tickets Purchased</span>
                     </div>
                     <div className="profile-stat-item">
                       <span className="stat-number">
-                        {customerData.membershipExpires}
+                        {customerData.membershipExpires
+                          ? customerData.membershipExpires
+                          : "Not officially joined"}
                       </span>
                       <span className="stat-label">Membership Expires</span>
                     </div>
@@ -300,31 +270,9 @@ export function CustomerDashboard() {
                     <h2>Personal Information</h2>
                     <div className="profile-actions">
                       <button
-                        className={`action-button ${showPasswordForm ? "action-button-cancel" : ""}`}
-                        onClick={() => {
-                          setShowPasswordForm(!showPasswordForm);
-                          if (showSettings) setShowSettings(false);
-                          setPasswordError("");
-                          setPasswordSuccess(false);
-                        }}
-                      >
-                        {showPasswordForm ? (
-                          <>
-                            <X size={16} />
-                            <span>Cancel</span>
-                          </>
-                        ) : (
-                          <>
-                            <Lock size={16} />
-                            <span>Change Password</span>
-                          </>
-                        )}
-                      </button>
-                      <button
                         className={`action-button ${showSettings ? "action-button-cancel" : ""}`}
                         onClick={() => {
                           setShowSettings(!showSettings);
-                          if (showPasswordForm) setShowPasswordForm(false);
                         }}
                       >
                         {showSettings ? (
@@ -341,81 +289,6 @@ export function CustomerDashboard() {
                       </button>
                     </div>
                   </div>
-
-                  {showPasswordForm ? (
-                    <div className="settings-form password-form">
-                      <h3>Change Password</h3>
-                      {passwordSuccess && (
-                        <div className="form-success-message">
-                          Password changed successfully!
-                        </div>
-                      )}
-                      {passwordError && (
-                        <div className="form-error-message">
-                          {passwordError}
-                        </div>
-                      )}
-                      <form onSubmit={handlePasswordSubmit}>
-                        <div className="form-group">
-                          <label htmlFor="currentPassword">
-                            Current Password
-                          </label>
-                          <input
-                            type="password"
-                            id="currentPassword"
-                            name="currentPassword"
-                            value={passwordData.currentPassword}
-                            onChange={handlePasswordChange}
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label htmlFor="newPassword">New Password</label>
-                          <input
-                            type="password"
-                            id="newPassword"
-                            name="newPassword"
-                            value={passwordData.newPassword}
-                            onChange={handlePasswordChange}
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label htmlFor="confirmPassword">
-                            Confirm New Password
-                          </label>
-                          <input
-                            type="password"
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            value={passwordData.confirmPassword}
-                            onChange={handlePasswordChange}
-                            required
-                          />
-                        </div>
-                        <div className="form-actions">
-                          <button
-                            type="button"
-                            className="cancel-button"
-                            onClick={() => {
-                              setShowPasswordForm(false);
-                              setPasswordData({
-                                currentPassword: "",
-                                newPassword: "",
-                                confirmPassword: "",
-                              });
-                              setPasswordError("");
-                            }}
-                          >
-                            Cancel
-                          </button>
-                          <button type="submit" className="save-button">
-                            Update Password
-                          </button>
-                        </div>
-                      </form>
-                    </div>
-                  ) : null}
 
                   {showSettings ? (
                     <div className="settings-form">
@@ -446,7 +319,6 @@ export function CustomerDashboard() {
                             name="email"
                             value={formData.email}
                             onChange={handleFormChange}
-                            required
                           />
                         </div>
 
@@ -458,7 +330,6 @@ export function CustomerDashboard() {
                             name="phone"
                             value={formData.phone}
                             onChange={handleFormChange}
-                            required
                           />
                         </div>
 
@@ -470,7 +341,6 @@ export function CustomerDashboard() {
                             name="address"
                             value={formData.address}
                             onChange={handleFormChange}
-                            required
                           />
                         </div>
 
@@ -511,15 +381,33 @@ export function CustomerDashboard() {
                       <div className="profile-details">
                         <div className="detail-section">
                           <h3>Membership</h3>
-                          <p>{customerData.membershipType}</p>
+                          <p>
+                            <i>
+                              {customerData.membershipType
+                                ? customerData.membershipType
+                                : "Not officially joined"}
+                            </i>
+                          </p>
                         </div>
                         <div className="detail-section">
                           <h3>Member Since</h3>
-                          <p>{customerData.joinDate}</p>
+                          <p>
+                            <i>
+                              {customerData.joinDate
+                                ? customerData.joinDate
+                                : "Not officially joined"}
+                            </i>
+                          </p>
                         </div>
                         <div className="detail-section">
                           <h3>Expires On</h3>
-                          <p>{customerData.membershipExpires}</p>
+                          <p>
+                            <i>
+                              {customerData.membershipExpires
+                                ? customerData.membershipExpires
+                                : "Not officially joined"}
+                            </i>
+                          </p>
                         </div>
                       </div>
 
@@ -580,7 +468,7 @@ export function CustomerDashboard() {
                               ))}
                             </ul>
                           </td>
-                          <td>${transaction.total.toFixed(2)}</td>
+                          <td>${parseFloat(transaction.total).toFixed(2)}</td>
                           <td>
                             <span
                               className={`status-badge status-${transaction.status.toLowerCase()}`}
@@ -592,6 +480,11 @@ export function CustomerDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  {transactions.length === 0 && (
+                    <div className="empty-state">
+                      <p>No gift shop transactions found.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -626,7 +519,7 @@ export function CustomerDashboard() {
                           <td>{new Date(ticket.date).toLocaleDateString()}</td>
                           <td>{ticket.type}</td>
                           <td>{ticket.quantity}</td>
-                          <td>${ticket.total.toFixed(2)}</td>
+                          <td>${parseFloat(ticket.total).toFixed(2)}</td>
                           <td>
                             <span
                               className={`status-badge status-${ticket.status.toLowerCase()}`}
@@ -638,6 +531,11 @@ export function CustomerDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  {museumTickets.length === 0 && (
+                    <div className="empty-state">
+                      <p>No museum ticket purchases found.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -672,7 +570,7 @@ export function CustomerDashboard() {
                           <td>{new Date(ticket.date).toLocaleDateString()}</td>
                           <td>{ticket.name}</td>
                           <td>{ticket.quantity}</td>
-                          <td>${ticket.total.toFixed(2)}</td>
+                          <td>${parseFloat(ticket.total).toFixed(2)}</td>
                           <td>
                             <span
                               className={`status-badge status-${ticket.status.toLowerCase()}`}
@@ -684,6 +582,11 @@ export function CustomerDashboard() {
                       ))}
                     </tbody>
                   </table>
+                  {exhibitTickets.length === 0 && (
+                    <div className="empty-state">
+                      <p>No exhibit ticket purchases found.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
