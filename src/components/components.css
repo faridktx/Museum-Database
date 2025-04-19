@@ -1552,3 +1552,146 @@ select.rounded-input {
     transform: translateX(-50%) translateY(-5px);
   }
 }
+
+.plan-visit-page {
+  padding-top: 80px;
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.visit-hero {
+  background: linear-gradient(to right, #ffffff, #f0f4f8);
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.visit-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.visit-hero p {
+  font-size: 1.25rem;
+  color: #555;
+}
+
+.visit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.visit-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.visit-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+
+.visit-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #4a6fa5;
+}
+
+.promo-section {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.promo-card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 2rem;
+  max-width: 350px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.promo-card:hover {
+  transform: translateY(-5px);
+}
+
+.promo-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-primary);
+}
+
+.promo-card p {
+  font-size: 1rem;
+  color: var(--color-text);
+  margin-bottom: 1.25rem;
+}
+
+.promo-button {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.promo-button:hover {
+  background-color: #2d4e78;
+}
+
+.promo-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  padding: 2rem;
+  max-width: 350px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.promo-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.1);
+}
+
+.promo-icon {
+  font-size: 2.5rem;
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+.promo-button {
+  background-color: #4a6fa5;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 1rem;
+  transition: background 0.3s ease;
+}
+
+.promo-button:hover {
+  background-color: #3a5a8f;
+}

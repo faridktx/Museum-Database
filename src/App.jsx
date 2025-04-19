@@ -58,6 +58,7 @@ import {
 } from "./components/inventory-ops";
 import { SalesOperations } from "./pages/sales";
 import { AddSale, ModifySale, DeleteSale } from "./components/sales-ops";
+import { PlanVisit } from "./pages/PlanVisit";
 
 const routes = [
   { route: "/gift-shop", component: GiftShop },
@@ -65,6 +66,7 @@ const routes = [
   { route: "/dashboard/sales", component: SalesOperations },
   { route: "/dashboard/inventory", component: InventoryOperations },
   { route: "/dashboard/exhibit", component: ExhibitOperations },
+  { route: "/plan-your-visit", component: PlanVisit },
   { route: "/dashboard/artifact", component: ArtifactOperations },
   { route: "/dashboard/guest", component: GuestOperations },
   { route: "/dashboard/guest/modify", component: ModifyGuest },

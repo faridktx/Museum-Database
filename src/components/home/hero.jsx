@@ -8,9 +8,9 @@ export function Hero() {
   <p>
     Discover the wonders of art, culture, and history — all in one place.
   </p>
-  <a href="#exhibits" className="button">
-    Plan Your Visit
-  </a>
+  <a href="/plan-your-visit" className="button">
+  Plan Your Visit
+</a>
 </div>
 <a href="#featured" className="scroll-arrow" aria-label="Scroll to Featured Exhibits">
   ↓
