@@ -32,18 +32,90 @@ export function DepartmentReport() {
   const { user } = useUser();
   const [, navigate] = useLocation();
   const [reportData, setReportData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [exhibits, setExhibits] = useState([]);
+  const [roles, setRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter states
+  const [selectedExhibits, setSelectedExhibits] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
+  const [employeeStatus, setEmployeeStatus] = useState('all');
+  const [salaryMin, setSalaryMin] = useState('');
+  const [salaryMax, setSalaryMax] = useState('');
 
   useEffect(() => {
     const loadReportData = async () => {
       const response = await apiFetch("/api/department-report/", "GET", user.id);
-      setReportData(response.data);
+      const data = response.data;
+      
+      // Extract unique exhibits and roles
+      const uniqueExhibits = [...new Set(data.map(item => item.exhibit_name))];
+      const uniqueRoles = [...new Set(data.map(item => item.role))];
+      
+      setReportData(data);
+      setFilteredData(data);
+      setExhibits(uniqueExhibits);
+      setRoles(uniqueRoles);
+      setLoading(false);
     };
     loadReportData();
   }, []);
 
+  useEffect(() => {
+    applyFilters();
+  }, [reportData, selectedExhibits, selectedRoles, employeeStatus, salaryMin, salaryMax]);
+
+  const applyFilters = () => {
+    let filtered = [...reportData];
+
+    // Exhibit filter
+    if (selectedExhibits.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedExhibits.includes(item.exhibit_name)
+      );
+    }
+
+    // Role filter
+    if (selectedRoles.length > 0) {
+      filtered = filtered.filter(item => 
+        selectedRoles.includes(item.role)
+      );
+    }
+
+    // Employee status filter
+    if (employeeStatus === 'active') {
+      filtered = filtered.filter(item => item.active_employees > 0);
+    } else if (employeeStatus === 'inactive') {
+      filtered = filtered.filter(item => item.active_employees === 0);
+    }
+
+    // Salary range filter
+    if (salaryMin) {
+      filtered = filtered.filter(item => 
+        item.average_salary >= Number(salaryMin)
+      );
+    }
+    if (salaryMax) {
+      filtered = filtered.filter(item => 
+        item.average_salary <= Number(salaryMax)
+      );
+    }
+
+    setFilteredData(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setSelectedExhibits([]);
+    setSelectedRoles([]);
+    setEmployeeStatus('all');
+    setSalaryMin('');
+    setSalaryMax('');
+  };
+
   const prepareChartData = () => {
-    const exhibits = [...new Set(reportData.map((item) => item.exhibit_name))];
-    const roles = [...new Set(reportData.map((item) => item.role))];
+    const filteredExhibits = [...new Set(filteredData.map((item) => item.exhibit_name))];
+    const filteredRoles = [...new Set(filteredData.map((item) => item.role))];
 
     const colors = {
       Curator: "rgba(74, 111, 165, 1)", // Museum blue
@@ -253,6 +325,89 @@ export function DepartmentReport() {
           </div>
 
           <div className="report-results">
+            {/* New Filters Section */}
+            <div className="filters-container">
+              <div className="filter-row">
+                {/* Exhibit Filter */}
+                <div className="filter-group">
+                  <label>Exhibits:</label>
+                  <select
+                    multiple
+                    value={selectedExhibits}
+                    onChange={(e) => setSelectedExhibits(
+                      Array.from(e.target.selectedOptions, option => option.value)
+                    )}
+                    className="filter-select"
+                  >
+                    {exhibits.map(exhibit => (
+                      <option key={exhibit} value={exhibit}>{exhibit}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role Filter */}
+                <div className="filter-group">
+                  <label>Roles:</label>
+                  <select
+                    multiple
+                    value={selectedRoles}
+                    onChange={(e) => setSelectedRoles(
+                      Array.from(e.target.selectedOptions, option => option.value)
+                    )}
+                    className="filter-select"
+                  >
+                    {roles.map(role => (
+                      <option key={role} value={role}>{role}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Employee Status Filter */}
+                <div className="filter-group">
+                  <label>Employee Status:</label>
+                  <select
+                    value={employeeStatus}
+                    onChange={(e) => setEmployeeStatus(e.target.value)}
+                    className="filter-select"
+                  >
+                    <option value="all">All Employees</option>
+                    <option value="active">Active Only</option>
+                    <option value="inactive">Inactive Only</option>
+                  </select>
+                </div>
+
+                {/* Salary Range Filter */}
+                <div className="filter-group">
+                  <label>Salary Range:</label>
+                  <div className="range-inputs">
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={salaryMin}
+                      onChange={(e) => setSalaryMin(e.target.value)}
+                      className="filter-input"
+                    />
+                    <span>to</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={salaryMax}
+                      onChange={(e) => setSalaryMax(e.target.value)}
+                      className="filter-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Clear Filters Button */}
+                <button 
+                  className="clear-filters"
+                  onClick={handleClearFilters}
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            </div>
+
             <div className="report-header">
               <h2>Exhibit Staffing Analysis by Role</h2>
               <span className="report-date">
@@ -260,6 +415,7 @@ export function DepartmentReport() {
               </span>
             </div>
 
+            {/* ... (rest of your existing JSX remains the same, but using filteredData instead of reportData) */}
             <div className="report-content">
               <div className="custom-legend">
                 {prepareChartData().datasets.map((dataset, index) => (
@@ -299,7 +455,7 @@ export function DepartmentReport() {
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.map((item, index) => (
+                    {filteredData.map((item, index) => (
                       <tr key={index}>
                         <td>{item.exhibit_name}</td>
                         <td>{item.role}</td>

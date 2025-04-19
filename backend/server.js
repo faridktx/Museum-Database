@@ -1314,3 +1314,19 @@ app.post("/api/custom/checkout", async (req, res) => {
     res.status(500).json({ success: false, errors: [err.message || "Checkout error"] });
   }
 });
+
+
+app.get("/api/featured-exhibits", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT exhibit_name, description, image_url
+      FROM Exhibits
+      ORDER BY start_date DESC
+      LIMIT 3
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, error: "Failed to fetch exhibits" });
+  }
+});

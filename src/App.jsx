@@ -25,7 +25,7 @@ import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
 import { Cart } from "./pages/cart";
 import { ReceiptPage } from "./pages/ReceiptPage";
-
+import { Tickets } from "./pages/tickets";
 import { ArtistList } from "./pages/artist-list";
 import { InventoryReport } from "./pages/inventory-report";
 import { SalesReport } from "./pages/sales-report";
@@ -59,6 +59,7 @@ import {
 } from "./components/inventory-ops";
 import { SalesOperations } from "./pages/sales";
 import { AddSale, ModifySale, DeleteSale } from "./components/sales-ops";
+import { PlanVisit } from "./pages/PlanVisit";
 
 const routes = [
   { route: "/gift-shop", component: GiftShop },
@@ -66,6 +67,7 @@ const routes = [
   { route: "/dashboard/sales", component: SalesOperations },
   { route: "/dashboard/inventory", component: InventoryOperations },
   { route: "/dashboard/exhibit", component: ExhibitOperations },
+  { route: "/plan-your-visit", component: PlanVisit },
   { route: "/dashboard/artifact", component: ArtifactOperations },
   { route: "/dashboard/guest", component: GuestOperations },
   { route: "/dashboard/guest/modify", component: ModifyGuest },
@@ -104,6 +106,7 @@ const routes = [
   { route: "/dashboard/employee-report", component: EmployeeReport },
   { route: "/tickets-memberships", component: TicketMembership },
   { route: "/dashboard/cart", component: Cart },
+  { route: "/tickets", component: Tickets },
   { route: "/dashboard/artist-report", component: ArtistList },
   { route: "/dashboard/inventory-report", component: InventoryReport },
   { route: "/dashboard/sales-report", component: SalesReport },
