@@ -1330,3 +1330,40 @@ app.get("/api/featured-exhibits", async (req, res) => {
     res.json({ success: false, error: "Failed to fetch exhibits" });
   }
 });
+
+app.get("/api/fraud-alerts", async (req, res) => {
+  try {
+    const [alerts] = await promisePool.query(
+      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+    );
+
+    return res.status(200).json({ success: true, alerts });
+  } catch (err) {
+    console.error("❌ Failed to fetch fraud alerts:", err);
+    return res.status(500).json({ success: false, errors: ["Server error"] });
+  }
+});
+
+app.post("/api/fraud-alerts/resolve", async (req, res) => {
+  const { alert_id } = req.body;
+
+  if (!alert_id) {
+    return res.status(400).json({ success: false, errors: ["Missing alert_id"] });
+  }
+
+  try {
+    const [result] = await promisePool.query(
+      `UPDATE fraud_alerts SET is_resolved = 1 WHERE alert_id = ?`,
+      [alert_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, errors: ["Alert not found or already resolved"] });
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("❌ Failed to resolve alert:", err);
+    return res.status(500).json({ success: false, errors: ["Database error"] });
+  }
+});

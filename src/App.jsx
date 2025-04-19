@@ -29,6 +29,7 @@ import { Tickets } from "./pages/tickets";
 import { ArtistList } from "./pages/artist-list";
 import { InventoryReport } from "./pages/inventory-report";
 import { SalesReport } from "./pages/sales-report";
+import { AdminNotifications } from "./pages/AdminNotifications";
 import {
   AddArtifact,
   ModifyArtifact,
@@ -111,6 +112,7 @@ const routes = [
   { route: "/dashboard/inventory-report", component: InventoryReport },
   { route: "/dashboard/sales-report", component: SalesReport },
   { route: "/receipt", component: ReceiptPage },
+  { route: "/dashboard/notifications", component: AdminNotifications },
 ];
 
 export function App() {
