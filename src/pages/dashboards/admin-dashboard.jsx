@@ -17,6 +17,26 @@ import { useUser } from "@clerk/clerk-react";
 import "../../components/components.css";
 import { ROLES } from "../../components/constants.js";
 
+function addStatusToExhibit(exhibit) {
+  const today = new Date();
+  const start = new Date(exhibit.startDate);
+  const end = new Date(exhibit.endDate);
+
+  let status;
+  if (start > today) {
+    status = "upcoming";
+  } else if (end < today) {
+    status = "past";
+  } else {
+    status = "ongoing";
+  }
+
+  return {
+    ...exhibit,
+    status,
+  };
+}
+
 export function AdminDashboard() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
@@ -39,6 +59,27 @@ export function AdminDashboard() {
 
   // State for showing new employee form
   const [showNewEmployeeForm, setShowNewEmployeeForm] = useState(false);
+
+  const [exhibitsMap, setExhibitsMap] = useState([]);
+  useEffect(() => {
+    const getExhibitsMap = async () => {
+      const url = new URL(
+        "/api/getexhibitsmap/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      try {
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
+        const data = await response.json();
+        setExhibitsMap(data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    getExhibitsMap();
+  }, []);
 
   useEffect(() => {
     const getAdminInfo = async () => {
@@ -236,7 +277,12 @@ export function AdminDashboard() {
           method: "GET",
         });
         const data = await response.json();
-        setEmployees(data.data);
+        setEmployees(
+          data.data.map(emp => ({
+            ...emp,
+            status: emp.firedDate === null ? 'active' : 'inactive',
+          }))
+        );
       } catch (err) {
         console.log(err);
       }
@@ -246,6 +292,7 @@ export function AdminDashboard() {
 
   useEffect(() => {
     const getExhibits = async () => {
+      const today = new Date();
       const url = new URL(
         "/api/getexhibits/",
         process.env.REACT_APP_BACKEND_URL,
@@ -256,7 +303,7 @@ export function AdminDashboard() {
           method: "GET",
         });
         const data = await response.json();
-        setExhibits(data.data);
+        setExhibits(data.data.map(addStatusToExhibit));
       } catch (err) {
         console.log(err);
       }
@@ -279,7 +326,7 @@ export function AdminDashboard() {
       phone: employee.phone,
       role: employee.role,
       status: employee.status,
-      startDate: employee.hiringDate,
+      hiringDate: employee.hiringDate,
       salary: employee.salary,
     });
   };
@@ -379,7 +426,7 @@ export function AdminDashboard() {
     setExhibits(
       exhibits.map((exhibit) =>
         exhibit.id === editingExhibit
-          ? { ...exhibit, ...editFormData }
+          ? addStatusToExhibit({ ...exhibit, ...editFormData })
           : exhibit,
       ),
     );
@@ -399,8 +446,6 @@ export function AdminDashboard() {
     // Exit edit mode
     setEditingExhibit(null);
     setEditFormData({});
-
-    console.log("Exhibit updated successfully");
   };
 
   // Function to cancel editing exhibit
@@ -475,7 +520,12 @@ export function AdminDashboard() {
     }
 
     // Add the new employee to the employees array
-    setEmployees([...employees, newEmployeeData]);
+    setEmployees([...employees, {
+      ...newEmployeeData, status: newEmployeeData.firedDate === null ? 'active' : 'inactive',
+    }]);
+    console.log({
+      ...newEmployeeData, status: newEmployeeData.firedDate === null ? 'active' : 'inactive',
+    });
 
     // Reset the form
     setNewEmployeeData({
@@ -495,8 +545,6 @@ export function AdminDashboard() {
 
     // Hide the new employee form
     setShowNewEmployeeForm(false);
-
-    console.log("New employee added successfully");
   };
 
   // Function to save a new exhibit
@@ -512,8 +560,7 @@ export function AdminDashboard() {
     } catch (err) {
       console.log(err);
     }
-
-    setExhibits([...exhibits, newExhibitData]);
+    setExhibits([...exhibits, addStatusToExhibit(newExhibitData)]);
 
     // Reset the form
     setNewExhibitData({
@@ -521,29 +568,20 @@ export function AdminDashboard() {
       startDate: "",
       endDate: "",
       description: "",
+      status: ""
     });
 
     // Hide the new exhibit form
     setShowNewExhibitForm(false);
-
-    console.log("New exhibit added successfully");
   };
 
   // Handle form field changes for the new employee form
   const handleNewEmployeeChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "salary") {
-      setNewEmployeeData({
-        ...newEmployeeData,
-        [name]: parseFloat(value) || 0,
-      });
-    } else {
-      setNewEmployeeData({
-        ...newEmployeeData,
-        [name]: value,
-      });
-    }
+    setNewEmployeeData({
+      ...newEmployeeData,
+      [name]: value,
+    });
   };
 
   // Handle form field changes for the new exhibit form
@@ -951,12 +989,12 @@ export function AdminDashboard() {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="startDate">Start Date</label>
+                        <label htmlFor="hiringDate">Start Date</label>
                         <input
                           type="text"
-                          id="startDate"
-                          name="startDate"
-                          value={formData.startDate}
+                          id="hiringDate"
+                          name="hiringDate"
+                          value={formData.hiringDate}
                           disabled
                         />
                         <small className="field-note">
@@ -991,7 +1029,7 @@ export function AdminDashboard() {
                       </div>
                       <div className="detail-section">
                         <h3>Start Date</h3>
-                        <p>{adminData.startDate}</p>
+                        <p>{adminData.hiringDate}</p>
                       </div>
                     </div>
 
@@ -1081,16 +1119,37 @@ export function AdminDashboard() {
                           required
                         />
                       </div>
+                      <div className="form-group">
+                        <label className="required" htmlFor="new-exhibitId">
+                            Exhibit
+                        </label>
+                        <select
+                          id="new-exhibitId"
+                          name="exhibitId"
+                          value={newEmployeeData.exhibitId}
+                          onChange={handleNewEmployeeChange}
+                          required
+                        >
+                          <option disabled selected value="">
+                            Select an exhibit
+                          </option>
+                          {exhibitsMap.map((exhibit) => (
+                            <option key={exhibit.id} value={exhibit.id}>
+                              {exhibit.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <div className="form-row">
                       <div className="form-group">
-                        <label className="required" htmlFor="email">
+                        <label className="required" htmlFor="personalEmail">
                           Personal Email
                         </label>
                         <input
                           type="email"
-                          id="email"
-                          name="email"
+                          id="personalEmail"
+                          name="personalEmail"
                           value={newEmployeeData.personalEmail}
                           onChange={handleNewEmployeeChange}
                           required
@@ -1189,14 +1248,14 @@ export function AdminDashboard() {
                         />
                       </div>
                       <div className="form-group">
-                        <label className="required" htmlFor="startDate">
+                        <label className="required" htmlFor="hiringDate">
                           Start Date
                         </label>
                         <input
                           type="date"
-                          id="startDate"
-                          name="startDate"
-                          value={newEmployeeData.startDate}
+                          id="hiringDate"
+                          name="hiringDate"
+                          value={newEmployeeData.hiringDate}
                           onChange={handleNewEmployeeChange}
                           required
                         />
@@ -1295,8 +1354,8 @@ export function AdminDashboard() {
                               <td>
                                 <input
                                   type="date"
-                                  name="startDate"
-                                  value={editFormData.startDate}
+                                  name="hiringDate"
+                                  value={editFormData.hiringDate}
                                   onChange={handleEditFormChange}
                                   required
                                 />
@@ -1512,13 +1571,14 @@ export function AdminDashboard() {
                       </div>
                     </div>
                     <div className="form-group full-width">
-                      <label htmlFor="description">Description</label>
+                      <label className="required" htmlFor="description">Description</label>
                       <textarea
                         id="description"
                         name="description"
                         value={newExhibitData.description}
                         onChange={handleNewExhibitChange}
                         rows={3}
+                        required
                       />
                     </div>
                     <div className="form-actions">
@@ -1580,7 +1640,12 @@ export function AdminDashboard() {
                                   required
                                 />
                               </td>
-                              <td>{exhibit.status}</td>
+                              <td>                                <span
+                                  className={`status-badge ${exhibit.status}`}
+                                >
+                                  {exhibit.status.charAt(0).toUpperCase() +
+                                    exhibit.status.slice(1)}
+                                </span></td>
                               <td>
                                 <input
                                   type="date"
@@ -1598,10 +1663,28 @@ export function AdminDashboard() {
                                   onChange={handleExhibitFormChange}
                                 />
                               </td>
-                              <td>{exhibit.visitorCount}</td>
-                              <td>{exhibit.ticketsSold}</td>
-                              <td>{exhibit.ticketPrice}</td>
-                              <td>{exhibit.revenue}</td>
+                              <td>
+                                {(
+                                  parseInt(exhibit.visitorCount) || 0
+                                ).toLocaleString()}
+                              </td>
+                              <td>
+                                {(
+                                  parseInt(exhibit.ticketsSold) || 0
+                                ).toLocaleString()}
+                              </td>
+                              <td>
+                                $
+                                {(parseFloat(exhibit.ticketPrice) || 0).toFixed(
+                                  2,
+                                )}
+                              </td>
+                              <td>
+                                $
+                                {(
+                                  parseInt(exhibit.revenue) || 0
+                                ).toLocaleString()}
+                              </td>
                               <td className="actions-cell">
                                 <button
                                   className="icon-button save"

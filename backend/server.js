@@ -161,10 +161,10 @@ app.patch("/api/setcustomerinfo/", async (req, res) => {
   const query = `
     UPDATE customers
     SET 
-      full_name = ?,
-      email = ?,
-      phone_number = ?,
-      address = ?
+      full_name = NULLIF(?, ''),
+      email = NULLIF(?, ''),
+      phone_number = NULLIF(?, ''),
+      address = NULLIF(?, '')
     WHERE customer_id = ?;
   `;
   try {
@@ -330,9 +330,9 @@ app.post("/api/addinventory/", async (req, res) => {
     description,
     category,
     quantity,
-    unit_price
+    unit_price,
     supplier
-  ) VALUES (?, ?, ?, ?, ?, ?, ?);
+  ) VALUES (?, ?, ?, ?, ?, ?);
   `;
   try {
     await promisePool.query(query, [
@@ -376,8 +376,8 @@ app.patch("/api/setinventory/", async (req, res) => {
       category,
       price,
       inStock,
-      id,
       supplier,
+      id,
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -488,7 +488,6 @@ app.patch("/api/setartist/", async (req, res) => {
     nationality,
     movement,
     notableWorks,
-    biography,
   } = req.body;
   const query = `
     UPDATE artists
@@ -496,7 +495,9 @@ app.patch("/api/setartist/", async (req, res) => {
       artist_name = ?,
       nationality = ?,
       birth_year = ?,
-      death_year = ?
+      death_year = NULLIF(?, ''),
+      movement = ?,
+      notable_works = NULLIF(?, '')
     WHERE artist_id = ?
   `;
   try {
@@ -505,7 +506,9 @@ app.patch("/api/setartist/", async (req, res) => {
       nationality,
       birthYear,
       deathYear,
-      id,
+      movement,
+      notableWorks,
+      id
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -557,7 +560,8 @@ app.get("/api/getartifacts/", async (req, res) => {
     a.value AS acquisitionValue,
     a.condition,
     a.needs_restoration AS needsRestoration,
-    e.exhibit_name AS exhibitName
+    e.exhibit_name AS exhibitName,
+    e.exhibit_id AS exhibitId
   FROM artifacts a
   JOIN artists ar ON a.artist_id = ar.artist_id
   JOIN exhibits e ON a.exhibit_id = e.exhibit_id;
@@ -599,28 +603,37 @@ app.patch("/api/setartifact/", async (req, res) => {
       .status(401)
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
-
+  
   const {
     id,
     title,
     artistId,
+    exhibitId,
     year,
     medium,
-    dimensions,
-    location,
-    acquisitionDate,
-    condition,
-    needsRestoration,
+    condition
   } = req.body;
   const query = `
     UPDATE artifacts
     SET 
       artifact_name = ?,
-      artist_id = ?
+      artist_id = ?,
+      exhibit_id = ?,
+      created_year = NULLIF(?, ''),
+      medium = NULLIF(?, ''),
+      \`condition\` = ?
     WHERE artifact_id = ?
   `;
   try {
-    await promisePool.query(query, [title, artistId, id]);
+    await promisePool.query(query, [
+      title,
+      artistId,
+      exhibitId,
+      year,
+      medium,
+      condition,
+      id
+    ]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -640,7 +653,7 @@ app.post("/api/addrestored/", async (req, res) => {
   const { id, employeeId } = req.body;
   const query = `
     INSERT INTO restored (artifact_id, curator_id, date_marked, date_restored)
-    SELECT ?, ?, ?, ?
+    SELECT ?, ?, ?, NULLIF(?, '')
     WHERE NOT EXISTS (
       SELECT 1 FROM restored
       WHERE artifact_id = ? AND curator_id = ? AND date_marked = ?
@@ -714,7 +727,7 @@ app.post("/api/addartist/", async (req, res) => {
     INSERT INTO artists (
       artist_name, birth_year, death_year, nationality, movement,
       biography, notable_works
-    ) VALUES (?, ?, ?, ?, ?, ?, ?);
+    ) VALUES (?, ?, NULLIF(?, ''), ?, ?, NULLIF(?, ''), NULLIF(?, ''));
   `;
   try {
     await promisePool.query(query, [
@@ -770,20 +783,20 @@ app.post("/api/addartifact/", async (req, res) => {
       acquisition_type,
       acquisition_date,
       needs_restoration
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    ) VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?, NULLIF(?, ''), ?, ?, ?);
   `;
   try {
     await promisePool.query(query, [
       title,
-      artistId,
       exhibitId,
-      createdYear,
+      artistId,
       medium,
       description,
-      dimensions,
-      condition,
-      acquisitionType,
+      createdYear,
       acquisitionValue,
+      condition,
+      dimensions,
+      acquisitionType,
       acquisitionDate,
       needsRestoration,
     ]);
@@ -830,7 +843,7 @@ app.get("/api/getadmininfo/", async (req, res) => {
     role as title,
     personal_email as email,
     phone_number as phone,
-    DATE_FORMAT(hiring_date, '%Y-%m-%d') as startDate
+    DATE_FORMAT(hiring_date, '%Y-%m-%d') as hiringDate
   FROM employees WHERE access_id = ?
   `;
   try {
@@ -880,6 +893,7 @@ app.post("/api/addemployee/", async (req, res) => {
 
   const {
     name,
+    exhibitId,
     ssn,
     phone,
     address,
@@ -888,12 +902,14 @@ app.post("/api/addemployee/", async (req, res) => {
     birthDate,
     hiringDate,
     firedDate,
-    hourlyRate,
+    salary,
     role,
   } = req.body;
   const query = `
     INSERT INTO employees (
       employee_name,
+      exhibit_id,
+      access_id,
       ssn,
       phone_number,
       address,
@@ -904,11 +920,13 @@ app.post("/api/addemployee/", async (req, res) => {
       fired_date,
       salary,
       role
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
   `;
   try {
     await promisePool.query(query, [
       name,
+      exhibitId,
+      null,
       ssn,
       phone,
       address,
@@ -917,7 +935,7 @@ app.post("/api/addemployee/", async (req, res) => {
       birthDate,
       hiringDate,
       firedDate,
-      hourlyRate,
+      salary,
       role,
     ]);
     res.status(200).json({ success: true });
@@ -949,11 +967,7 @@ app.get("/api/getemployees/", async (req, res) => {
       DATE_FORMAT(hiring_date, '%Y-%m-%d') as hiringDate,
       DATE_FORMAT(fired_date, '%Y-%m-%d') as firedDate,
       salary,
-      role,
-      CASE 
-        WHEN fired_date IS NULL THEN 'active'
-        ELSE 'inactive'
-      END AS status
+      role
   FROM employees
   `;
   try {
@@ -974,7 +988,7 @@ app.patch("/api/setemployee/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { id, name, workEmail, phone, role, startDate, salary } = req.body;
+  const { id, name, workEmail, phone, role, hiringDate, salary } = req.body;
   const query = `
     UPDATE employees
     SET 
@@ -992,7 +1006,7 @@ app.patch("/api/setemployee/", async (req, res) => {
       workEmail,
       phone,
       role,
-      startDate,
+      hiringDate,
       salary,
       id,
     ]);
@@ -1039,11 +1053,6 @@ app.get("/api/getexhibits/", async (req, res) => {
     DATE_FORMAT(e.start_date, '%Y-%m-%d') AS startDate,
     DATE_FORMAT(e.end_date, '%Y-%m-%d') AS endDate,
     e.description,
-    CASE
-      WHEN e.end_date < CURDATE() THEN 'past'
-      WHEN e.start_date > CURDATE() THEN 'upcoming'
-      ELSE 'ongoing'
-    END AS status,
     15 AS ticketPrice,
     COUNT(DISTINCT t.guest_id) AS visitorCount,
     SUM(t.quantity) AS ticketsSold,
@@ -1092,12 +1101,12 @@ app.post("/api/addexhibit/", async (req, res) => {
 
   const { title, startDate, endDate, description } = req.body;
   const query = `
-    INSERT INTO employees (
+    INSERT INTO exhibits (
       exhibit_name,
-      description,
       start_date,
-      end_date
-    ) VALUES (?, ?, ?, ?)
+      end_date,
+      description
+    ) VALUES (?, ?, ?, NULLIF(?, ''))
   `;
   try {
     await promisePool.query(query, [title, startDate, endDate, description]);
@@ -1124,7 +1133,7 @@ app.patch("/api/setexhibit/", async (req, res) => {
       exhibit_name = ?,
       description = ?,
       start_date = ?,
-      end_date = ?
+      end_date = NULLIF(?, '')
     WHERE exhibit_id = ?
   `;
   try {
