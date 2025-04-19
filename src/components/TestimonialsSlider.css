@@ -1,0 +1,27 @@
+.testimonials-section {
+  padding: 4rem 2rem;
+  background-color: #f8f9fa;
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.testimonial-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  min-height: 180px;
+}
+
+.quote {
+  font-size: 1.2rem;
+  color: #333;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.name {
+  font-weight: 600;
+  color: #c8102e;
+}

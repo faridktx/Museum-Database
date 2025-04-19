@@ -18,12 +18,23 @@ import { SupportReport } from "./pages/support/support-report";
 import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
+import { TicketMembership } from "./pages/TicketMembership";
+import { ArtifactReport } from "./pages/artifact-report";
+import { DepartmentReport } from "./pages/department-report";
+import { EmployeeReport } from "./pages/employee-report";
+import { Cart } from "./pages/cart";
+import { ReceiptPage } from "./pages/ReceiptPage";
+import { ArtistList } from "./pages/artist-list";
+import { InventoryReport } from "./pages/inventory-report";
+import { SalesReport } from "./pages/sales-report";
 import { Memberships } from "./pages/memberships";
 import { useEffect } from "react";
 import { CuratorDashboard } from "./pages/dashboards/curator-dashboard";
 import { CustomerDashboard } from "./pages/dashboards/customer-dashboard";
 import { GiftShopDashboard } from "./pages/dashboards/giftshop-dashboard";
 import { AdminDashboard } from "./pages/dashboards/admin-dashboard";
+import { PlanVisit } from "./pages/PlanVisit";
+import {GiftShop} from "./pages/giftshop";
 
 const routes = [
   { route: "/memberships", component: Memberships },
@@ -31,6 +42,8 @@ const routes = [
   { route: "/dashboard/customer", component: CustomerDashboard },
   { route: "/dashboard/giftshop", component: GiftShopDashboard },
   { route: "/dashboard/admin", component: AdminDashboard },
+  { route: "/gift-shop", component: GiftShop },
+  { route: "/plan-your-visit", component: PlanVisit },
   { route: "/support-docs", component: SupportDocumentation },
   { route: "/support-center", component: SupportCenter },
   { route: "/support-account", component: SupportAccount },
@@ -43,6 +56,12 @@ const routes = [
   { route: "/dashboard/artifact-report", component: ArtifactReport },
   { route: "/dashboard/department-report", component: DepartmentReport },
   { route: "/dashboard/employee-report", component: EmployeeReport },
+  { route: "/tickets-memberships", component: TicketMembership },
+  { route: "/dashboard/cart", component: Cart },
+  { route: "/dashboard/artist-report", component: ArtistList },
+  { route: "/dashboard/inventory-report", component: InventoryReport },
+  { route: "/dashboard/sales-report", component: SalesReport },
+  { route: "/receipt", component: ReceiptPage },
 ];
 
 export function App() {

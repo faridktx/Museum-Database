@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
 import { apiFetch } from "../components/utils";
-import { ArrowLeft, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import "../components/components.css";
 
 export function EmployeeReport() {
   const { user } = useUser();
-  const [, navigate] = useLocation();
   const [employees, setEmployees] = useState([]);
   const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -27,7 +25,6 @@ export function EmployeeReport() {
       try {
         const [empRes, exRes] = await Promise.all([
           apiFetch("/api/employees", "GET", user.id),
-          apiFetch("/api/exhibits", "GET", user.id),
         ]);
 
         const empData = empRes.data;
@@ -63,46 +60,47 @@ export function EmployeeReport() {
     hiringDateStart,
     hiringDateEnd,
   ]);
-
   const applyFilters = () => {
     let filtered = [...employees];
 
     // Name filter
     if (nameSearch) {
-      filtered = filtered.filter((emp) =>
-        emp.employee_name.toLowerCase().includes(nameSearch.toLowerCase()),
+      filtered = filtered.filter(emp => 
+        emp.employee_name.toLowerCase().includes(nameSearch.toLowerCase())
       );
     }
 
     // ID filter
     if (idSearch) {
-      filtered = filtered.filter((emp) =>
-        emp.employee_id.toString().includes(idSearch),
+      filtered = filtered.filter(emp => 
+        emp.employee_id.toString().includes(idSearch)
       );
     }
 
     // Role filter
-    if (selectedRole && selectedRole !== "All") {
-      filtered = filtered.filter((emp) => emp.role === selectedRole);
+    if (selectedRole && selectedRole !== 'All') {
+      filtered = filtered.filter(emp => 
+        emp.role === selectedRole
+      );
     }
 
     // Department filter
-    if (selectedDepartment && selectedDepartment !== "All") {
-      filtered = filtered.filter(
-        (emp) => emp.department === selectedDepartment,
+    if (selectedDepartment && selectedDepartment !== 'All') {
+      filtered = filtered.filter(emp => 
+        emp.department === selectedDepartment
       );
     }
 
     // Date range filter
     if (hiringDateStart) {
-      filtered = filtered.filter(
-        (emp) => new Date(emp.hiring_date) >= new Date(hiringDateStart),
+      filtered = filtered.filter(emp => 
+        new Date(emp.hiring_date) >= new Date(hiringDateStart)
       );
     }
 
     if (hiringDateEnd) {
-      filtered = filtered.filter(
-        (emp) => new Date(emp.hiring_date) <= new Date(hiringDateEnd),
+      filtered = filtered.filter(emp => 
+        new Date(emp.hiring_date) <= new Date(hiringDateEnd)
       );
     }
 
@@ -110,23 +108,23 @@ export function EmployeeReport() {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
 
   const formatPhone = (phone) => {
-    if (!phone) return "N/A";
-    return phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3");
+    if (!phone) return 'N/A';
+    return phone.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
   };
 
   const handleClearFilters = () => {
-    setNameSearch("");
-    setIdSearch("");
-    setSelectedRole("All");
-    setSelectedDepartment("All");
-    setHiringDateStart("");
-    setHiringDateEnd("");
+    setNameSearch('');
+    setIdSearch('');
+    setSelectedRole('All');
+    setSelectedDepartment('All');
+    setHiringDateStart('');
+    setHiringDateEnd('');
   };
 
   const exportToCsv = () => {
@@ -138,22 +136,15 @@ export function EmployeeReport() {
       "Phone",
       "Work Email",
       "Hire Date",
-      "Salary",
+      "Salary"
     ];
-
-    const rows = filteredEmployees.map((emp) => [
-      emp.employee_id,
-      emp.employee_name,
-      emp.role,
-      emp.department,
-      emp.phone_number,
-      emp.work_email,
-      emp.hiring_date,
-      emp.salary,
+    
+    const rows = filteredEmployees.map(emp => [
+      emp.salary
     ]);
 
     const csvContent = [headers, ...rows]
-      .map((row) => row.join(","))
+      .map(row => row.join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -267,7 +258,7 @@ export function EmployeeReport() {
 
                 {/* Clear Filters Button */}
                 <div className="filter-item">
-                  <button
+                  <button 
                     className="clear-filters rounded-button"
                     onClick={handleClearFilters}
                   >
@@ -298,9 +289,9 @@ export function EmployeeReport() {
                         <td>{emp.employee_id}</td>
                         <td>{emp.employee_name}</td>
                         <td>{emp.role}</td>
-                        <td>{emp.department || "N/A"}</td>
+                        <td>{emp.department || 'N/A'}</td>
                         <td>{formatPhone(emp.phone_number)}</td>
-                        <td>{emp.work_email || "N/A"}</td>
+                        <td>{emp.work_email || 'N/A'}</td>
                         <td>{formatDate(emp.hiring_date)}</td>
                         <td>${emp.salary.toLocaleString()}</td>
                       </tr>

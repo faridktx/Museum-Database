@@ -1,0 +1,38 @@
+.events-section {
+  padding: 4rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.event-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  text-align: left;
+}
+
+.event-card h3 {
+  color: #c8102e;
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+
+.event-date {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.75rem;
+}
+
+.event-desc {
+  font-size: 0.95rem;
+  color: #333;
+}

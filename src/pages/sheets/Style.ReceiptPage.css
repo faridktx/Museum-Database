@@ -1,0 +1,140 @@
+/* Receipt Page Styles */
+.receipt-page {
+  max-width: 700px;
+  margin: 4rem auto;
+  padding: 2rem;
+  background: white;
+  color: #1e293b;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.receipt-page h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #0f172a;
+}
+
+.receipt-page p {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.receipt-section {
+  margin-top: 2rem;
+}
+
+.receipt-section h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #cbd5e1;
+  padding-bottom: 0.5rem;
+  color: #0f172a;
+}
+
+.receipt-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 1rem;
+}
+
+.receipt-line:last-child {
+  border-bottom: none;
+}
+
+.receipt-total {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  color: #111827;
+}
+
+.qr-container {
+  margin-top: 1.5rem;
+  text-align: center;
+  page-break-inside: avoid;
+}
+
+.qr-container p {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: #475569;
+}
+
+.print-button {
+  margin: 2rem auto 0;
+  display: block;
+  background-color: #2563eb;
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.print-button:hover {
+  background-color: #1e40af;
+}
+
+/* Print Optimization */
+@media print {
+  body {
+    background: none;
+  }
+
+  .receipt-page {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-button {
+    display: none;
+  }
+
+  .qr-container {
+    page-break-inside: avoid;
+  }
+}
+
+.receipt-page {
+  padding: 2rem;
+  font-family: sans-serif;
+}
+
+.receipt-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.25rem 0;
+}
+
+.receipt-section {
+  margin-top: 1.5rem;
+}
+
+.receipt-total {
+  margin-top: 2rem;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.qr-container {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.print-button {
+  margin-top: 2rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+}
