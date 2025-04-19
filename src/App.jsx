@@ -19,9 +19,6 @@ import { ArtifactReport } from "./pages/artifact-report";
 import { DepartmentReport } from "./pages/department-report";
 import { EmployeeReport } from "./pages/employee-report";
 import { TicketMembership } from "./pages/TicketMembership";
-import { ArtifactReport } from "./pages/artifact-report";
-import { DepartmentReport } from "./pages/department-report";
-import { EmployeeReport } from "./pages/employee-report";
 import { Cart } from "./pages/cart";
 import { ReceiptPage } from "./pages/ReceiptPage";
 import { ArtistList } from "./pages/artist-list";
@@ -34,7 +31,7 @@ import { CustomerDashboard } from "./pages/dashboards/customer-dashboard";
 import { GiftShopDashboard } from "./pages/dashboards/giftshop-dashboard";
 import { AdminDashboard } from "./pages/dashboards/admin-dashboard";
 import { PlanVisit } from "./pages/PlanVisit";
-import {GiftShop} from "./pages/giftshop";
+import { GiftShop } from "./pages/giftshop";
 
 const routes = [
   { route: "/memberships", component: Memberships },

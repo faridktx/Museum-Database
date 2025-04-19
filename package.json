@@ -24,6 +24,7 @@
     "react-scripts": "^5.0.1",
     "react-slick": "^0.30.3",
     "serve": "^14.2.4",
+    "slick": "^1.12.2",
     "slick-carousel": "^1.8.1",
     "wouter": "^3.6.0"
   },

@@ -40,19 +40,25 @@ export function DepartmentReport() {
   // Filter states
   const [selectedExhibits, setSelectedExhibits] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
-  const [employeeStatus, setEmployeeStatus] = useState('all');
-  const [salaryMin, setSalaryMin] = useState('');
-  const [salaryMax, setSalaryMax] = useState('');
+  const [employeeStatus, setEmployeeStatus] = useState("all");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [salaryMax, setSalaryMax] = useState("");
 
   useEffect(() => {
     const loadReportData = async () => {
-      const response = await apiFetch("/api/department-report/", "GET", user.id);
+      const response = await apiFetch(
+        "/api/department-report/",
+        "GET",
+        user.id,
+      );
       const data = response.data;
-      
+
       // Extract unique exhibits and roles
-      const uniqueExhibits = [...new Set(data.map(item => item.exhibit_name))];
-      const uniqueRoles = [...new Set(data.map(item => item.role))];
-      
+      const uniqueExhibits = [
+        ...new Set(data.map((item) => item.exhibit_name)),
+      ];
+      const uniqueRoles = [...new Set(data.map((item) => item.role))];
+
       setReportData(data);
       setFilteredData(data);
       setExhibits(uniqueExhibits);
@@ -64,41 +70,46 @@ export function DepartmentReport() {
 
   useEffect(() => {
     applyFilters();
-  }, [reportData, selectedExhibits, selectedRoles, employeeStatus, salaryMin, salaryMax]);
+  }, [
+    reportData,
+    selectedExhibits,
+    selectedRoles,
+    employeeStatus,
+    salaryMin,
+    salaryMax,
+  ]);
 
   const applyFilters = () => {
     let filtered = [...reportData];
 
     // Exhibit filter
     if (selectedExhibits.length > 0) {
-      filtered = filtered.filter(item => 
-        selectedExhibits.includes(item.exhibit_name)
+      filtered = filtered.filter((item) =>
+        selectedExhibits.includes(item.exhibit_name),
       );
     }
 
     // Role filter
     if (selectedRoles.length > 0) {
-      filtered = filtered.filter(item => 
-        selectedRoles.includes(item.role)
-      );
+      filtered = filtered.filter((item) => selectedRoles.includes(item.role));
     }
 
     // Employee status filter
-    if (employeeStatus === 'active') {
-      filtered = filtered.filter(item => item.active_employees > 0);
-    } else if (employeeStatus === 'inactive') {
-      filtered = filtered.filter(item => item.active_employees === 0);
+    if (employeeStatus === "active") {
+      filtered = filtered.filter((item) => item.active_employees > 0);
+    } else if (employeeStatus === "inactive") {
+      filtered = filtered.filter((item) => item.active_employees === 0);
     }
 
     // Salary range filter
     if (salaryMin) {
-      filtered = filtered.filter(item => 
-        item.average_salary >= Number(salaryMin)
+      filtered = filtered.filter(
+        (item) => item.average_salary >= Number(salaryMin),
       );
     }
     if (salaryMax) {
-      filtered = filtered.filter(item => 
-        item.average_salary <= Number(salaryMax)
+      filtered = filtered.filter(
+        (item) => item.average_salary <= Number(salaryMax),
       );
     }
 
@@ -108,13 +119,15 @@ export function DepartmentReport() {
   const handleClearFilters = () => {
     setSelectedExhibits([]);
     setSelectedRoles([]);
-    setEmployeeStatus('all');
-    setSalaryMin('');
-    setSalaryMax('');
+    setEmployeeStatus("all");
+    setSalaryMin("");
+    setSalaryMax("");
   };
 
   const prepareChartData = () => {
-    const filteredExhibits = [...new Set(filteredData.map((item) => item.exhibit_name))];
+    const filteredExhibits = [
+      ...new Set(filteredData.map((item) => item.exhibit_name)),
+    ];
     const filteredRoles = [...new Set(filteredData.map((item) => item.role))];
 
     const colors = {
@@ -334,13 +347,20 @@ export function DepartmentReport() {
                   <select
                     multiple
                     value={selectedExhibits}
-                    onChange={(e) => setSelectedExhibits(
-                      Array.from(e.target.selectedOptions, option => option.value)
-                    )}
+                    onChange={(e) =>
+                      setSelectedExhibits(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value,
+                        ),
+                      )
+                    }
                     className="filter-select"
                   >
-                    {exhibits.map(exhibit => (
-                      <option key={exhibit} value={exhibit}>{exhibit}</option>
+                    {exhibits.map((exhibit) => (
+                      <option key={exhibit} value={exhibit}>
+                        {exhibit}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -351,13 +371,20 @@ export function DepartmentReport() {
                   <select
                     multiple
                     value={selectedRoles}
-                    onChange={(e) => setSelectedRoles(
-                      Array.from(e.target.selectedOptions, option => option.value)
-                    )}
+                    onChange={(e) =>
+                      setSelectedRoles(
+                        Array.from(
+                          e.target.selectedOptions,
+                          (option) => option.value,
+                        ),
+                      )
+                    }
                     className="filter-select"
                   >
-                    {roles.map(role => (
-                      <option key={role} value={role}>{role}</option>
+                    {roles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -399,10 +426,7 @@ export function DepartmentReport() {
                 </div>
 
                 {/* Clear Filters Button */}
-                <button 
-                  className="clear-filters"
-                  onClick={handleClearFilters}
-                >
+                <button className="clear-filters" onClick={handleClearFilters}>
                   Clear All Filters
                 </button>
               </div>
