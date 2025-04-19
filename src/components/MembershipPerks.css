@@ -1,0 +1,38 @@
+.membership-perks-section {
+  padding: 4rem 2rem;
+  background-color: #fff;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.perks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.perk-card {
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.perk-card:hover {
+  transform: translateY(-5px);
+}
+
+.perk-icon {
+  font-size: 2rem;
+  color: #c8102e;
+  margin-bottom: 1rem;
+}
+
+.perk-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+}

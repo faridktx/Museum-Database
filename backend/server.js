@@ -1118,3 +1118,18 @@ app.get("/api/giftshop-names", async (_, res) => {
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
 });
+
+app.get("/api/featured-exhibits", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT exhibit_name, description, image_url
+      FROM Exhibits
+      ORDER BY start_date DESC
+      LIMIT 3
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error(error);
+    res.json({ success: false, error: "Failed to fetch exhibits" });
+  }
+});
