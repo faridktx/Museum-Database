@@ -1544,7 +1544,7 @@ app.post("/api/custom/checkout", async (req, res) => {
       saleIds.push(nextSaleId++);
     };
 
-    // Tickets
+    // Process tickets
     for (const [type, count] of Object.entries(tickets)) {
       if (count > 0) {
         const [[ticket]] = await connection.query(
@@ -1552,16 +1552,18 @@ app.post("/api/custom/checkout", async (req, res) => {
           [type],
         );
         if (ticket) {
-          await insert({
-            ticket_type: type,
-            quantity: count,
-            sale_cost: ticket.price * count,
-          });
+          const nextId = await getNextId('tickets');
+          await connection.query(
+            `INSERT INTO tickets (ticket_id, guest_id, purchase_date, ticket_type, quantity)
+             VALUES (?, ?, ?, ?, ?)`,
+            [nextId, accountId, today, type, count]
+          );
+          saleIds.push(`T-${nextId}`);
         }
       }
     }
 
-    // Exhibits
+    // Process exhibits
     for (const [name, count] of Object.entries(exhibits)) {
       if (count > 0) {
         const [[exhibit]] = await connection.query(
@@ -1569,31 +1571,37 @@ app.post("/api/custom/checkout", async (req, res) => {
           [name],
         );
         if (exhibit) {
-          await insert({
-            ticket_type: name,
-            quantity: count,
-            sale_cost: exhibit.price * count,
-          });
+          const nextId = await getNextId('exhibit_tickets');
+          await connection.query(
+            `INSERT INTO exhibit_tickets (ticket_id, exhibit_id, guest_id, purchase_date, quantity)
+             VALUES (?, ?, ?, ?, ?)`,
+            [nextId, exhibit.exhibit_id, accountId, today, count]
+          );
+          saleIds.push(`E-${nextId}`);
         }
       }
     }
 
-    // Membership
+    // Process membership (kept in combined_sales as before)
     if (membership) {
       const [[member]] = await connection.query(
         `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
         [membership],
       );
       if (member) {
-        await insert({
-          ticket_type: membership,
-          quantity: 1,
-          sale_cost: member.price,
-        });
+        const [maxRow] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+        const nextSaleId = (maxRow[0].max || 0) + 1;
+        
+        await connection.query(
+          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          [nextSaleId, accountId, membership, 1, member.price, today]
+        );
+        saleIds.push(`M-${nextSaleId}`);
       }
     }
 
-    // Gift Shop
+    // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {
       if (count > 0) {
         const [[item]] = await connection.query(
@@ -1601,11 +1609,13 @@ app.post("/api/custom/checkout", async (req, res) => {
           [itemId],
         );
         if (item) {
-          await insert({
-            item_id: itemId,
-            quantity: count,
-            sale_cost: item.unit_price * count,
-          });
+          const nextId = await getNextId('gift_shop_sales');
+          await connection.query(
+            `INSERT INTO gift_shop_sales (sale_id, item_id, guest_id, sale_date, quantity, total_cost)
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [nextId, itemId, accountId, today, count, item.unit_price * count]
+          );
+          saleIds.push(`G-${nextId}`);
         }
       }
     }
@@ -1643,18 +1653,18 @@ app.get("/api/featured-exhibits", async (req, res) => {
   }
 });
 
-app.get("/api/fraud-alerts", async (req, res) => {
-  try {
-    const [alerts] = await promisePool.query(
-      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
-    );
+//app.get("/api/fraud-alerts", async (req, res) => {
+//  try {
+//    const [alerts] = await promisePool.query(
+//      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+//    );
 
-    return res.status(200).json({ success: true, alerts });
-  } catch (err) {
-    console.error("❌ Failed to fetch fraud alerts:", err);
-    return res.status(500).json({ success: false, errors: ["Server error"] });
-  }
-});
+//    return res.status(200).json({ success: true, alerts });
+//  } catch (err) {
+//    console.error("❌ Failed to fetch fraud alerts:", err);
+//    return res.status(500).json({ success: false, errors: ["Server error"] });
+//  }
+//});
 
 app.post("/api/fraud-alerts/resolve", async (req, res) => {
   const { alert_id } = req.body;
@@ -1677,5 +1687,122 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
     return res.status(500).json({ success: false, errors: ["Database error"] });
+  }
+});
+
+app.get('/api/receipt-tickets', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, tickets: [] });
+
+  try {
+    const [tickets] = await promisePool.query(
+      `SELECT t.ticket_id, t.guest_id, t.purchase_date, t.ticket_type, t.quantity, ty.price 
+       FROM tickets t
+       JOIN ticket_types ty ON t.ticket_type = ty.ticket_type
+       WHERE t.ticket_id IN (?)`, 
+      [ids]
+    );
+    res.json({ success: true, tickets });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+
+app.get('/api/receipt-exhibit-tickets', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, exhibits: [] });
+
+  try {
+    const [exhibits] = await promisePool.query(
+      `SELECT et.ticket_id, et.exhibit_id, et.guest_id, et.purchase_date, et.quantity, e.price
+       FROM exhibit_tickets et
+       JOIN exhibits e ON et.exhibit_id = e.exhibit_id
+       WHERE et.ticket_id IN (?)`,
+      [ids]
+    );
+    res.json({ success: true, exhibits });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/receipt-gift-shop-sales', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, items: [] });
+
+  try {
+    const [items] = await promisePool.query(
+      `SELECT sale_id, item_id, guest_id, sale_date, quantity, total_cost 
+       FROM gift_shop_sales 
+       WHERE sale_id IN (?)`,
+      [ids]
+    );
+    res.json({ success: true, items });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/receipt-membership-sales', async (req, res) => {
+  const id = req.query.id;
+  if (!id) return res.json({ success: true, membership: null });
+
+  try {
+    const [[membership]] = await promisePool.query(
+      `SELECT s.sale_id, s.ticket_type AS membership_type, s.sale_cost AS price, s.purchase_date
+       FROM combined_sales s
+       JOIN membership_types m ON s.ticket_type = m.membership_type
+       WHERE s.sale_id = ?`,
+      [id]
+    );
+    res.json({ success: true, membership });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/receipt-exhibits', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, exhibits: [] });
+
+  try {
+    const [exhibits] = await promisePool.query(
+      `SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibit_id IN (?)`,
+      [ids]
+    );
+    res.json({ success: true, exhibits });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/receipt-gift-shop-items', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, items: [] });
+
+  try {
+    const [items] = await promisePool.query(
+      `SELECT item_id, item_name FROM gift_shop_inventory WHERE item_id IN (?)`,
+      [ids]
+    );
+    res.json({ success: true, items });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/receipt-exhibits', async (req, res) => {
+  const ids = req.query.ids?.split(',') || [];
+  if (!ids.length) return res.json({ success: true, exhibits: [] });
+
+  try {
+    const [exhibits] = await promisePool.query(
+      `SELECT exhibit_id, exhibit_name FROM exhibits WHERE exhibit_id IN (?)`,
+      [ids]
+    );
+    res.json({ success: true, exhibits });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
