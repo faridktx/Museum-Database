@@ -34,6 +34,52 @@ ChartJS.register(
   Legend,
 );
 
+function generateSalesChartData(sales) {
+  console.log("Sales data:", sales);
+  console.log(SHOPCATEGORIES);
+
+  const categoryTotals = {};
+  for (const cat of SHOPCATEGORIES) {
+    categoryTotals[cat] = { revenue: 0, units: 0 };
+  }
+
+  // Aggregate data
+  for (const sale of sales) {
+    const { category, quantity, total } = sale;
+    if (!category || !categoryTotals[category]) continue;
+
+    categoryTotals[category].revenue += total;
+    categoryTotals[category].units += quantity;
+  }
+
+  const revenueData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].revenue);
+  const unitsData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].units);
+
+  return {
+    labels: SHOPCATEGORIES,
+    datasets: [
+      {
+        label: "Revenue ($)",
+        data: revenueData,
+        backgroundColor: "rgba(102, 153, 255, 0.7)", // Calm blue
+        borderColor: "rgba(102, 153, 255, 1)",
+        borderWidth: 1,
+        borderRadius: 5,
+        barThickness: 40,
+      },
+      {
+        label: "Units Sold",
+        data: unitsData,
+        backgroundColor: "rgba(255, 204, 102, 0.7)", // Soft amber
+        borderColor: "rgba(255, 204, 102, 1)",
+        borderWidth: 1,
+        borderRadius: 5,
+        barThickness: 40,
+      },
+    ],
+  };
+}
+
 export function GiftShopDashboard() {
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState("profile");
@@ -1507,138 +1553,13 @@ export function GiftShopDashboard() {
                     <div className="metric-value">
                       <DollarSign size={24} />
                       <span>
-                        ${(getTotalSales() / sales.length).toFixed(2)}
+                        {sales.length > 0
+                          ? `$${(getTotalSales() / sales.length).toFixed(2)}`
+                          : "$0.00"}
                       </span>
                     </div>
                     <div className="metric-description">
                       <p>Average value per transaction</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Sales Analysis Chart */}
-              <div className="content-section chart-section">
-                <div className="section-header">
-                  <h3>Sales Analysis by Category</h3>
-                </div>
-                <div className="chart-container">
-                  <div className="sales-chart">
-                    <Bar
-                      data={{
-                        labels: [
-                          "Books",
-                          "Apparel",
-                          "Accessories",
-                          "Art Supplies",
-                          "Homewares",
-                          "Prints",
-                        ],
-                        datasets: [
-                          {
-                            label: "Revenue ($)",
-                            data: [104.97, 74.97, 47.97, 56.97, 67.5, 45.99],
-                            backgroundColor: "rgba(74, 111, 165, 0.7)",
-                            borderColor: "rgba(74, 111, 165, 1)",
-                            borderWidth: 1,
-                            borderRadius: 5,
-                            barThickness: 40,
-                          },
-                          {
-                            label: "Units Sold",
-                            data: [3, 3, 3, 3, 3, 1],
-                            backgroundColor: "rgba(155, 133, 121, 0.7)",
-                            borderColor: "rgba(155, 133, 121, 1)",
-                            borderWidth: 1,
-                            borderRadius: 5,
-                            barThickness: 40,
-                          },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            position: "top",
-                            labels: {
-                              font: {
-                                family: "'Playfair Display', serif",
-                                size: 14,
-                              },
-                            },
-                          },
-                          tooltip: {
-                            callbacks: {
-                              label: function (context) {
-                                let label = context.dataset.label || "";
-                                if (label) {
-                                  label += ": ";
-                                }
-                                if (context.dataset.label === "Revenue ($)") {
-                                  label += "$" + context.parsed.y;
-                                } else {
-                                  label += context.parsed.y;
-                                }
-                                return label;
-                              },
-                            },
-                          },
-                        },
-                        scales: {
-                          x: {
-                            grid: {
-                              display: false,
-                            },
-                            ticks: {
-                              font: {
-                                family: "'Playfair Display', serif",
-                              },
-                            },
-                          },
-                          y: {
-                            beginAtZero: true,
-                            ticks: {
-                              font: {
-                                family: "'Helvetica Neue', Arial, sans-serif",
-                              },
-                            },
-                          },
-                        },
-                      }}
-                      height={340}
-                    />
-                    <div className="chart-insights">
-                      <h4>Key Insights:</h4>
-                      <ul>
-                        <li>
-                          <strong>Books:</strong> $104.97 revenue from 3 units
-                          sold{" "}
-                          <span className="top-performer">
-                            (Top performing category)
-                          </span>
-                        </li>
-                        <li>
-                          <strong>Apparel:</strong> $74.97 revenue from 3 units
-                          sold
-                        </li>
-                        <li>
-                          <strong>Homewares:</strong> $67.50 revenue from 3
-                          units sold
-                        </li>
-                        <li>
-                          <strong>Art Supplies:</strong> $56.97 revenue from 3
-                          units sold
-                        </li>
-                        <li>
-                          <strong>Accessories:</strong> $47.97 revenue from 3
-                          units sold
-                        </li>
-                        <li>
-                          <strong>Prints:</strong> $45.99 revenue from 1 unit
-                          sold
-                        </li>
-                      </ul>
                     </div>
                   </div>
                 </div>
@@ -1694,48 +1615,112 @@ export function GiftShopDashboard() {
                             <td>{product.name}</td>
                             <td>{product.category}</td>
                             <td>{product.quantity}</td>
-                            <td>${product.revenue.toFixed(2)}</td>
+                            <td>${parseInt(product.revenue).toFixed(2)}</td>
                           </tr>
                         ));
                       })()}
                     </tbody>
                   </table>
+                  {sales.length === 0 && (
+                    <div className="empty-state">
+                      <p>No gift shop item sales found.</p>
+                    </div>
+                  )}
                 </div>
+              </div>
 
+              {/* Sales Analysis Chart */}
+              <div className="content-section chart-section">
                 <div className="section-header">
-                  <h3>Low Stock Alert</h3>
+                  <h3>Sales Analysis by Category</h3>
                 </div>
-                <div className="data-table-container">
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Product</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Minimum Required</th>
-                        <th>Reorder Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {inventory
-                        .filter((item) => isLowStock(item))
-                        .map((item, index) => (
-                          <tr key={`low-stock-${index}`} className="alert-row">
-                            <td>{item.name}</td>
-                            <td>{item.category}</td>
-                            <td>{item.inStock}</td>
-                            <td>{item.minimumStock}</td>
-                            <td>
-                              {Math.max(
-                                item.minimumStock * 2 - item.inStock,
-                                5,
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+                <div
+                  className="sales-chart"
+                  style={{ margin: "0 auto", height: "300px", width: "80%" }}
+                >
+                  <Bar
+                    data={generateSalesChartData(sales)}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: "top",
+                          labels: {
+                            font: {
+                              family: "'Playfair Display', serif",
+                              size: 14,
+                            },
+                          },
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function (context) {
+                              let label = context.dataset.label || "";
+                              if (label) label += ": ";
+                              if (context.dataset.label === "Revenue ($)") {
+                                label += "$" + context.parsed.y;
+                              } else {
+                                label += context.parsed.y;
+                              }
+                              return label;
+                            },
+                          },
+                        },
+                      },
+                      scales: {
+                        x: {
+                          grid: { display: false },
+                          ticks: {
+                            font: { family: "'Playfair Display', serif" },
+                          },
+                        },
+                        y: {
+                          beginAtZero: true,
+                          ticks: {
+                            font: {
+                              family: "'Helvetica Neue', Arial, sans-serif",
+                            },
+                          },
+                        },
+                      },
+                    }}
+                  />
                 </div>
+              </div>
+
+              <div className="data-table-container">
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Date</th>
+                      <th>Customer</th>
+                      <th>Items</th>
+                      <th>Total</th>
+                      <th>Payment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filterItems(sales, "sales").map((sale) => (
+                      <React.Fragment key={`sale-row-${sale.id}`}>
+                        <tr>
+                          <td>#{sale.id}</td>
+                          <td>{new Date(sale.date).toLocaleDateString()}</td>
+                          <td>{sale.customer}</td>
+                          <td>{sale.products.length}</td>
+                          <td>${sale.total.toFixed(2)}</td>
+                          <td>{sale.paymentMethod}</td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+                {sales.length === 0 && (
+                  <div className="empty-state">
+                    <p>No gift shop item sales found.</p>
+                  </div>
+                )}
               </div>
             </div>
           )}

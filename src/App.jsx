@@ -15,14 +15,10 @@ import { SupportFaq } from "./pages/support/support-faq";
 import { SupportContact } from "./pages/support/support-contact";
 import { SupportKnowledge } from "./pages/support/support-knowledge";
 import { SupportReport } from "./pages/support/support-report";
-import { ArtifactReport } from "./pages/artifact-report";
-import { DepartmentReport } from "./pages/department-report";
-import { EmployeeReport } from "./pages/employee-report";
 import { TicketMembership } from "./pages/TicketMembership";
 import { Cart } from "./pages/cart";
 import { ReceiptPage } from "./pages/ReceiptPage";
 import { ArtistList } from "./pages/artist-list";
-import { InventoryReport } from "./pages/inventory-report";
 import { SalesReport } from "./pages/sales-report";
 import { AdminNotifications } from "./pages/AdminNotifications";
 import { Memberships } from "./pages/memberships";
@@ -51,13 +47,9 @@ const routes = [
   { route: "/support-contact", component: SupportContact },
   { route: "/support-knowledge", component: SupportKnowledge },
   { route: "/support-report", component: SupportReport },
-  { route: "/dashboard/artifact-report", component: ArtifactReport },
-  { route: "/dashboard/department-report", component: DepartmentReport },
-  { route: "/dashboard/employee-report", component: EmployeeReport },
   { route: "/tickets-memberships", component: TicketMembership },
   { route: "/dashboard/cart", component: Cart },
   { route: "/dashboard/artist-report", component: ArtistList },
-  { route: "/dashboard/inventory-report", component: InventoryReport },
   { route: "/dashboard/sales-report", component: SalesReport },
   { route: "/receipt", component: ReceiptPage },
   { route: "/dashboard/notifications", component: AdminNotifications },

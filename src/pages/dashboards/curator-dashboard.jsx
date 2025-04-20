@@ -11,7 +11,7 @@ import {
   Settings as SettingsIcon,
   X,
 } from "lucide-react";
-import { CollectionGrowthCharts } from "../charts/curator-growth";
+import { Bar } from "react-chartjs-2";
 import "../../components/components.css";
 import "./curator.css";
 import { useUser } from "@clerk/clerk-react";
@@ -21,6 +21,168 @@ import {
   NATIONALITIES,
   CONDITIONS,
 } from "../../components/constants.js";
+
+const ART_MOVEMENT_COLORS = [
+  "#8da0cb", // muted blue
+  "#fc8d62", // soft orange
+  "#66c2a5", // desaturated teal
+  "#a6d854", // soft green
+  "#ffd92f", // soft yellow
+  "#e78ac3", // soft pink
+  "#e5c494", // tan
+  "#b3b3b3", // grey
+  "#a1c9f4", // pastel blue
+  "#c6dbef", // pale blue-grey
+];
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+    },
+    title: {
+      display: true,
+      text: "Artifact Count by Year and Art Movement",
+      padding: {
+        top: 10,
+        bottom: 20,
+      },
+    },
+  },
+  scales: {
+    x: {
+      stacked: false,
+      title: {
+        display: true,
+        text: "Acquisition Year",
+      },
+    },
+    y: {
+      stacked: false,
+      title: {
+        display: true,
+        text: "Number of Artifacts",
+      },
+    },
+  },
+};
+
+const valueChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+    },
+    title: {
+      display: true,
+      text: "Total Artifact Value by Year and Art Movement ($)",
+      padding: {
+        top: 10,
+        bottom: 20,
+      },
+    },
+  },
+  scales: {
+    x: {
+      stacked: false,
+      title: {
+        display: true,
+        text: "Acquisition Year",
+      },
+    },
+    y: {
+      stacked: false,
+      title: {
+        display: true,
+        text: "Total Value ($)",
+      },
+      ticks: {
+        callback: function (value) {
+          return "$" + Number(value).toLocaleString();
+        },
+      },
+    },
+  },
+};
+
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+const prepareChartData = (artifacts) => {
+  const yearList = artifacts.map((a) =>
+    new Date(a.acquisitionDate).getFullYear(),
+  );
+  const minYear = Math.min(...yearList);
+  const maxYear = Math.max(...yearList);
+  const years = Array.from(
+    { length: maxYear - minYear + 1 },
+    (_, i) => minYear + i,
+  );
+
+  const movements = [...new Set(artifacts.map((a) => a.movement))];
+  const datasets = movements.map((mov, index) => {
+    const data = years.map(
+      (year) =>
+        artifacts.filter(
+          (a) =>
+            new Date(a.acquisitionDate).getFullYear() === year &&
+            a.movement === mov,
+        ).length,
+    );
+
+    return {
+      label: mov,
+      data,
+      backgroundColor: hexToRgba(ART_MOVEMENT_COLORS[index], 0.7),
+      borderColor: hexToRgba(ART_MOVEMENT_COLORS[index], 1),
+      borderWidth: 1,
+    };
+  });
+
+  return { labels: years, datasets };
+};
+
+const prepareValueChartData = (artifacts) => {
+  const yearList = artifacts.map((a) =>
+    new Date(a.acquisitionDate).getFullYear(),
+  );
+  const minYear = Math.min(...yearList);
+  const maxYear = Math.max(...yearList);
+  const years = Array.from(
+    { length: maxYear - minYear + 1 },
+    (_, i) => minYear + i,
+  );
+
+  const movements = [...new Set(artifacts.map((a) => a.movement))];
+  const datasets = movements.map((mov, index) => {
+    const data = years.map((year) =>
+      artifacts
+        .filter(
+          (a) =>
+            new Date(a.acquisitionDate).getFullYear() === year &&
+            a.movement === mov,
+        )
+        .reduce((sum, a) => sum + (a.acquisitionValue || 0), 0),
+    );
+
+    return {
+      label: mov,
+      data,
+      backgroundColor: hexToRgba(ART_MOVEMENT_COLORS[index], 0.7),
+      borderColor: hexToRgba(ART_MOVEMENT_COLORS[index], 1),
+      borderWidth: 1,
+    };
+  });
+
+  return { labels: years, datasets };
+};
 
 export function getConditionClass(condition) {
   switch (condition) {
@@ -1944,10 +2106,9 @@ export function CuratorDashboard() {
                             // View mode - display data
                             <>
                               <td>
-                                {artifact.title}{" "}
-                                {artifact.needsRestoration && (
-                                  <span className="restoration-flag">❗</span>
-                                )}
+                                {artifact.needsRestoration
+                                  ? `${artifact.title}❗`
+                                  : artifact.title}
                               </td>
                               <td>
                                 {artists.find((a) => a.id === artifact.artistId)
@@ -2020,43 +2181,71 @@ export function CuratorDashboard() {
                 assigned section.
               </p>
 
-              <div className="reports-grid">
-                <div className="report-card">
-                  <h3>Acquisition Report</h3>
-                  <p>
-                    Summary of artifacts acquired in the current quarter and
-                    their status.
-                  </p>
-                  <button className="action-button">
-                    <span>View Report</span>
-                  </button>
-                </div>
-
-                <div className="report-card">
-                  <h3>Artist Analytics</h3>
-                  <p>
-                    Analysis of represented artists and their works in the
-                    collection.
-                  </p>
-                  <button className="action-button">
-                    <span>View Report</span>
-                  </button>
-                </div>
-
-                <div className="report-card">
-                  <h3>Collection Status</h3>
-                  <p>
-                    Overview of the entire collection by period, medium, and
-                    conservation status.
-                  </p>
-                  <button className="action-button">
-                    <span>View Report</span>
-                  </button>
-                </div>
+              <div
+                className="report-card exhibit-performance"
+                style={{ margin: "0 auto", height: "400px" }}
+              >
+                <Bar
+                  data={prepareChartData(artifacts)}
+                  options={chartOptions}
+                />
+              </div>
+              <br></br>
+              <div
+                className="report-card employee-performance"
+                style={{ margin: "0 auto", height: "400px" }}
+              >
+                <Bar
+                  data={prepareValueChartData(artifacts)}
+                  options={valueChartOptions}
+                />
               </div>
 
-              <div className="report-charts">
-                <CollectionGrowthCharts />
+              <div className="data-table-container">
+                <table className="data-table artifacts-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Artist</th>
+                      <th>Year</th>
+                      <th>Medium</th>
+                      <th>Exhibit Name</th>
+                      <th>Condition</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filterItems(artifacts, "artifacts").map((artifact) => (
+                      <>
+                        <tr key={`artifact-row-${artifact.id}`}>
+                          {
+                            // View mode - display data
+                            <>
+                              <td>
+                                {artifact.needsRestoration
+                                  ? `${artifact.title}❗`
+                                  : artifact.title}
+                              </td>
+                              <td>
+                                {artists.find((a) => a.id === artifact.artistId)
+                                  ?.name || "Unknown"}
+                              </td>
+                              <td>{artifact.year}</td>
+                              <td>{artifact.medium}</td>
+                              <td>{artifact.exhibitName}</td>
+                              <td>
+                                <span
+                                  className={`condition-badge ${getConditionClass(artifact.condition)}`}
+                                >
+                                  {artifact.condition}
+                                </span>
+                              </td>
+                            </>
+                          }
+                        </tr>
+                      </>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

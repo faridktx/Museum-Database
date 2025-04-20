@@ -508,7 +508,7 @@ app.patch("/api/setartist/", async (req, res) => {
       deathYear,
       movement,
       notableWorks,
-      id
+      id,
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -561,7 +561,8 @@ app.get("/api/getartifacts/", async (req, res) => {
     a.condition,
     a.needs_restoration AS needsRestoration,
     e.exhibit_name AS exhibitName,
-    e.exhibit_id AS exhibitId
+    e.exhibit_id AS exhibitId,
+    ar.movement
   FROM artifacts a
   JOIN artists ar ON a.artist_id = ar.artist_id
   JOIN exhibits e ON a.exhibit_id = e.exhibit_id;
@@ -603,16 +604,8 @@ app.patch("/api/setartifact/", async (req, res) => {
       .status(401)
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
-  
-  const {
-    id,
-    title,
-    artistId,
-    exhibitId,
-    year,
-    medium,
-    condition
-  } = req.body;
+
+  const { id, title, artistId, exhibitId, year, medium, condition } = req.body;
   const query = `
     UPDATE artifacts
     SET 
@@ -632,7 +625,7 @@ app.patch("/api/setartifact/", async (req, res) => {
       year,
       medium,
       condition,
-      id
+      id,
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -1655,7 +1648,7 @@ app.get("/api/featured-exhibits", async (req, res) => {
 app.get("/api/fraud-alerts", async (req, res) => {
   try {
     const [alerts] = await promisePool.query(
-      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`,
     );
 
     return res.status(200).json({ success: true, alerts });
@@ -1669,17 +1662,22 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
   const { alert_id } = req.body;
 
   if (!alert_id) {
-    return res.status(400).json({ success: false, errors: ["Missing alert_id"] });
+    return res
+      .status(400)
+      .json({ success: false, errors: ["Missing alert_id"] });
   }
 
   try {
     const [result] = await promisePool.query(
       `UPDATE fraud_alerts SET is_resolved = 1 WHERE alert_id = ?`,
-      [alert_id]
+      [alert_id],
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, errors: ["Alert not found or already resolved"] });
+      return res.status(404).json({
+        success: false,
+        errors: ["Alert not found or already resolved"],
+      });
     }
 
     return res.status(200).json({ success: true });

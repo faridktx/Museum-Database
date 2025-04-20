@@ -19,7 +19,9 @@ export function AdminNotifications() {
           setAlerts(data.alerts);
 
           // Dynamically gather unique alert types
-          const types = [...new Set(data.alerts.map((a) => a.alert_type).filter(Boolean))];
+          const types = [
+            ...new Set(data.alerts.map((a) => a.alert_type).filter(Boolean)),
+          ];
           setAlertTypes(["All", ...types]);
         }
       } catch (err) {
@@ -34,13 +36,19 @@ export function AdminNotifications() {
     let filteredList = [...alerts];
 
     if (selectedType !== "All") {
-      filteredList = filteredList.filter((a) => (a.alert_type || "").trim() === selectedType);
+      filteredList = filteredList.filter(
+        (a) => (a.alert_type || "").trim() === selectedType,
+      );
     }
 
     if (sortOrder === "Newest") {
-      filteredList.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      filteredList.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
     } else {
-      filteredList.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      filteredList.sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at),
+      );
     }
 
     setFiltered(filteredList);
@@ -56,7 +64,9 @@ export function AdminNotifications() {
 
       const data = await res.json();
       if (data.success) {
-        setAlerts((prev) => prev.filter((alert) => alert.alert_id !== alert_id));
+        setAlerts((prev) =>
+          prev.filter((alert) => alert.alert_id !== alert_id),
+        );
       } else {
         alert("Failed to resolve alert.");
       }
@@ -70,19 +80,31 @@ export function AdminNotifications() {
       <h2>Fraud Alerts</h2>
 
       {!user && (
-        <p style={{ fontStyle: "italic", color: "#64748b", marginBottom: "1rem" }}>
+        <p
+          style={{
+            fontStyle: "italic",
+            color: "#64748b",
+            marginBottom: "1rem",
+          }}
+        >
           You're viewing alerts in guest mode.
         </p>
       )}
 
       <div className="filter-bar">
-        <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(e.target.value)}
+        >
           {alertTypes.map((type) => (
             <option key={type}>{type}</option>
           ))}
         </select>
 
-        <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}>
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
           <option value="Newest">Newest</option>
           <option value="Oldest">Oldest</option>
         </select>
@@ -104,7 +126,9 @@ export function AdminNotifications() {
           filtered.map((alert) => (
             <div key={alert.alert_id} className="alert-row">
               <span>
-                <span className={`alert-badge ${alert.alert_type ? alert.alert_type.replace(/\s+/g, '').toLowerCase() : 'unknown'}`}>
+                <span
+                  className={`alert-badge ${alert.alert_type ? alert.alert_type.replace(/\s+/g, "").toLowerCase() : "unknown"}`}
+                >
                   {alert.alert_type || "Unknown"}
                 </span>
               </span>
@@ -113,7 +137,9 @@ export function AdminNotifications() {
                 {new Date(alert.created_at).toLocaleString()}
               </span>
               <span className="alert-action">
-                <button onClick={() => handleResolve(alert.alert_id)}>Resolve</button>
+                <button onClick={() => handleResolve(alert.alert_id)}>
+                  Resolve
+                </button>
               </span>
             </div>
           ))
