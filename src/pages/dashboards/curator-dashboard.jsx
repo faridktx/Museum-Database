@@ -394,8 +394,7 @@ export function CuratorDashboard() {
         );
       } else if (type === "artifacts") {
         filteredItems = filteredItems.filter((artifact) => {
-          const artistName =
-            artists.find((a) => a.id === artifact.artistId)?.name || "";
+          const artistName = artifact?.name || "";
           return (
             artifact.title.toLowerCase().includes(query) ||
             artistName.toLowerCase().includes(query) ||
@@ -440,8 +439,7 @@ export function CuratorDashboard() {
 
       if (artist) {
         filteredItems = filteredItems.filter((artifact) => {
-          const artistName =
-            artists.find((a) => a.id === artifact.artistId)?.name || "";
+          const artistName = artifact?.name || "";
           return artistName.toLowerCase().includes(artist.toLowerCase());
         });
       }
@@ -508,7 +506,6 @@ export function CuratorDashboard() {
       nationality: artist.nationality,
       movement: artist.movement,
       notableWorks: artist.notableWorks,
-      biography: artist.biography,
     });
   };
 
@@ -817,10 +814,24 @@ export function CuratorDashboard() {
 
   // Handle new artifact form field changes
   const handleNewArtifactChange = (e) => {
+    let additionalChange = {};
     const { name, value, type, checked } = e.target;
+    if (name === "artistId") {
+      const artistName = artists.find(
+        (artist) => parseInt(artist.id) === parseInt(value),
+      );
+      additionalChange = { artist: artistName?.name || "" };
+    } else if (name === "exhibitId") {
+      const exhibitName = exhibitsMap.find(
+        (exhibit) => parseInt(exhibit.id) === parseInt(value),
+      );
+      additionalChange = { exhibitName: exhibitName?.name || "" };
+    }
+
     setNewArtifactData({
       ...newArtifactData,
       [name]: type === "checkbox" ? checked : value,
+      ...additionalChange,
     });
   };
 
@@ -838,6 +849,10 @@ export function CuratorDashboard() {
       console.log(err);
     }
 
+    const movement =
+      artists.find((a) => parseInt(a.id) === parseInt(newArtifactData.artistId))
+        ?.movement || "";
+    newArtifactData.movement = movement;
     // Add to the artifacts array
     setArtifacts([...artifacts, newArtifactData]);
 
@@ -2113,10 +2128,7 @@ export function CuratorDashboard() {
                                   ? `${artifact.title}❗`
                                   : artifact.title}
                               </td>
-                              <td>
-                                {artists.find((a) => a.id === artifact.artistId)
-                                  ?.name || "Unknown"}
-                              </td>
+                              <td>{artifact.artist || "Unknown"}</td>
                               <td>{artifact.year}</td>
                               <td>{artifact.medium}</td>
                               <td>{artifact.exhibitName}</td>
@@ -2228,10 +2240,7 @@ export function CuratorDashboard() {
                                   ? `${artifact.title}❗`
                                   : artifact.title}
                               </td>
-                              <td>
-                                {artists.find((a) => a.id === artifact.artistId)
-                                  ?.name || "Unknown"}
-                              </td>
+                              <td>{artifact.artist || "Unknown"}</td>
                               <td>{artifact.year}</td>
                               <td>{artifact.medium}</td>
                               <td>{artifact.exhibitName}</td>
@@ -2294,11 +2303,7 @@ export function CuratorDashboard() {
                               // Edit mode - show input fields
                               <>
                                 <td>{artifact.title}</td>
-                                <td>
-                                  {artists.find(
-                                    (a) => a.id === artifact.artistId,
-                                  )?.name || "Unknown"}
-                                </td>
+                                <td>{artifact?.artist || "Unknown"}</td>
                                 <td>{artifact.year}</td>
                                 <td>{artifact.medium}</td>
                                 <td>{artifact.exhibitName}</td>
@@ -2345,11 +2350,7 @@ export function CuratorDashboard() {
                                   {artifact.title}{" "}
                                   <span className="restoration-flag">❗</span>
                                 </td>
-                                <td>
-                                  {artists.find(
-                                    (a) => a.id === artifact.artistId,
-                                  )?.name || "Unknown"}
-                                </td>
+                                <td>{artifact.artist || "Unknown"}</td>
                                 <td>{artifact.year}</td>
                                 <td>{artifact.medium}</td>
                                 <td>{artifact.exhibitName}</td>

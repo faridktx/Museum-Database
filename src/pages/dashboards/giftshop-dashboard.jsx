@@ -55,6 +55,9 @@ function generateSalesChartData(sales) {
   const revenueData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].revenue);
   const unitsData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].units);
 
+  console.log(revenueData);
+  console.log(unitsData);
+
   return {
     labels: SHOPCATEGORIES,
     datasets: [
@@ -112,11 +115,11 @@ export function GiftShopDashboard() {
 
   // Form data
   const [formData, setFormData] = useState({
+    exhibitName: "",
     name: "",
     title: "",
     email: "",
     phone: "",
-    department: "",
     startDate: "",
   });
 
@@ -131,12 +134,11 @@ export function GiftShopDashboard() {
 
   const [editFormData, setEditFormData] = useState({});
   const [employeeData, setEmployeeData] = useState({
-    employeeId: "",
+    exhibitName: "",
     name: "",
     title: "",
     email: "",
     phone: "",
-    department: "",
     startDate: "",
   });
 
@@ -154,7 +156,6 @@ export function GiftShopDashboard() {
         const data = await response.json();
         setEmployeeData({
           ...data.data,
-          department: "Gift Shop",
         });
       } catch (err) {
         console.log(err);
@@ -522,11 +523,11 @@ export function GiftShopDashboard() {
   useEffect(() => {
     if (showSettings) {
       setFormData({
+        employeeId: employeeData.employeeId,
         name: employeeData.name,
         title: employeeData.title,
         email: employeeData.email,
         phone: employeeData.phone,
-        department: employeeData.department,
         startDate: employeeData.startDate,
       });
     }
@@ -917,7 +918,7 @@ export function GiftShopDashboard() {
                     <h2>{employeeData.name}</h2>
                     <p className="curator-title">{employeeData.title}</p>
                     <div className="curator-department">
-                      <span>{employeeData.department}</span>
+                      <span>{employeeData.exhibitName}</span>
                     </div>
                   </div>
                 </div>
@@ -1025,16 +1026,16 @@ export function GiftShopDashboard() {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="department">Department</label>
+                        <label htmlFor="exhibitName">Exhibit</label>
                         <input
                           type="text"
-                          id="department"
-                          name="department"
-                          value={formData.department}
+                          id="exhibitName"
+                          name="exhibitName"
+                          value={formData.exhibitName}
                           disabled
                         />
                         <small className="field-note">
-                          Department cannot be changed.
+                          Exhibit cannot be changed.
                         </small>
                       </div>
 
@@ -1070,8 +1071,8 @@ export function GiftShopDashboard() {
                   <div className="curator-profile">
                     <div className="profile-details">
                       <div className="detail-section">
-                        <h3>Department</h3>
-                        <p>{employeeData.department}</p>
+                        <h3>Exhibit</h3>
+                        <p>{employeeData.exhibitName}</p>
                       </div>
                       <div className="detail-section">
                         <h3>Position</h3>
@@ -1618,7 +1619,7 @@ export function GiftShopDashboard() {
                             <td>{product.name}</td>
                             <td>{product.category}</td>
                             <td>{product.quantity}</td>
-                            <td>${parseInt(product.revenue).toFixed(2)}</td>
+                            <td>${parseFloat(product.revenue).toFixed(2)}</td>
                           </tr>
                         ));
                       })()}
