@@ -231,15 +231,16 @@ app.get("/api/getemployeeinfo/", async (req, res) => {
 
   const query = `
     SELECT
-      exhibit_name as exhibitName,
+      exhibits.exhibit_name AS exhibitName,
       employees.employee_id AS employeeId,
-      employee_name AS name,
+      employees.employee_name AS name,
       employees.role AS title,
-      personal_email AS email,
+      employees.personal_email AS email,
       employees.phone_number AS phone,
-      DATE_FORMAT(hiring_date, '%Y-%m-%d') AS startDate
+      DATE_FORMAT(employees.hiring_date, '%Y-%m-%d') AS startDate
     FROM employees
     JOIN users ON employees.employee_id = users.employee_id
+    JOIN exhibits ON employees.exhibit_id = exhibits.exhibit_id
     WHERE users.user_id = ?
   `;
   try {
@@ -397,7 +398,7 @@ app.post(
   ) VALUES (?, ?, ?, ?, ?, ?);
   `;
     try {
-      await promisePool.query(query, [
+      const [result] = await promisePool.query(query, [
         name,
         description,
         category,
@@ -405,7 +406,8 @@ app.post(
         price,
         supplier,
       ]);
-      res.status(200).json({ success: true });
+      const insertedId = result.insertId;
+      res.status(200).json({ success: true, insertedId: insertedId });
     } catch (err) {
       res.status(500).json({ success: false, errors: ["Database error"] });
       console.log("Error retrieving entires...");
@@ -869,7 +871,7 @@ app.post(
     ) VALUES (?, ?, NULLIF(?, ''), ?, ?, NULLIF(?, ''), NULLIF(?, ''));
   `;
     try {
-      await promisePool.query(query, [
+      const [result] = await promisePool.query(query, [
         name,
         birthYear,
         deathYear,
@@ -878,7 +880,8 @@ app.post(
         biography,
         notableWorks,
       ]);
-      res.status(200).json({ success: true });
+      const insertedId = result.insertId;
+      res.status(200).json({ success: true, insertedId: insertedId });
     } catch (err) {
       res.status(500).json({ success: false, errors: ["Database error"] });
       console.log("Error retrieving entires...");
@@ -964,7 +967,7 @@ app.post(
     ) VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?, NULLIF(?, ''), ?, ?, ?);
   `;
     try {
-      await promisePool.query(query, [
+      const [result] = await promisePool.query(query, [
         title,
         exhibitId,
         artistId,
@@ -978,7 +981,8 @@ app.post(
         acquisitionDate,
         needsRestoration,
       ]);
-      res.status(200).json({ success: true });
+      const insertedId = result.insertId;
+      res.status(200).json({ success: true, insertedId: insertedId });
     } catch (err) {
       res.status(500).json({ success: false, errors: ["Database error"] });
       console.log("Error retrieving entires...");
@@ -1146,7 +1150,7 @@ app.post(
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
   `;
     try {
-      await promisePool.query(query, [
+      const [result] = await promisePool.query(query, [
         name,
         exhibitId,
         ssn,
@@ -1160,7 +1164,8 @@ app.post(
         salary,
         role,
       ]);
-      res.status(200).json({ success: true });
+      const insertedId = result.insertId;
+      res.status(200).json({ success: true, insertedId: insertedId });
     } catch (err) {
       res.status(500).json({ success: false, errors: ["Database error"] });
       console.log("Error retrieving entires...");
@@ -1372,8 +1377,14 @@ app.post(
     ) VALUES (?, ?, ?, NULLIF(?, ''))
   `;
     try {
-      await promisePool.query(query, [title, startDate, endDate, description]);
-      res.status(200).json({ success: true });
+      const [result] = await promisePool.query(query, [
+        title,
+        startDate,
+        endDate,
+        description,
+      ]);
+      const insertedId = result.insertId;
+      res.status(200).json({ success: true, insertedId: insertedId });
     } catch (err) {
       res.status(500).json({ success: false, errors: ["Database error"] });
       console.log("Error retrieving entires...");
@@ -1926,8 +1937,8 @@ app.get("/api/proxy", async (req, res) => {
 });
 
 app.get("/api/fraud-alerts/unresolved-count", async (req, res) => {
-  const [rows] = await db.execute(
-    "SELECT COUNT(*) as count FROM fraud_alerts WHERE is_resolved = 0"
+  const [rows] = await promisePool.execute(
+    "SELECT COUNT(*) as count FROM fraud_alerts WHERE is_resolved = 0",
   );
   res.json({ count: rows[0].count });
 });

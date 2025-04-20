@@ -81,9 +81,7 @@ export function DashboardHeader() {
               <Link href="/dashboard/notifications" aria-label="Notifications">
                 <Bell size={20} />
                 {unresolvedCount > 0 && (
-                  <span className="notification-badge">
-                    {unresolvedCount}
-                  </span>
+                  <span className="notification-badge">{unresolvedCount}</span>
                 )}
               </Link>
             </div>

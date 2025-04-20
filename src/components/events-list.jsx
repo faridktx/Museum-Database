@@ -1,4 +1,4 @@
-import "./EventsList.css";
+import "./events-list.css";
 
 export function EventsList() {
   const events = [

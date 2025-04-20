@@ -307,6 +307,7 @@ export function CuratorDashboard() {
 
   // State for new artist form data
   const [newArtistData, setNewArtistData] = useState({
+    id: "",
     name: "",
     birthYear: "",
     deathYear: "",
@@ -321,6 +322,7 @@ export function CuratorDashboard() {
 
   // State for new artifact form data
   const [newArtifactData, setNewArtifactData] = useState({
+    id: "",
     title: "",
     artistId: "",
     exhibitId: "",
@@ -778,6 +780,8 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArtistData),
       });
+      const json = await response.json();
+      newArtistData.id = parseInt(json.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -787,6 +791,7 @@ export function CuratorDashboard() {
 
     // Reset form and hide it
     setNewArtistData({
+      id: "",
       name: "",
       birthYear: "",
       deathYear: "",
@@ -802,6 +807,7 @@ export function CuratorDashboard() {
   const handleCancelNewArtist = () => {
     setShowNewArtistForm(false);
     setNewArtistData({
+      id: "",
       name: "",
       birthYear: "",
       deathYear: "",
@@ -845,6 +851,8 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArtifactData),
       });
+      const json = await response.json();
+      newArtifactData.id = parseInt(json.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -858,6 +866,7 @@ export function CuratorDashboard() {
 
     // Reset form and hide it
     setNewArtifactData({
+      id: "",
       title: "",
       artistId: "",
       exhibitId: "",
@@ -878,6 +887,7 @@ export function CuratorDashboard() {
   const handleCancelNewArtifact = () => {
     setShowNewArtifactForm(false);
     setNewArtifactData({
+      id: "",
       title: "",
       artistId: "",
       exhibitId: "",

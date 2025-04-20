@@ -2,11 +2,10 @@ import { Hero } from "../components/home/hero";
 import { Features } from "../components/home/features";
 import { Overview } from "../components/home/overview";
 import { Contact } from "../components/home/contact";
-import { ExhibitCarousel } from "../components/ExhibitCarousel";
-import { TestimonialsSlider } from "../components/TestimonialsSlider";
-import { MembershipPerks } from "../components/MembershipPerks";
-import { EventsList } from "../components/EventsList";
-import { ArtifactGallery } from "../components/ArtifactGallery";
+import { ExhibitCarousel } from "../components/exhibit-carousel";
+import { TestimonialsSlider } from "../components/testimonials-slider";
+import { MembershipPerks } from "../components/membership-perks.";
+import { EventsList } from "../components/events-list";
 
 export function Home() {
   return (
@@ -20,7 +19,6 @@ export function Home() {
       <EventsList />
       <Features />
       <Overview />
-
       <Contact />
     </main>
   );
