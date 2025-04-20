@@ -11,8 +11,6 @@ export function GiftShop() {
   const [cart, setCart] = useState({});
   const [shopItems, setShopItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [uniqueMemberships, setUniqueMemberships] = useState([]);
-  const [selectedMembership, setSelectedMembership] = useState(null);
   const [filters, setFilters] = useState({
     category: "",
     supplier: "",
@@ -22,14 +20,12 @@ export function GiftShop() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [itemsRes, membershipsRes] = await Promise.all([
+        const [itemsRes] = await Promise.all([
           apiFetch("/api/custom/giftshop-items", "GET", user?.id),
-          apiFetch("/api/custom/memberships", "GET", user?.id),
         ]);
 
         setShopItems(itemsRes.data || []);
         setFilteredItems(itemsRes.data || []);
-        setUniqueMemberships(membershipsRes.data || []);
       } catch (error) {
         console.error("Failed to load data:", error);
       }
@@ -71,16 +67,6 @@ export function GiftShop() {
     });
   };
 
-  const handleMembershipSelect = (membership) => {
-    setSelectedMembership((prev) => {
-      // If clicking the same membership, deselect it
-      if (prev?.membership_type === membership.membership_type) {
-        return null;
-      }
-      return membership;
-    });
-  };
-
   const calculateCartTotal = () => {
     const itemsTotal = Object.entries(cart).reduce(
       (total, [itemId, { count, price }]) => {
@@ -88,10 +74,7 @@ export function GiftShop() {
       },
       0,
     );
-
-    const membershipTotal = selectedMembership ? selectedMembership.price : 0;
-
-    return (itemsTotal + membershipTotal).toFixed(2);
+    return (itemsTotal).toFixed(2);
   };
 
   const uniqueValues = (field) => [
@@ -111,19 +94,9 @@ export function GiftShop() {
 
     const existing = localStorage.getItem("museum_cart");
     const parsed = existing ? JSON.parse(existing) : {};
-
-    // Prepare membership data if selected
-    const membershipCart = selectedMembership
-      ? {
-          membership: selectedMembership.membership_type,
-          membershipData: selectedMembership,
-        }
-      : {};
-
     const merged = {
       ...parsed,
       giftshop: cart,
-      ...membershipCart,
       guestId: user.id,
     };
 
@@ -183,7 +156,7 @@ export function GiftShop() {
 
         <div className="cart-summary-box">
           <h3>Order Summary</h3>
-          {Object.keys(cart).length === 0 && !selectedMembership ? (
+          {Object.keys(cart).length === 0 ? (
             <p className="empty-cart-msg">Your cart is empty.</p>
           ) : (
             <>
@@ -201,15 +174,6 @@ export function GiftShop() {
                 );
               })}
 
-              {selectedMembership && (
-                <div className="cart-line membership-line">
-                  <span>
-                    {selectedMembership.membership_type} Membership × 1
-                  </span>
-                  <span>${selectedMembership.price.toFixed(2)}</span>
-                </div>
-              )}
-
               <div className="cart-line" style={{ fontWeight: "600" }}>
                 <span>Total</span>
                 <span>${calculateCartTotal()}</span>
@@ -223,27 +187,6 @@ export function GiftShop() {
             </>
           )}
         </div>
-
-        <div className="membership-section">
-          <h3>Memberships</h3>
-          {uniqueMemberships.map((membership) => (
-            <div
-              key={membership.membership_type}
-              className={`membership-card ${
-                selectedMembership?.membership_type ===
-                membership.membership_type
-                  ? "selected"
-                  : ""
-              }`}
-              onClick={() => handleMembershipSelect(membership)}
-            >
-              <h4>{capitalize(membership.membership_type)}</h4>
-              <p>${membership.price.toFixed(2)}</p>
-              <p>{membership.description}</p>
-              <small>{membership.period}</small>
-            </div>
-          ))}
-        </div>
       </aside>
 
       <main className="giftshop-content">
@@ -251,13 +194,6 @@ export function GiftShop() {
         <div className="product-grid">
           {filteredItems.map((item) => (
             <div key={item.item_id} className="product-card">
-              <div className="product-image">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.item_name} />
-                ) : (
-                  <div className="image-placeholder"></div>
-                )}
-              </div>
               <div className="product-info">
                 <h3>{item.item_name}</h3>
                 <p className="product-description">{item.description}</p>
@@ -297,8 +233,4 @@ export function GiftShop() {
       </main>
     </div>
   );
-}
-
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
 }
