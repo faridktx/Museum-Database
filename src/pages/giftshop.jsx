@@ -37,7 +37,7 @@ export function GiftShop() {
         (!filters.supplier || item.supplier === filters.supplier) &&
         (!filters.price || item.unit_price <= parseFloat(filters.price))
       );
-    });    
+    });
     setFilteredItems(filtered);
   }, [filters, shopItems]);
 
@@ -77,7 +77,7 @@ export function GiftShop() {
 
   const clearFilters = () => {
     setFilters({ category: "", supplier: "", price: "" });
-  };  
+  };
 
   const handleRedirectToCart = () => {
     if (!user?.id) {
@@ -101,43 +101,43 @@ export function GiftShop() {
           <h3>Filters</h3>
           <div className="filter-row">
             <div className="filter-item">
-            <select
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, category: e.target.value }))
-              }
-              value={filters.category}
-            >
-              <option value="">All Categories</option>
-              {uniqueValues("category").map((cat) => (
-                <option key={cat}>{cat}</option>
-              ))}
-            </select>
-          </div>
+              <select
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, category: e.target.value }))
+                }
+                value={filters.category}
+              >
+                <option value="">All Categories</option>
+                {uniqueValues("category").map((cat) => (
+                  <option key={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
 
-          <div className="filter-item">
-            <select
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, supplier: e.target.value }))
-              }
-              value={filters.supplier}
-            >
-              <option value="">All Suppliers</option>
-              {uniqueValues("supplier").map((sup) => (
-                <option key={sup}>{sup}</option>
-              ))}
-            </select>
-          </div>
+            <div className="filter-item">
+              <select
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, supplier: e.target.value }))
+                }
+                value={filters.supplier}
+              >
+                <option value="">All Suppliers</option>
+                {uniqueValues("supplier").map((sup) => (
+                  <option key={sup}>{sup}</option>
+                ))}
+              </select>
+            </div>
 
-          <div className="filter-item">
-            <input
-              type="number"
-              placeholder="Max Price"
-              value={filters.price}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, price: e.target.value }))
-              }
-            />
-          </div>
+            <div className="filter-item">
+              <input
+                type="number"
+                placeholder="Max Price"
+                value={filters.price}
+                onChange={(e) =>
+                  setFilters((f) => ({ ...f, price: e.target.value }))
+                }
+              />
+            </div>
           </div>
           <button onClick={clearFilters} className="clear-filters">
             Clear Filters

@@ -240,7 +240,9 @@
   border-radius: 8px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .delete-button:hover {
