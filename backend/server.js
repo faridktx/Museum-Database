@@ -1547,7 +1547,7 @@ app.get("/api/fraud-alerts", async (req, res) => {
 
     return res.status(200).json({ success: true, alerts });
   } catch (err) {
-    console.error("❌ Failed to fetch fraud alerts:", err);
+    console.error("Failed to fetch fraud alerts:", err);
     return res.status(500).json({ success: false, errors: ["Server error"] });
   }
 });
@@ -1668,4 +1668,11 @@ app.get("/api/proxy", async (req, res) => {
       details: error.message,
     });
   }
+});
+
+app.get("/api/fraud-alerts/unresolved-count", async (req, res) => {
+  const [rows] = await db.execute(
+    "SELECT COUNT(*) as count FROM fraud_alerts WHERE is_resolved = 0"
+  );
+  res.json({ count: rows[0].count });
 });

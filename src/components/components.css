@@ -4655,3 +4655,108 @@ select.rounded-input {
 .promo-button:hover {
   background-color: #3a5a8f;
 }
+
+.header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: #fff;
+  z-index: 1000;
+  transition: top 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1.5rem;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.logo h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  font-size: 1rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #222;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: #555;
+}
+
+.login-button {
+  background-color: #000;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.login-button:hover {
+  background-color: #333;
+}
+
+.nav-links a:hover svg {
+  animation: shake 0.4s ease-in-out;
+}
+
+.notification-icon {
+  position: relative;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.notification-icon svg {
+  vertical-align: middle;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: red;
+  color: white;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-weight: bold;
+}
+
+@keyframes shake {
+  0% { transform: rotate(0); }
+  25% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  75% { transform: rotate(-10deg); }
+  100% { transform: rotate(0); }
+}
