@@ -1383,7 +1383,7 @@ export function GiftShopDashboard() {
                                 )}
                               </td>
                               <td>{product.category}</td>
-                              <td>${product.price.toFixed(2)}</td>
+                              <td>${parseFloat(product.price).toFixed(2)}</td>
                               <td>{product.inStock}</td>
                               <td>{product.supplier}</td>
                               <td className="action-buttons">
@@ -1452,8 +1452,8 @@ export function GiftShopDashboard() {
                           <td>#{sale.id}</td>
                           <td>{new Date(sale.date).toLocaleDateString()}</td>
                           <td>{sale.customer}</td>
-                          <td>{sale.products.length}</td>
-                          <td>${sale.total.toFixed(2)}</td>
+                          <td>{sale.quantity}</td>
+                          <td>${parseFloat(sale.total).toFixed(2)}</td>
                           <td>{sale.paymentMethod}</td>
                         </tr>
                       </React.Fragment>
@@ -1590,23 +1590,22 @@ export function GiftShopDashboard() {
                         const productSales = {};
 
                         sales.forEach((sale) => {
-                          sale.products.forEach((item) => {
-                            if (!productSales[item.id]) {
-                              productSales[item.id] = {
-                                id: item.id,
-                                name: item.name,
-                                quantity: 0,
-                                revenue: 0,
-                                category:
-                                  inventory.find((p) => p.id === item.id)
-                                    ?.category || "Unknown",
-                              };
-                            }
+                          if (!productSales[sale.productId]) {
+                            productSales[sale.productId] = {
+                              id: sale.productId,
+                              name: sale.productName,
+                              quantity: 0,
+                              revenue: 0,
+                              category:
+                                inventory.find((p) => p.id === sale.productId)
+                                  ?.category || "Unknown",
+                            };
+                          }
 
-                            productSales[item.id].quantity += item.quantity;
-                            productSales[item.id].revenue +=
-                              item.price * item.quantity;
-                          });
+                          productSales[sale.productId].quantity +=
+                            sale.quantity;
+                          productSales[sale.productId].revenue +=
+                            sale.price * sale.quantity;
                         });
 
                         // Convert to array and sort by quantity
@@ -1712,8 +1711,8 @@ export function GiftShopDashboard() {
                           <td>#{sale.id}</td>
                           <td>{new Date(sale.date).toLocaleDateString()}</td>
                           <td>{sale.customer}</td>
-                          <td>{sale.products.length}</td>
-                          <td>${sale.total.toFixed(2)}</td>
+                          <td>{sale.quantity}</td>
+                          <td>${parseFloat(sale.total).toFixed(2)}</td>
                           <td>{sale.paymentMethod}</td>
                         </tr>
                       </React.Fragment>
