@@ -508,7 +508,7 @@ app.patch("/api/setartist/", async (req, res) => {
       deathYear,
       movement,
       notableWorks,
-      id
+      id,
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -561,7 +561,8 @@ app.get("/api/getartifacts/", async (req, res) => {
     a.condition,
     a.needs_restoration AS needsRestoration,
     e.exhibit_name AS exhibitName,
-    e.exhibit_id AS exhibitId
+    e.exhibit_id AS exhibitId,
+    ar.movement
   FROM artifacts a
   JOIN artists ar ON a.artist_id = ar.artist_id
   JOIN exhibits e ON a.exhibit_id = e.exhibit_id;
@@ -603,16 +604,8 @@ app.patch("/api/setartifact/", async (req, res) => {
       .status(401)
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
-  
-  const {
-    id,
-    title,
-    artistId,
-    exhibitId,
-    year,
-    medium,
-    condition
-  } = req.body;
+
+  const { id, title, artistId, exhibitId, year, medium, condition } = req.body;
   const query = `
     UPDATE artifacts
     SET 
@@ -632,7 +625,7 @@ app.patch("/api/setartifact/", async (req, res) => {
       year,
       medium,
       condition,
-      id
+      id,
     ]);
     res.status(200).json({ success: true });
   } catch (err) {
@@ -1714,7 +1707,9 @@ app.get("/api/fraud-alerts", async (req, res) => {
 app.post("/api/fraud-alerts/resolve", async (req, res) => {
   const { alert_id } = req.body;
   if (!alert_id) {
-    return res.status(400).json({ success: false, errors: ["Missing alert_id"] });
+    return res
+      .status(400)
+      .json({ success: false, errors: ["Missing alert_id"] });
   }
 
   try {

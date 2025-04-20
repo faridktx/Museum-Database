@@ -18,6 +18,26 @@ export const SHOPCATEGORIES = [
 ];
 export const CONDITIONS = ["Excellent", "Good", "Fair", "Poor", "Critical"];
 
+export const ROLECOLORS = {
+  Curator: { bg: "rgba(255, 193, 7, 0.7)", border: "rgba(255, 193, 7, 1)" }, // Amber
+  Educator: {
+    bg: "rgba(102, 187, 106, 0.7)",
+    border: "rgba(102, 187, 106, 1)",
+  }, // Green
+  Reception: { bg: "rgba(255, 112, 67, 0.7)", border: "rgba(255, 112, 67, 1)" }, // Deep Orange
+  Custodian: { bg: "rgba(156, 39, 176, 0.7)", border: "rgba(156, 39, 176, 1)" }, // Purple
+  Administrator: {
+    bg: "rgba(0, 188, 212, 0.7)",
+    border: "rgba(0, 188, 212, 1)",
+  }, // Cyan
+  Development: {
+    bg: "rgba(205, 220, 57, 0.7)",
+    border: "rgba(205, 220, 57, 1)",
+  }, // Lime
+  Security: { bg: "rgba(255, 87, 34, 0.7)", border: "rgba(255, 87, 34, 1)" }, // Orange
+  Retail: { bg: "rgba(121, 134, 203, 0.7)", border: "rgba(121, 134, 203, 1)" }, // Indigo
+};
+
 export const ARTMOVEMENTS = [
   "Impressionism",
   "Expressionism",
