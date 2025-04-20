@@ -77,7 +77,7 @@ export function TicketMembership() {
       <div className="ticket-wrapper">
         <h2>General Admissions</h2>
         <div className="ticket-info">
-          Tickets grant access to our museum’s core collection...
+          Choose from a variety of admission tickets to explore the museum’s core collections and captivating special exhibits.
         </div>
 
         <div className="ticket-box">
@@ -222,7 +222,7 @@ export function TicketMembership() {
       <div className="membership-section">
         <h2>Membership Plans</h2>
         <div className="ticket-info" style={{ marginTop: "-0.5rem" }}>
-          All memberships include unlimited access to all special exhibits...
+          Unlock unlimited year-round access, exclusive member events, and special discounts with our membership plans.
         </div>
 
         {membershipOptions.map((option) => {

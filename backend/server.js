@@ -1196,6 +1196,42 @@ app.post("/api/resolve-alert", async (req, res) => {
   res.json({ success: true });
 });
 
+app.get("/api/fraud-alerts/resolved", async (req, res) => {
+  try {
+    const [alerts] = await promisePool.query(
+      "SELECT * FROM fraud_alerts WHERE is_resolved = 1 ORDER BY created_at DESC"
+    );
+    return res.json({ success: true, alerts });
+  } catch (err) {
+    console.error("Failed to fetch resolved alerts:", err);
+    res.status(500).json({ success: false });
+  }
+});
+
+app.post("/api/fraud-alerts/delete", async (req, res) => {
+  const { alert_id } = req.body;
+
+  if (!alert_id) {
+    return res.status(400).json({ success: false, error: "Missing alert_id" });
+  }
+
+  try {
+    const [result] = await promisePool.query(
+      "DELETE FROM fraud_alerts WHERE alert_id = ?",
+      [alert_id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, error: "Alert not found" });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting alert:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
 app.get("/api/artifact-graph", async (_, res) => {
   const query = `
   SELECT
@@ -1662,40 +1698,91 @@ app.get("/api/featured-exhibits", async (req, res) => {
   }
 });
 
-//app.get("/api/fraud-alerts", async (req, res) => {
-//  try {
-//    const [alerts] = await promisePool.query(
-//      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
-//    );
+app.get("/api/fraud-alerts", async (req, res) => {
+ try {
+   const [alerts] = await promisePool.query(
+     `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+   );
 
-//    return res.status(200).json({ success: true, alerts });
-//  } catch (err) {
-//    console.error("❌ Failed to fetch fraud alerts:", err);
-//    return res.status(500).json({ success: false, errors: ["Server error"] });
-//  }
-//});
+   return res.status(200).json({ success: true, alerts });
+ } catch (err) {
+   console.error("❌ Failed to fetch fraud alerts:", err);
+   return res.status(500).json({ success: false, errors: ["Server error"] });
+ }
+});
 
 app.post("/api/fraud-alerts/resolve", async (req, res) => {
   const { alert_id } = req.body;
-
   if (!alert_id) {
     return res.status(400).json({ success: false, errors: ["Missing alert_id"] });
   }
 
   try {
-    const [result] = await promisePool.query(
+    // 1. Lookup the alert first
+    const [rows] = await promisePool.query(
+      `SELECT * FROM fraud_alerts WHERE alert_id = ?`,
+      [alert_id]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ success: false, errors: ["Alert not found"] });
+    }
+
+    const alert = rows[0];
+    const type = (alert.alert_type || "").toLowerCase();
+    const msg = alert.message;
+
+    // 2. Fix based on type
+    if (type === "inventory") {
+      // Extract item_id from message
+      const match = msg.match(/item_id\\s*=\\s*(\\d+)/i);
+      if (match) {
+        const item_id = parseInt(match[1]);
+        await promisePool.query(
+          `UPDATE railway_gift_shop_inventory SET quantity = 100 WHERE item_id = ?`,
+          [item_id]
+        );
+      }
+    }
+
+    if (type === "duplicateguest") {
+      // Soft-delete all but one matching guest
+      const match = msg.match(/name:\\s*(\\w+\\s\\w+),\\s*email:\\s*([^\\s]+)/i);
+      if (match) {
+        const [firstName, lastName] = match[1].split(" ");
+        const email = match[2];
+        await promisePool.query(
+          `DELETE FROM railway_guests WHERE email = ? AND first_name = ? AND last_name = ? LIMIT 1`,
+          [email, firstName, lastName]
+        );
+      }
+    }
+
+    if (type === "roleescalation") {
+      // Revert elevated user
+      const match = msg.match(/user_id:\\s*(\\d+)/i);
+      if (match) {
+        const user_id = match[1];
+        await promisePool.query(
+          `UPDATE railway_users SET role = 'guest' WHERE user_id = ?`,
+          [user_id]
+        );
+      }
+    }
+
+    //add more here if needed (depends if we add more triggers)
+
+    // 3. Mark the alert as resolved
+    await promisePool.query(
       `UPDATE fraud_alerts SET is_resolved = 1 WHERE alert_id = ?`,
       [alert_id]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, errors: ["Alert not found or already resolved"] });
-    }
-
     return res.status(200).json({ success: true });
+
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
-    return res.status(500).json({ success: false, errors: ["Database error"] });
+    return res.status(500).json({ success: false, errors: ["Resolution failed"] });
   }
 });
 

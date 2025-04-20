@@ -14,6 +14,9 @@ export function Cart() {
   const [membership, setMembership] = useState(null);
   const [membershipData, setMembershipData] = useState(null);
   const [formValid, setFormValid] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(() => () => {});
 
   const [totals, setTotals] = useState({
     subtotal: "0.00",
@@ -91,6 +94,31 @@ export function Cart() {
       total: total.toFixed(2),
     });
   }, [tickets, exhibits, giftshop, membershipData]);
+
+  const triggerClearCart = () => {
+    setConfirmMessage("Are you sure you want to clear your cart?");
+    setShowConfirm(true);
+    setConfirmAction(() => () => {
+      localStorage.removeItem("museum_cart");
+      setShowConfirm(false);
+      window.location.reload();
+    });
+  };
+  const ConfirmModal = ({ show, message, onConfirm, onCancel }) => {
+    if (!show) return null;
+    return (
+      <div className="modal-overlay">
+        <div className="modal-box">
+          <h3>Are you sure?</h3>
+          <p>{message}</p>
+          <div className="modal-actions">
+            <button className="modal-confirm" onClick={onConfirm}>Confirm</button>
+            <button className="modal-cancel" onClick={onCancel}>Cancel</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const handleGiftshopCheckout = async (guestId, giftshopCart) => {
     const simplifiedCart = {};
@@ -277,8 +305,16 @@ export function Cart() {
             </div>
           </>
         )}
-      </div>
+      <div className="order-line" style={{ justifyContent: "flex-end", borderBottom: "none" }}>
+            <button
+              className="clear-cart-button"
+              onClick={triggerClearCart}
+            >
+              Clear Cart
+            </button>
 
+        </div>
+      </div>
       <form className="checkout-form" onSubmit={(e) => handleCheckout(e)}>
         <h3>Checkout</h3>
 
@@ -425,6 +461,12 @@ export function Cart() {
           Place Order
         </button>
       </form>
+      <ConfirmModal
+      show={showConfirm}
+      message={confirmMessage}
+      onConfirm={confirmAction}
+      onCancel={() => setShowConfirm(false)}
+    />
     </div>
   );
 }

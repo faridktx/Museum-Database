@@ -13,8 +13,7 @@ export function GiftShop() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [filters, setFilters] = useState({
     category: "",
-    color: "",
-    size: "",
+    supplier: "",
     price: "",
   });
 
@@ -35,11 +34,10 @@ export function GiftShop() {
     let filtered = shopItems.filter((item) => {
       return (
         (!filters.category || item.category === filters.category) &&
-        (!filters.color || item.color === filters.color) &&
-        (!filters.size || item.size === filters.size) &&
+        (!filters.supplier || item.supplier === filters.supplier) &&
         (!filters.price || item.unit_price <= parseFloat(filters.price))
       );
-    });
+    });    
     setFilteredItems(filtered);
   }, [filters, shopItems]);
 
@@ -78,8 +76,8 @@ export function GiftShop() {
   ];
 
   const clearFilters = () => {
-    setFilters({ category: "", color: "", size: "", price: "" });
-  };
+    setFilters({ category: "", supplier: "", price: "" });
+  };  
 
   const handleRedirectToCart = () => {
     if (!user?.id) {
@@ -103,54 +101,43 @@ export function GiftShop() {
           <h3>Filters</h3>
           <div className="filter-row">
             <div className="filter-item">
-              <select
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, category: e.target.value }))
-                }
-                value={filters.category}
-              >
-                <option value="">All Categories</option>
-                {uniqueValues("category").map((cat) => (
-                  <option key={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-item">
-              <select
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, color: e.target.value }))
-                }
-                value={filters.color}
-              >
-                <option value="">All Colors</option>
-                {uniqueValues("color").map((color) => (
-                  <option key={color}>{color}</option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-item">
-              <select
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, size: e.target.value }))
-                }
-                value={filters.size}
-              >
-                <option value="">All Sizes</option>
-                {uniqueValues("size").map((size) => (
-                  <option key={size}>{size}</option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-item">
-              <input
-                type="number"
-                placeholder="Max Price"
-                value={filters.price}
-                onChange={(e) =>
-                  setFilters((f) => ({ ...f, price: e.target.value }))
-                }
-              />
-            </div>
+            <select
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, category: e.target.value }))
+              }
+              value={filters.category}
+            >
+              <option value="">All Categories</option>
+              {uniqueValues("category").map((cat) => (
+                <option key={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <select
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, supplier: e.target.value }))
+              }
+              value={filters.supplier}
+            >
+              <option value="">All Suppliers</option>
+              {uniqueValues("supplier").map((sup) => (
+                <option key={sup}>{sup}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-item">
+            <input
+              type="number"
+              placeholder="Max Price"
+              value={filters.price}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, price: e.target.value }))
+              }
+            />
+          </div>
           </div>
           <button onClick={clearFilters} className="clear-filters">
             Clear Filters
