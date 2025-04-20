@@ -23,7 +23,9 @@ export function AdminNotifications() {
       const data = await res.json();
       if (data.success) {
         setAlerts(data.alerts);
-        const types = [...new Set(data.alerts.map((a) => a.alert_type).filter(Boolean))];
+        const types = [
+          ...new Set(data.alerts.map((a) => a.alert_type).filter(Boolean)),
+        ];
         setAlertTypes(["All", ...types]);
       }
     } catch (err) {
@@ -85,7 +87,9 @@ export function AdminNotifications() {
   };
 
   const handleDelete = async (alert_id) => {
-    setConfirmMessage("Are you sure you want to permanently delete this alert?");
+    setConfirmMessage(
+      "Are you sure you want to permanently delete this alert?",
+    );
     setShowConfirm(true);
     setConfirmAction(() => async () => {
       try {
@@ -96,7 +100,9 @@ export function AdminNotifications() {
         });
         const data = await res.json();
         if (data.success) {
-          setResolvedAlerts((prev) => prev.filter((a) => a.alert_id !== alert_id));
+          setResolvedAlerts((prev) =>
+            prev.filter((a) => a.alert_id !== alert_id),
+          );
         } else {
           alert("Failed to delete alert.");
         }
@@ -115,8 +121,12 @@ export function AdminNotifications() {
           <h3>Are you sure?</h3>
           <p>{message}</p>
           <div className="modal-actions">
-            <button className="modal-confirm" onClick={onConfirm}>Delete</button>
-            <button className="modal-cancel" onClick={onCancel}>Cancel</button>
+            <button className="modal-confirm" onClick={onConfirm}>
+              Delete
+            </button>
+            <button className="modal-cancel" onClick={onCancel}>
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -172,12 +182,16 @@ export function AdminNotifications() {
           filtered.map((alert) => (
             <div key={alert.alert_id} className="alert-row">
               <span>
-                <span className={`alert-badge ${alert.alert_type?.replace(/\s+/g, '').toLowerCase() || 'unknown'}`}>
+                <span
+                  className={`alert-badge ${alert.alert_type?.replace(/\s+/g, "").toLowerCase() || "unknown"}`}
+                >
                   {alert.alert_type || "Unknown"}
                 </span>
               </span>
               <span className="alert-message">{alert.message}</span>
-              <span className="alert-time">{new Date(alert.created_at).toLocaleString()}</span>
+              <span className="alert-time">
+                {new Date(alert.created_at).toLocaleString()}
+              </span>
               <span className="alert-action">
                 <button onClick={() => handleResolve(alert.alert_id)}>
                   Resolve
@@ -189,7 +203,10 @@ export function AdminNotifications() {
       </div>
 
       <div style={{ marginTop: "2rem" }}>
-        <button onClick={() => setShowResolved(!showResolved)} className="toggle-resolved-btn">
+        <button
+          onClick={() => setShowResolved(!showResolved)}
+          className="toggle-resolved-btn"
+        >
           {showResolved ? "Hide" : "Show"} Resolved Alerts
         </button>
 
@@ -204,14 +221,23 @@ export function AdminNotifications() {
             {resolvedAlerts.map((alert) => (
               <div key={alert.alert_id} className="alert-row">
                 <span>
-                  <span className={`alert-badge ${alert.alert_type?.replace(/\s+/g, '').toLowerCase() || 'unknown'}`}>
+                  <span
+                    className={`alert-badge ${alert.alert_type?.replace(/\s+/g, "").toLowerCase() || "unknown"}`}
+                  >
                     {alert.alert_type}
                   </span>
                 </span>
                 <span className="alert-message">{alert.message}</span>
-                <span className="alert-time">{new Date(alert.created_at).toLocaleString()}</span>
+                <span className="alert-time">
+                  {new Date(alert.created_at).toLocaleString()}
+                </span>
                 <span className="alert-action">
-                  <button onClick={() => handleDelete(alert.alert_id)} className="delete-button">Delete</button>
+                  <button
+                    onClick={() => handleDelete(alert.alert_id)}
+                    className="delete-button"
+                  >
+                    Delete
+                  </button>
                 </span>
               </div>
             ))}

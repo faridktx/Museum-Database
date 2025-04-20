@@ -1192,7 +1192,7 @@ app.post("/api/resolve-alert", async (req, res) => {
 app.get("/api/fraud-alerts/resolved", async (req, res) => {
   try {
     const [alerts] = await promisePool.query(
-      "SELECT * FROM fraud_alerts WHERE is_resolved = 1 ORDER BY created_at DESC"
+      "SELECT * FROM fraud_alerts WHERE is_resolved = 1 ORDER BY created_at DESC",
     );
     return res.json({ success: true, alerts });
   } catch (err) {
@@ -1211,7 +1211,7 @@ app.post("/api/fraud-alerts/delete", async (req, res) => {
   try {
     const [result] = await promisePool.query(
       "DELETE FROM fraud_alerts WHERE alert_id = ?",
-      [alert_id]
+      [alert_id],
     );
 
     if (result.affectedRows === 0) {
@@ -1223,56 +1223,6 @@ app.post("/api/fraud-alerts/delete", async (req, res) => {
     console.error("Error deleting alert:", err);
     res.status(500).json({ success: false, error: "Server error" });
   }
-});
-
-app.get("/api/artifact-graph", async (_, res) => {
-  const query = `
-  SELECT
-    YEAR(a.acquisition_date) AS acquisition_year,
-    ar.nationality,
-    COUNT(*) AS total_artifacts,
-    SUM(a.value) AS total_value
-    FROM railway.artifacts a
-    JOIN railway.artists ar ON a.artist_id = ar.artist_id
-    GROUP BY acquisition_year, ar.nationality
-    ORDER BY acquisition_year, total_value DESC
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-
-app.get("/api/artifact-report", async (_, res) => {
-  const query = `
-    SELECT 
-      a.Artifact_ID, 
-      a.Artifact_Name,
-      a.description, 
-      a.Value, 
-      ar.Artist_Name, 
-      ar.Nationality
-    FROM artifacts a
-    JOIN artists ar ON a.Artist_ID = ar.Artist_ID
-    ORDER BY a.Artifact_ID;
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-
-app.get("/api/department-report", async (_, res) => {
-  const query = `
-  SELECT
-    e.exhibit_name,
-    emp.role,
-    COUNT(*) AS total_employees,
-    COUNT(CASE WHEN emp.fired_date IS NULL THEN 1 END) AS active_employees,
-    AVG(emp.salary) AS average_salary
-  FROM railway.employees AS emp
-  JOIN railway.exhibits AS e ON emp.exhibit_id = e.exhibit_id
-  GROUP BY e.exhibit_name, emp.role
-  ORDER BY e.exhibit_name, emp.role
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
 });
 
 app.get("/api/employees", async (_, res) => {
@@ -1299,65 +1249,6 @@ app.get("/api/exhibits", async (_, res) => {
     SELECT exhibit_id, exhibit_name 
     FROM exhibits
     ORDER BY exhibit_name;
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-
-app.get("/api/artists-list", async (_, res) => {
-  const query = `
-    SELECT 
-      artist_id,
-      artist_name,
-      birth_date,
-      death_date,
-      nationality
-    FROM artists
-    ORDER BY artist_name;
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-
-app.get("/api/giftshop-inventory", async (_, res) => {
-  const query = `
-    SELECT 
-      item_id,
-      item_name,
-      description,
-      category,
-      quantity,
-      unit_price
-    FROM gift_shop_inventory
-    ORDER BY item_name;
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-
-app.get("/api/giftshop-sales", async (_, res) => {
-  const query = `
-    SELECT 
-      sale_id,
-      item_id,
-      guest_id,
-      sale_date,
-      quantity,
-      total_cost
-    FROM gift_shop_sales
-    ORDER BY sale_date DESC;
-  `;
-  const data = await executeSQLReturn(res, query);
-  res.status(200).json(data);
-});
-// for sales report
-app.get("/api/giftshop-names", async (_, res) => {
-  const query = `
-    SELECT 
-      item_id,
-      item_name,
-      category
-    FROM gift_shop_inventory;
   `;
   const data = await executeSQLReturn(res, query);
   res.status(200).json(data);
@@ -1684,11 +1575,13 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
     // 1. Lookup the alert first
     const [rows] = await promisePool.query(
       `SELECT * FROM fraud_alerts WHERE alert_id = ?`,
-      [alert_id]
+      [alert_id],
     );
 
     if (!rows.length) {
-      return res.status(404).json({ success: false, errors: ["Alert not found"] });
+      return res
+        .status(404)
+        .json({ success: false, errors: ["Alert not found"] });
     }
 
     const alert = rows[0];
@@ -1703,20 +1596,22 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
         const item_id = parseInt(match[1]);
         await promisePool.query(
           `UPDATE railway_gift_shop_inventory SET quantity = 100 WHERE item_id = ?`,
-          [item_id]
+          [item_id],
         );
       }
     }
 
     if (type === "duplicateguest") {
       // Soft-delete all but one matching guest
-      const match = msg.match(/name:\\s*(\\w+\\s\\w+),\\s*email:\\s*([^\\s]+)/i);
+      const match = msg.match(
+        /name:\\s*(\\w+\\s\\w+),\\s*email:\\s*([^\\s]+)/i,
+      );
       if (match) {
         const [firstName, lastName] = match[1].split(" ");
         const email = match[2];
         await promisePool.query(
           `DELETE FROM railway_guests WHERE email = ? AND first_name = ? AND last_name = ? LIMIT 1`,
-          [email, firstName, lastName]
+          [email, firstName, lastName],
         );
       }
     }
@@ -1728,7 +1623,7 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
         const user_id = match[1];
         await promisePool.query(
           `UPDATE railway_users SET role = 'guest' WHERE user_id = ?`,
-          [user_id]
+          [user_id],
         );
       }
     }
@@ -1738,11 +1633,10 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
     // 3. Mark the alert as resolved
     await promisePool.query(
       `UPDATE fraud_alerts SET is_resolved = 1 WHERE alert_id = ?`,
-      [alert_id]
+      [alert_id],
     );
 
     return res.status(200).json({ success: true });
-
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
     return res.status(500).json({ success: false, errors: ["Resolution failed"] });
@@ -1781,4 +1675,4 @@ app.get('/api/proxy', async (req, res) => {
       details: error.message 
     });
   }
-});
+})

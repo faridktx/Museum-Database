@@ -112,8 +112,12 @@ export function Cart() {
           <h3>Are you sure?</h3>
           <p>{message}</p>
           <div className="modal-actions">
-            <button className="modal-confirm" onClick={onConfirm}>Confirm</button>
-            <button className="modal-cancel" onClick={onCancel}>Cancel</button>
+            <button className="modal-confirm" onClick={onConfirm}>
+              Confirm
+            </button>
+            <button className="modal-cancel" onClick={onCancel}>
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -340,14 +344,13 @@ export function Cart() {
             </div>
           </>
         )}
-      <div className="order-line" style={{ justifyContent: "flex-end", borderBottom: "none" }}>
-            <button
-              className="clear-cart-button"
-              onClick={triggerClearCart}
-            >
-              Clear Cart
-            </button>
-
+        <div
+          className="order-line"
+          style={{ justifyContent: "flex-end", borderBottom: "none" }}
+        >
+          <button className="clear-cart-button" onClick={triggerClearCart}>
+            Clear Cart
+          </button>
         </div>
       </div>
       <form className="checkout-form" onSubmit={(e) => handleCheckout(e)}>
@@ -497,11 +500,11 @@ export function Cart() {
         </button>
       </form>
       <ConfirmModal
-      show={showConfirm}
-      message={confirmMessage}
-      onConfirm={confirmAction}
-      onCancel={() => setShowConfirm(false)}
-    />
+        show={showConfirm}
+        message={confirmMessage}
+        onConfirm={confirmAction}
+        onCancel={() => setShowConfirm(false)}
+      />
     </div>
   );
 }

@@ -15,19 +15,16 @@ import { SupportFaq } from "./pages/support/support-faq";
 import { SupportContact } from "./pages/support/support-contact";
 import { SupportKnowledge } from "./pages/support/support-knowledge";
 import { SupportReport } from "./pages/support/support-report";
-import { TicketMembership } from "./pages/TicketMembership";
+import { TicketMembership } from "./pages/ticket-memberships";
 import { Cart } from "./pages/cart";
-import { ReceiptPage } from "./pages/ReceiptPage";
-import { ArtistList } from "./pages/artist-list";
-import { SalesReport } from "./pages/sales-report";
-import { AdminNotifications } from "./pages/AdminNotifications";
+import { AdminNotifications } from "./pages/admin-notifications";
 import { Memberships } from "./pages/memberships";
 import { useEffect } from "react";
 import { CuratorDashboard } from "./pages/dashboards/curator-dashboard";
 import { CustomerDashboard } from "./pages/dashboards/customer-dashboard";
 import { GiftShopDashboard } from "./pages/dashboards/giftshop-dashboard";
 import { AdminDashboard } from "./pages/dashboards/admin-dashboard";
-import { PlanVisit } from "./pages/PlanVisit";
+import { PlanVisit } from "./pages/plan-visit";
 import { GiftShop } from "./pages/giftshop";
 
 const routes = [
@@ -49,9 +46,6 @@ const routes = [
   { route: "/support-report", component: SupportReport },
   { route: "/tickets-memberships", component: TicketMembership },
   { route: "/dashboard/cart", component: Cart },
-  { route: "/dashboard/artist-report", component: ArtistList },
-  { route: "/dashboard/sales-report", component: SalesReport },
-  { route: "/receipt", component: ReceiptPage },
   { route: "/dashboard/notifications", component: AdminNotifications },
 ];
 
