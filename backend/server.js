@@ -429,7 +429,7 @@ app.get("/api/getcurator/", async (req, res) => {
 
   const query = `
   SELECT
-    employee_id as employeeId,
+    employees.employee_id as employeeId,
     employee_name as name,
     employees.role as title,
     personal_email as email,
