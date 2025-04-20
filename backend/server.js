@@ -1639,7 +1639,7 @@ app.post("/api/custom/checkout", async (req, res) => {
     connection = await promisePool.getConnection();
     await connection.beginTransaction();
 
-    // 1. Verify user exists and get exact user_id
+    // 1. Verify user exists
     const [user] = await connection.query(
       `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
       [userId],
@@ -1655,7 +1655,7 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
     const exactUserId = user[0].user_id;
 
-    // 2. Check if guest exists, if not create one
+    // 2. Create guest record if needed
     const [existingGuest] = await connection.query(
       `SELECT guest_id FROM guests WHERE guest_id = ? LIMIT 1`,
       [exactUserId],
@@ -1667,20 +1667,13 @@ app.post("/api/custom/checkout", async (req, res) => {
          VALUES (?, ?, ?, ?)`,
         [exactUserId, firstName, lastName, email],
       );
-      console.log(`Created new guest record for user ${exactUserId}`);
+      console.log(`Created guest record for user ${exactUserId}`);
     }
 
-    // Helper functions
+    // Helper function for ID generation
     const getNextId = async (table, idColumn) => {
       const [maxRow] = await connection.query(
         `SELECT MAX(${idColumn}) AS max FROM ${table}`,
-      );
-      return (maxRow[0].max || 0) + 1;
-    };
-
-    const getNextSaleId = async () => {
-      const [maxRow] = await connection.query(
-        `SELECT MAX(sale_id) AS max FROM combined_sales`,
       );
       return (maxRow[0].max || 0) + 1;
     };
@@ -1723,7 +1716,7 @@ app.post("/api/custom/checkout", async (req, res) => {
       }
     }
 
-    //   Process membership
+    // Process membership
     if (membership) {
       const [[member]] = await connection.query(
         `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
@@ -1733,24 +1726,45 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (member) {
         await connection.query(
           `UPDATE guests 
-         SET membership_type = ?, paid_date = ?
-         WHERE guest_id = ?`,
+           SET membership_type = ?, paid_date = ?
+           WHERE guest_id = ?`,
           [membership, today, exactUserId],
         );
-
-        // Just add a simple identifier for the membership purchase
         saleIds.push(`M-${Date.now()}`);
       }
     }
 
-    // Process gift shop items
+    // Process gift shop items with inventory deduction
     for (const [itemId, count] of Object.entries(giftshop)) {
       if (count > 0) {
-        const [[item]] = await connection.query(
-          `SELECT unit_price FROM gift_shop_inventory WHERE item_id = ? LIMIT 1`,
-          [itemId],
-        );
-        if (item) {
+        // Start transaction for inventory check and deduction
+        await connection.query('SAVEPOINT gift_shop_item');
+
+        try {
+          // 1. Verify item exists and has sufficient stock (with row lock)
+          const [[item]] = await connection.query(
+            `SELECT unit_price, quantity FROM gift_shop_inventory 
+             WHERE item_id = ? FOR UPDATE`, // Lock row for update
+            [itemId]
+          );
+
+          if (!item) {
+            throw new Error(`Item ${itemId} not found`);
+          }
+
+          if (item.quantity < count) {
+            throw new Error(`Insufficient stock for item ${itemId}`);
+          }
+
+          // 2. Deduct inventory
+          await connection.query(
+            `UPDATE gift_shop_inventory 
+             SET quantity = quantity - ?
+             WHERE item_id = ?`,
+            [count, itemId]
+          );
+
+          // 3. Record sale
           const nextId = await getNextId("gift_shop_sales", "sale_id");
           await connection.query(
             `INSERT INTO gift_shop_sales (sale_id, item_id, guest_id, sale_date, quantity, total_cost)
@@ -1765,6 +1779,11 @@ app.post("/api/custom/checkout", async (req, res) => {
             ],
           );
           saleIds.push(`G-${nextId}`);
+
+        } catch (err) {
+          await connection.query('ROLLBACK TO SAVEPOINT gift_shop_item');
+          console.error(`Gift shop item ${itemId} failed:`, err.message);
+          throw err;
         }
       }
     }
@@ -1779,19 +1798,25 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
 
     return res.status(200).json({ success: true, saleIds });
+
   } catch (err) {
-    console.error("Checkout error:", err);
+    console.error("Checkout error:", {
+      message: err.message,
+      sqlMessage: err.sqlMessage,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+
     if (connection) {
       await connection.rollback();
       connection.release();
     }
+
     return res.status(500).json({
       success: false,
       errors: ["Checkout failed"],
-      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
-      ...(process.env.NODE_ENV === "development" && {
-        sqlMessage: err.sqlMessage,
-      }),
+      ...(process.env.NODE_ENV === 'development' && {
+        details: err.message
+      })
     });
   }
 });
