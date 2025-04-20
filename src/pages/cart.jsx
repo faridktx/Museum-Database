@@ -142,38 +142,57 @@ export function Cart() {
   const handleCheckout = async (e) => {
     e.preventDefault();
     const form = e.target;
-
+  
     const name = form.name.value;
     const email = form.email.value;
     const phone = form.phone.value;
-
+  
     try {
       let accountId;
-
-      // Try to find the account
+  
+      // Try to find the account - with improved error handling
       const lookupRes = await fetch("/api/account-id", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, phone }),
       });
-
+  
+      // Check if response is JSON first
+      const lookupContentType = lookupRes.headers.get('content-type');
+      if (!lookupContentType?.includes('application/json')) {
+        const text = await lookupRes.text();
+        throw new Error(`Account lookup failed: ${text.substring(0, 100)}`);
+      }
+  
       const lookupData = await lookupRes.json();
       if (lookupData.success) {
         accountId = lookupData.accountId;
       } else {
+        // Account registration with improved error handling
         const regRes = await fetch("/api/register-account", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, phone }),
         });
-
+  
+        // Check if response is JSON first
+        const regContentType = regRes.headers.get('content-type');
+        if (!regContentType?.includes('application/json')) {
+          const text = await regRes.text();
+          throw new Error(`Account registration failed: ${text.substring(0, 100)}`);
+        }
+  
         const regData = await regRes.json();
-        if (!regData.success) throw new Error("Account creation failed");
+        if (!regData.success) {
+          throw new Error(regData.errors?.[0] || "Account creation failed");
+        }
         accountId = regData.accountId;
       }
-
+  
       const payload = {
-        accountId,
+        name,
+        accountId, // Make sure accountId is included in the payload
+        email,
         tickets: Object.fromEntries(
           Object.entries(tickets).map(([t, val]) => [t, val.count]),
         ),
@@ -185,35 +204,51 @@ export function Cart() {
         ),
         membership,
       };
-
+  
       console.log("Sending checkout:", payload);
-
+  
       const orderRes = await fetch("/api/custom/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
-      const text = await orderRes.text();
-      let orderData = {};
-
+  
+      // Enhanced response handling
+      const contentType = orderRes.headers.get('content-type');
+      const responseText = await orderRes.text();
+  
+      // Check if response is HTML (error page)
+      if (contentType?.includes('text/html')) {
+        console.error("Server returned HTML error page:", responseText.substring(0, 200));
+        throw new Error("Server error occurred. Please try again later.");
+      }
+  
+      // Try to parse as JSON
+      let orderData;
       try {
-        orderData = text ? JSON.parse(text) : {};
+        orderData = responseText ? JSON.parse(responseText) : {};
       } catch (err) {
         console.error("❌ JSON parse error:", err);
-        console.log("🪵 Raw response body:", text);
-        throw new Error("Server response was not valid JSON");
+        console.log("🪵 Raw response body:", responseText.substring(0, 200));
+        throw new Error("Invalid server response format");
       }
-
-      if (!orderData.success || !Array.isArray(orderData.saleIds)) {
-        throw new Error(orderData.errors?.[0] || "Checkout failed");
+  
+      if (!orderRes.ok || !orderData.success) {
+        const errorMessage = Array.isArray(orderData.errors) 
+          ? orderData.errors[0] 
+          : orderData.message || "Checkout failed";
+        throw new Error(errorMessage);
       }
-
+  
+      if (!Array.isArray(orderData.saleIds)) {
+        throw new Error("Invalid order data received");
+      }
+  
       localStorage.removeItem("museum_cart");
       navigate(`/dashboard/receipt?ids=${orderData.saleIds.join(",")}`);
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Checkout failed: " + err.message);
+      alert(`Checkout failed: ${err.message}`);
     }
   };
 
@@ -289,7 +324,7 @@ export function Cart() {
             id="name"
             name="name"
             type="text"
-            defaultValue="Jane Doe"
+            defaultValue=""
             required
           />
 
@@ -298,7 +333,7 @@ export function Cart() {
             id="email"
             name="email"
             type="email"
-            defaultValue="jane@example.com"
+            defaultValue=""
             required
           />
 
@@ -320,7 +355,7 @@ export function Cart() {
             id="address1"
             name="address1"
             type="text"
-            defaultValue="123 Museum Lane"
+            defaultValue=""
             required
           />
 
@@ -332,7 +367,7 @@ export function Cart() {
             id="city"
             name="city"
             type="text"
-            defaultValue="New York"
+            defaultValue=""
             required
           />
 
@@ -341,7 +376,7 @@ export function Cart() {
             id="state"
             name="state"
             type="text"
-            defaultValue="NY"
+            defaultValue=""
             required
           />
 
@@ -350,7 +385,7 @@ export function Cart() {
             id="zip"
             name="zip"
             type="text"
-            defaultValue="10001"
+            defaultValue=""
             required
           />
 
@@ -359,7 +394,7 @@ export function Cart() {
             id="country"
             name="country"
             type="text"
-            defaultValue="USA"
+            defaultValue=""
             required
           />
         </fieldset>
@@ -371,7 +406,7 @@ export function Cart() {
             id="cardName"
             name="cardName"
             type="text"
-            defaultValue="Jane Doe"
+            defaultValue=""
             required
           />
 
@@ -381,7 +416,7 @@ export function Cart() {
             name="cardNumber"
             type="text"
             inputMode="numeric"
-            defaultValue="4242424242424242"
+            defaultValue=""
             pattern="\d{13,19}"
             required
           />
@@ -394,7 +429,7 @@ export function Cart() {
                 name="exp"
                 type="text"
                 inputMode="numeric"
-                defaultValue="12/30"
+                defaultValue=""
                 pattern="\d{2}/\d{2}"
                 required
               />
@@ -406,7 +441,7 @@ export function Cart() {
                 name="cvv"
                 type="text"
                 inputMode="numeric"
-                defaultValue="123"
+                defaultValue=""
                 pattern="\d{3,4}"
                 required
               />
