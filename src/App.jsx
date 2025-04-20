@@ -18,7 +18,6 @@ import { SupportReport } from "./pages/support/support-report";
 import { TicketMembership } from "./pages/ticket-memberships";
 import { Cart } from "./pages/cart";
 import { AdminNotifications } from "./pages/admin-notifications";
-import { Memberships } from "./pages/memberships";
 import { useEffect } from "react";
 import { PlanVisit } from "./pages/plan-visit";
 import { GiftShop } from "./pages/giftshop";
@@ -26,7 +25,6 @@ import { DashboardRouter } from "./pages/dashboard";
 
 const routes = [
   { route: "/dashboard", component: DashboardRouter },
-  { route: "/memberships", component: Memberships },
   { route: "/gift-shop", component: GiftShop },
   { route: "/plan-your-visit", component: PlanVisit },
   { route: "/support-docs", component: SupportDocumentation },
