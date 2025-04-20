@@ -3,8 +3,14 @@ import mysql from "mysql2";
 import cors from "cors";
 import dotenv from "dotenv";
 import { clerkClient } from "@clerk/clerk-sdk-node";
-// import { body, validationResult } from "express-validator";
-// import { ACQUISITIONTYPES, ROLES, NATIONALITIES } from "./constants.js";
+import { body, validationResult } from "express-validator";
+import {
+  ACQUISITIONTYPES,
+  SHOPCATEGORIES,
+  CONDITIONS,
+  ROLES,
+  NATIONALITIES,
+} from "./constants.js";
 
 dotenv.config();
 const app = express();
@@ -29,6 +35,15 @@ const pool = mysql.createPool({
 });
 
 const promisePool = pool.promise();
+
+const validationErrorCheck = (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res
+      .status(400)
+      .json({ errors: errors.array().map((err) => err.msg) });
+  }
+};
 
 app.get("/api/getrole/", async (req, res) => {
   const id = req.query.id;
@@ -216,6 +231,7 @@ app.get("/api/getemployeeinfo/", async (req, res) => {
 
   const query = `
     SELECT
+      exhibit_name as exhibitName,
       employees.employee_id AS employeeId,
       employee_name AS name,
       employees.role AS title,
@@ -308,6 +324,7 @@ app.get("/api/getsales/", async (req, res) => {
     i.item_name AS productName,
     s.quantity,
     i.unit_price AS price,
+    i.category,
     COALESCE(NULLIF(CONCAT_WS(' ', c.first_name, c.last_name), ''), '') AS customer,
     s.total_cost AS total,
     'Credit Card' AS paymentMethod,
@@ -347,16 +364,29 @@ app.delete("/api/deleteinventory/", async (req, res) => {
   }
 });
 
-app.post("/api/addinventory/", async (req, res) => {
-  const id = req.query.id;
-  if (!id) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.post(
+  "/api/addinventory/",
+  [
+    body("name").notEmpty().withMessage("Item name is required"),
+    body("category")
+      .isIn(SHOPCATEGORIES)
+      .withMessage("Category must be one of the specified options"),
+    body("description").notEmpty().withMessage("Description is required"),
+    body("price").toInt().isInt().withMessage("Unit price must be an integer"),
+    body("inStock").toInt().isInt().withMessage("Quantity must be an integer"),
+    body("supplier").notEmpty().withMessage("Supplier name is required"),
+  ],
+  async (req, res) => {
+    const id = req.query.id;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { name, category, description, price, inStock, supplier } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { name, category, description, price, inStock, supplier } = req.body;
+    const query = `
   INSERT INTO gift_shop_inventory (
     item_name,
     description,
@@ -366,33 +396,46 @@ app.post("/api/addinventory/", async (req, res) => {
     supplier
   ) VALUES (?, ?, ?, ?, ?, ?);
   `;
-  try {
-    await promisePool.query(query, [
-      name,
-      description,
-      category,
-      inStock,
-      price,
-      supplier,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        name,
+        description,
+        category,
+        inStock,
+        price,
+        supplier,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
-app.patch("/api/setinventory/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.patch(
+  "/api/setinventory/",
+  [
+    body("name").notEmpty().withMessage("Item name is required"),
+    body("category")
+      .isIn(SHOPCATEGORIES)
+      .withMessage("Category must be one of the specified options"),
+    body("price").toInt().isInt().withMessage("Unit price must be an integer"),
+    body("inStock").toInt().isInt().withMessage("Quantity must be an integer"),
+    body("supplier").notEmpty().withMessage("Supplier name is required"),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { id, name, category, price, inStock, supplier } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { id, name, category, price, inStock, supplier } = req.body;
+    const query = `
     UPDATE gift_shop_inventory
     SET 
       item_name = ?,
@@ -402,22 +445,23 @@ app.patch("/api/setinventory/", async (req, res) => {
       supplier = ?
     WHERE item_id = ?
   `;
-  try {
-    await promisePool.query(query, [
-      name,
-      category,
-      price,
-      inStock,
-      supplier,
-      id,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        name,
+        category,
+        price,
+        inStock,
+        supplier,
+        id,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.get("/api/getcurator/", async (req, res) => {
   const id = req.query.id;
@@ -506,24 +550,44 @@ app.get("/api/getartists/", async (req, res) => {
   }
 });
 
-app.patch("/api/setartist/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.patch(
+  "/api/setartist/",
+  [
+    body("name")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artist name must not contain digits"),
+    body("nationality")
+      .isIn(NATIONALITIES)
+      .withMessage("Nationality must be one of the specified options"),
+    body("birthYear")
+      .matches(/^\d{4}$/)
+      .withMessage("Birth year must be a 4-digit year"),
+    body("deathYear")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}$/)
+      .withMessage("Death year must be a 4-digit year"),
+    body("movement").notEmpty().withMessage("Movement is required"),
+    body("notableWorks").optional({ checkFalsy: true }),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const {
-    id,
-    name,
-    birthYear,
-    deathYear,
-    nationality,
-    movement,
-    notableWorks,
-  } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const {
+      id,
+      name,
+      birthYear,
+      deathYear,
+      nationality,
+      movement,
+      notableWorks,
+    } = req.body;
+    const query = `
     UPDATE artists
     SET 
       artist_name = ?,
@@ -534,23 +598,24 @@ app.patch("/api/setartist/", async (req, res) => {
       notable_works = NULLIF(?, '')
     WHERE artist_id = ?
   `;
-  try {
-    await promisePool.query(query, [
-      name,
-      nationality,
-      birthYear,
-      deathYear,
-      movement,
-      notableWorks,
-      id,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        name,
+        nationality,
+        birthYear,
+        deathYear,
+        movement,
+        notableWorks,
+        id,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.delete("/api/deleteartist/", async (req, res) => {
   const id = req.query.id;
@@ -631,16 +696,41 @@ app.delete("/api/deleteartifact/", async (req, res) => {
   }
 });
 
-app.patch("/api/setartifact/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.patch(
+  "/api/setartifact/",
+  [
+    body("title")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artifact name must not contain digits"),
+    body("exhibitId")
+      .toInt()
+      .isInt()
+      .withMessage("Exhibit ID but be an integer"),
+    body("artistId")
+      .toInt()
+      .isInt()
+      .withMessage("Artist ID must be an integer"),
+    body("medium").optional({ checkFalsy: true }),
+    body("createdYear")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}$/)
+      .withMessage("Created year must be a 4-digit year"),
+    body("condition")
+      .isIn(CONDITIONS)
+      .withMessage("Condition must be one of the given options"),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { id, title, artistId, exhibitId, year, medium, condition } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { id, title, artistId, exhibitId, year, medium, condition } =
+      req.body;
+    const query = `
     UPDATE artifacts
     SET 
       artifact_name = ?,
@@ -651,23 +741,24 @@ app.patch("/api/setartifact/", async (req, res) => {
       \`condition\` = ?
     WHERE artifact_id = ?
   `;
-  try {
-    await promisePool.query(query, [
-      title,
-      artistId,
-      exhibitId,
-      year,
-      medium,
-      condition,
-      id,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        title,
+        artistId,
+        exhibitId,
+        year,
+        medium,
+        condition,
+        id,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.post("/api/addrestored/", async (req, res) => {
   const userId = req.query.id;
@@ -733,70 +824,130 @@ app.patch("/api/setrestored/", async (req, res) => {
   }
 });
 
-app.post("/api/addartist/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.post(
+  "/api/addartist/",
+  [
+    body("name")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artist name must not contain digits"),
+    body("nationality")
+      .isIn(NATIONALITIES)
+      .withMessage("Nationality must be one of the specified options"),
+    body("birthYear")
+      .matches(/^\d{4}$/)
+      .withMessage("Birth year must be a 4-digit year"),
+    body("deathYear")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}$/)
+      .withMessage("Death year must be a 4-digit year"),
+    body("movement").notEmpty().withMessage("Movement is required"),
+    body("biography").optional({ checkFalsy: true }),
+    body("notableWorks").optional({ checkFalsy: true }),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const {
-    name,
-    birthYear,
-    deathYear,
-    nationality,
-    movement,
-    notableWorks,
-    biography,
-  } = req.body;
-  const query = `
-    INSERT INTO artists (
-      artist_name, birth_year, death_year, nationality, movement,
-      biography, notable_works
-    ) VALUES (?, ?, NULLIF(?, ''), ?, ?, NULLIF(?, ''), NULLIF(?, ''));
-  `;
-  try {
-    await promisePool.query(query, [
+    if (validationErrorCheck(req, res)) return;
+    const {
       name,
       birthYear,
       deathYear,
       nationality,
       movement,
-      biography,
       notableWorks,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+      biography,
+    } = req.body;
+    const query = `
+    INSERT INTO artists (
+      artist_name, birth_year, death_year, nationality, movement,
+      biography, notable_works
+    ) VALUES (?, ?, NULLIF(?, ''), ?, ?, NULLIF(?, ''), NULLIF(?, ''));
+  `;
+    try {
+      await promisePool.query(query, [
+        name,
+        birthYear,
+        deathYear,
+        nationality,
+        movement,
+        biography,
+        notableWorks,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
-app.post("/api/addartifact/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.post(
+  "/api/addartifact/",
+  [
+    body("title")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Artifact name must not contain digits"),
+    body("exhibitId")
+      .toInt()
+      .isInt()
+      .withMessage("Exhibit ID but be an integer"),
+    body("artistId")
+      .toInt()
+      .isInt()
+      .withMessage("Artist ID must be an integer"),
+    body("description").optional({ checkFalsy: true }),
+    body("medium").optional({ checkFalsy: true }),
+    body("dimensions").optional({ checkFalsy: true }),
+    body("createdYear")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}$/)
+      .withMessage("Created year must be a 4-digit year"),
+    body("acquisitionValue")
+      .toInt()
+      .isInt()
+      .withMessage("Acquisition value must be a number"),
+    body("condition")
+      .isIn(CONDITIONS)
+      .withMessage("Condition must be one of the given options"),
+    body("acquisitionType")
+      .isIn(ACQUISITIONTYPES)
+      .withMessage("Acquisition type must be one of the given options"),
+    body("acquisitionDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Acquisition date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Acquisition date must be a valid date"),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const {
-    title,
-    artistId,
-    exhibitId,
-    createdYear,
-    medium,
-    description,
-    dimensions,
-    condition,
-    acquisitionType,
-    acquisitionValue,
-    acquisitionDate,
-    needsRestoration,
-  } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const {
+      title,
+      artistId,
+      exhibitId,
+      createdYear,
+      medium,
+      description,
+      dimensions,
+      condition,
+      acquisitionType,
+      acquisitionValue,
+      acquisitionDate,
+      needsRestoration,
+    } = req.body;
+    const query = `
     INSERT INTO artifacts (
       artifact_name,
       exhibit_id,
@@ -812,28 +963,29 @@ app.post("/api/addartifact/", async (req, res) => {
       needs_restoration
     ) VALUES (?, ?, ?, NULLIF(?, ''), NULLIF(?, ''), NULLIF(?, ''), ?, ?, NULLIF(?, ''), ?, ?, ?);
   `;
-  try {
-    await promisePool.query(query, [
-      title,
-      exhibitId,
-      artistId,
-      medium,
-      description,
-      createdYear,
-      acquisitionValue,
-      condition,
-      dimensions,
-      acquisitionType,
-      acquisitionDate,
-      needsRestoration,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        title,
+        exhibitId,
+        artistId,
+        medium,
+        description,
+        createdYear,
+        acquisitionValue,
+        condition,
+        dimensions,
+        acquisitionType,
+        acquisitionDate,
+        needsRestoration,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.get("/api/getexhibitsmap/", async (req, res) => {
   const id = req.query.id;
@@ -912,29 +1064,72 @@ app.patch("/api/setadmininfo/", async (req, res) => {
   }
 });
 
-app.post("/api/addemployee/", async (req, res) => {
-  const id = req.query.id;
-  if (!id) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.post(
+  "/api/addemployee/",
+  [
+    body("name")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Employee name must not contain digits"),
+    body("exhibitID")
+      .toInt()
+      .isInt()
+      .withMessage("Exhibit ID must be an integer"),
+    body("ssn")
+      .matches(/^\d{3}-\d{2}-\d{4}$/)
+      .withMessage("SSN must be in the format XXX-XX-XXXX"),
+    body("phone")
+      .matches(/^\d{3}-\d{3}-\d{4}$/)
+      .withMessage("Phone number must be in the format XXX-XXX-XXXX"),
+    body("address").isString().withMessage("Address must be a string"),
+    body("personalEmail")
+      .isEmail()
+      .withMessage("Personal email must be a valid email"),
+    body("workEmail").isEmail().withMessage("Work email must be a valid email"),
+    body("birthDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Birth date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Birth date must be a valid date"),
+    body("hiringDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Hiring date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Hiring date must be a valid date"),
+    body("firedDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Hiring date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Hiring date must be a valid date"),
+    body("salary").toInt().isInt().withMessage("Salary must be an integer"),
+    body("role")
+      .isIn(ROLES)
+      .withMessage("Role must be one of the specified options"),
+  ],
+  async (req, res) => {
+    const id = req.query.id;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const {
-    name,
-    exhibitId,
-    ssn,
-    phone,
-    address,
-    personalEmail,
-    workEmail,
-    birthDate,
-    hiringDate,
-    firedDate,
-    salary,
-    role,
-  } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const {
+      name,
+      exhibitId,
+      ssn,
+      phone,
+      address,
+      personalEmail,
+      workEmail,
+      birthDate,
+      hiringDate,
+      firedDate,
+      salary,
+      role,
+    } = req.body;
+    const query = `
     INSERT INTO employees (
       employee_name,
       exhibit_id,
@@ -950,29 +1145,29 @@ app.post("/api/addemployee/", async (req, res) => {
       role
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
   `;
-  try {
-    await promisePool.query(query, [
-      name,
-      exhibitId,
-      null,
-      ssn,
-      phone,
-      address,
-      personalEmail,
-      workEmail,
-      birthDate,
-      hiringDate,
-      firedDate,
-      salary,
-      role,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        name,
+        exhibitId,
+        ssn,
+        phone,
+        address,
+        personalEmail,
+        workEmail,
+        birthDate,
+        hiringDate,
+        firedDate,
+        salary,
+        role,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.get("/api/getemployees/", async (req, res) => {
   const id = req.query.id;
@@ -1008,16 +1203,37 @@ app.get("/api/getemployees/", async (req, res) => {
   }
 });
 
-app.patch("/api/setemployee/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.patch(
+  "/api/setemployee/",
+  [
+    body("name")
+      .custom((value) => !/\d/.test(value))
+      .withMessage("Employee name must not contain digits"),
+    body("phone")
+      .matches(/^\d{3}-\d{3}-\d{4}$/)
+      .withMessage("Phone number must be in the format XXX-XXX-XXXX"),
+    body("workEmail").isEmail().withMessage("Work email must be a valid email"),
+    body("hiringDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Hiring date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Hiring date must be a valid date"),
+    body("salary").toInt().isInt().withMessage("Salary must be an integer"),
+    body("role")
+      .isIn(ROLES)
+      .withMessage("Role must be one of the specified options"),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { id, name, workEmail, phone, role, hiringDate, salary } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { id, name, workEmail, phone, role, hiringDate, salary } = req.body;
+    const query = `
     UPDATE employees
     SET 
       employee_name = ?,
@@ -1028,23 +1244,24 @@ app.patch("/api/setemployee/", async (req, res) => {
       salary = ?
     WHERE employee_id = ?
   `;
-  try {
-    await promisePool.query(query, [
-      name,
-      workEmail,
-      phone,
-      role,
-      hiringDate,
-      salary,
-      id,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        name,
+        workEmail,
+        phone,
+        role,
+        hiringDate,
+        salary,
+        id,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.delete("/api/deleteemployee/", async (req, res) => {
   const id = req.query.id;
@@ -1119,16 +1336,34 @@ app.delete("/api/deleteexhibit/", async (req, res) => {
   }
 });
 
-app.post("/api/addexhibit/", async (req, res) => {
-  const id = req.query.id;
-  if (!id) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.post(
+  "/api/addexhibit/",
+  [
+    body("title").notEmpty().withMessage("Exhibit name is required"),
+    body("startDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Start date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Start date must be a valid date"),
+    body("endDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("End date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("End date must be a valid date"),
+    body("description").notEmpty().withMessage("Description is required"),
+  ],
+  async (req, res) => {
+    const id = req.query.id;
+    if (!id) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { title, startDate, endDate, description } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { title, startDate, endDate, description } = req.body;
+    const query = `
     INSERT INTO exhibits (
       exhibit_name,
       start_date,
@@ -1136,26 +1371,45 @@ app.post("/api/addexhibit/", async (req, res) => {
       description
     ) VALUES (?, ?, ?, NULLIF(?, ''))
   `;
-  try {
-    await promisePool.query(query, [title, startDate, endDate, description]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [title, startDate, endDate, description]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
-app.patch("/api/setexhibit/", async (req, res) => {
-  const userId = req.query.id;
-  if (!userId) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
-  }
+app.patch(
+  "/api/setexhibit/",
+  [
+    body("title").notEmpty().withMessage("Exhibit name is required"),
+    body("startDate")
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("Start date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("Start date must be a valid date"),
+    body("endDate")
+      .optional({ checkFalsy: true })
+      .matches(/^\d{4}-\d{2}-\d{2}$/)
+      .withMessage("End date must be in the format YYYY-MM-DD")
+      .isISO8601()
+      .withMessage("End date must be a valid date"),
+    body("description").notEmpty().withMessage("Description is required"),
+  ],
+  async (req, res) => {
+    const userId = req.query.id;
+    if (!userId) {
+      return res
+        .status(401)
+        .json({ success: false, errors: ["Do not have authorized access"] });
+    }
 
-  const { id, title, startDate, endDate, description } = req.body;
-  const query = `
+    if (validationErrorCheck(req, res)) return;
+    const { id, title, startDate, endDate, description } = req.body;
+    const query = `
     UPDATE exhibits
     SET 
       exhibit_name = ?,
@@ -1164,21 +1418,22 @@ app.patch("/api/setexhibit/", async (req, res) => {
       end_date = NULLIF(?, '')
     WHERE exhibit_id = ?
   `;
-  try {
-    await promisePool.query(query, [
-      title,
-      description,
-      startDate,
-      endDate,
-      id,
-    ]);
-    res.status(200).json({ success: true });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
-  }
-});
+    try {
+      await promisePool.query(query, [
+        title,
+        description,
+        startDate,
+        endDate,
+        id,
+      ]);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      res.status(500).json({ success: false, errors: ["Database error"] });
+      console.log("Error retrieving entires...");
+      console.log(err);
+    }
+  },
+);
 
 app.post("/api/register-user", async (req, res) => {
   const id = req.query.id;
@@ -1526,7 +1781,7 @@ app.post("/api/custom/checkout", async (req, res) => {
 
 app.get("/api/featured-exhibits", async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const [rows] = await promisePool.query(`
       SELECT exhibit_name, description, image_url
       FROM Exhibits
       ORDER BY start_date DESC
