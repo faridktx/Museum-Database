@@ -106,9 +106,9 @@ export function AdminDashboard() {
 
   // State for new employee form data
   const [newEmployeeData, setNewEmployeeData] = useState({
+    id: "",
     name: "",
     exhibitId: "",
-    accessId: "",
     ssn: "",
     phone: "",
     address: "",
@@ -126,6 +126,7 @@ export function AdminDashboard() {
 
   // State for new exhibit form data
   const [newExhibitData, setNewExhibitData] = useState({
+    id: "",
     title: "",
     startDate: "",
     endDate: "",
@@ -516,6 +517,8 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEmployeeData),
       });
+      const json = await response.json();
+      newEmployeeData.id = parseInt(json.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -528,13 +531,10 @@ export function AdminDashboard() {
         status: newEmployeeData.firedDate === null ? "active" : "inactive",
       },
     ]);
-    console.log({
-      ...newEmployeeData,
-      status: newEmployeeData.firedDate === null ? "active" : "inactive",
-    });
 
     // Reset the form
     setNewEmployeeData({
+      id: "",
       name: "",
       exhibitId: "",
       ssn: "",
@@ -563,6 +563,8 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newExhibitData),
       });
+      const json = await response.json();
+      newExhibitData.id = parseInt(json.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -570,11 +572,11 @@ export function AdminDashboard() {
 
     // Reset the form
     setNewExhibitData({
+      id: "",
       title: "",
       startDate: "",
       endDate: "",
       description: "",
-      status: "",
     });
 
     // Hide the new exhibit form

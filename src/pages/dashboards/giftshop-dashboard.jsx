@@ -124,6 +124,7 @@ export function GiftShopDashboard() {
   });
 
   const [newProductData, setNewProductData] = useState({
+    id: "",
     name: "",
     category: "",
     description: "",
@@ -386,6 +387,8 @@ export function GiftShopDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProductData),
       });
+      const json = await response.json();
+      newProduct.id = parseInt(json.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -395,6 +398,7 @@ export function GiftShopDashboard() {
 
     // Reset form
     setNewProductData({
+      id: "",
       name: "",
       category: "",
       description: "",
@@ -411,6 +415,7 @@ export function GiftShopDashboard() {
   const handleCancelNewProduct = () => {
     // Reset form data
     setNewProductData({
+      id: "",
       name: "",
       category: "",
       description: "",

@@ -1,4 +1,4 @@
-import "./MembershipPerks.css";
+import "./membership-perks.css";
 import {
   FaGift,
   FaClock,
