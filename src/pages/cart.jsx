@@ -175,11 +175,11 @@ export function Cart() {
   const handleCheckout = async (e) => {
     e.preventDefault();
     const form = e.target;
-  
+
     const name = form.name.value;
     const email = form.email.value;
     const phone = form.phone.value;
-  
+
     try {
 
       const payload = {
@@ -197,22 +197,25 @@ export function Cart() {
         ),
         membership,
       };
-  
+
       console.log("Sending checkout:", payload);
-  
+
       const orderRes = await fetch("/api/custom/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       // Enhanced response handling
-      const contentType = orderRes.headers.get('content-type');
+      const contentType = orderRes.headers.get("content-type");
       const responseText = await orderRes.text();
-  
+
       // Check if response is HTML (error page)
-      if (contentType?.includes('text/html')) {
-        console.error("Server returned HTML error page:", responseText.substring(0, 200));
+      if (contentType?.includes("text/html")) {
+        console.error(
+          "Server returned HTML error page:",
+          responseText.substring(0, 200),
+        );
         throw new Error("Server error occurred. Please try again later.");
       };
   
@@ -227,8 +230,8 @@ export function Cart() {
       };
   
       if (!orderRes.ok || !orderData.success) {
-        const errorMessage = Array.isArray(orderData.errors) 
-          ? orderData.errors[0] 
+        const errorMessage = Array.isArray(orderData.errors)
+          ? orderData.errors[0]
           : orderData.message || "Checkout failed";
         throw new Error(errorMessage);
       };
@@ -320,13 +323,7 @@ export function Cart() {
         <fieldset>
           <legend>Personal Information</legend>
           <label htmlFor="name">Full Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="name" name="name" type="text" defaultValue="" required />
 
           <label htmlFor="email">Email Address</label>
           <input
@@ -363,31 +360,13 @@ export function Cart() {
           <input id="address2" name="address2" type="text" />
 
           <label htmlFor="city">City</label>
-          <input
-            id="city"
-            name="city"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="city" name="city" type="text" defaultValue="" required />
 
           <label htmlFor="state">State/Province</label>
-          <input
-            id="state"
-            name="state"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="state" name="state" type="text" defaultValue="" required />
 
           <label htmlFor="zip">Postal Code</label>
-          <input
-            id="zip"
-            name="zip"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="zip" name="zip" type="text" defaultValue="" required />
 
           <label htmlFor="country">Country</label>
           <input

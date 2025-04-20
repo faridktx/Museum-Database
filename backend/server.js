@@ -30,6 +30,26 @@ const pool = mysql.createPool({
 
 const promisePool = pool.promise();
 
+app.get("/api/getrole/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res
+      .status(401)
+      .json({ success: false, errors: ["Do not have authorized access"] });
+  }
+  const query = `
+    SELECT role, employee_id as employeeId FROM users WHERE user_id = ?
+  `;
+  try {
+    const [rows] = await promisePool.query(query, [id]);
+    res.status(200).json({ success: true, data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, errors: ["Database error"] });
+    console.log("Error retrieving entires...");
+    console.log(err);
+  }
+});
+
 app.get("/api/getcustomer/", async (req, res) => {
   const id = req.query.id;
   if (!id) {
@@ -1332,7 +1352,7 @@ app.post("/api/custom/checkout", async (req, res) => {
       `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
       [userId]
     );
-    
+
     if (!user.length) {
       await connection.rollback();
       connection.release();
@@ -1346,26 +1366,30 @@ app.post("/api/custom/checkout", async (req, res) => {
     // 2. Check if guest exists, if not create one
     const [existingGuest] = await connection.query(
       `SELECT guest_id FROM guests WHERE guest_id = ? LIMIT 1`,
-      [exactUserId]
+      [exactUserId],
     );
 
     if (!existingGuest.length) {
       await connection.query(
         `INSERT INTO guests (guest_id, first_name, last_name, email)
          VALUES (?, ?, ?, ?)`,
-        [exactUserId, firstName, lastName, email]
+        [exactUserId, firstName, lastName, email],
       );
       console.log(`Created new guest record for user ${exactUserId}`);
     }
 
     // Helper functions
     const getNextId = async (table, idColumn) => {
-      const [maxRow] = await connection.query(`SELECT MAX(${idColumn}) AS max FROM ${table}`);
+      const [maxRow] = await connection.query(
+        `SELECT MAX(${idColumn}) AS max FROM ${table}`,
+      );
       return (maxRow[0].max || 0) + 1;
     };
 
     const getNextSaleId = async () => {
-      const [maxRow] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+      const [maxRow] = await connection.query(
+        `SELECT MAX(sale_id) AS max FROM combined_sales`,
+      );
       return (maxRow[0].max || 0) + 1;
     };
 
@@ -1374,14 +1398,14 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[ticket]] = await connection.query(
           `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
-          [type]
+          [type],
         );
         if (ticket) {
-          const nextId = await getNextId('tickets', 'ticket_id');
+          const nextId = await getNextId("tickets", "ticket_id");
           await connection.query(
             `INSERT INTO tickets (ticket_id, guest_id, purchase_date, ticket_type, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, exactUserId, today, type, count]
+            [nextId, exactUserId, today, type, count],
           );
           saleIds.push(`T-${nextId}`);
         }
@@ -1396,11 +1420,11 @@ app.post("/api/custom/checkout", async (req, res) => {
           [name]
         );
         if (exhibit) {
-          const nextId = await getNextId('exhibit_tickets', 'ticket_id');
+          const nextId = await getNextId("exhibit_tickets", "ticket_id");
           await connection.query(
             `INSERT INTO exhibit_tickets (ticket_id, exhibit_id, guest_id, purchase_date, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, exhibit.exhibit_id, exactUserId, today, count]
+            [nextId, exhibit.exhibit_id, exactUserId, today, count],
           );
           saleIds.push(`E-${nextId}`);
         }
@@ -1429,14 +1453,21 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[item]] = await connection.query(
           `SELECT unit_price FROM gift_shop_inventory WHERE item_id = ? LIMIT 1`,
-          [itemId]
+          [itemId],
         );
         if (item) {
-          const nextId = await getNextId('gift_shop_sales', 'sale_id');
+          const nextId = await getNextId("gift_shop_sales", "sale_id");
           await connection.query(
             `INSERT INTO gift_shop_sales (sale_id, item_id, guest_id, sale_date, quantity, total_cost)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [nextId, itemId, exactUserId, today, count, item.unit_price * count]
+            [
+              nextId,
+              itemId,
+              exactUserId,
+              today,
+              count,
+              item.unit_price * count,
+            ],
           );
           saleIds.push(`G-${nextId}`);
         }
@@ -1447,22 +1478,25 @@ app.post("/api/custom/checkout", async (req, res) => {
     connection.release();
 
     if (saleIds.length === 0) {
-      return res.status(400).json({ success: false, errors: ["No valid items to checkout"] });
+      return res
+        .status(400)
+        .json({ success: false, errors: ["No valid items to checkout"] });
     }
 
     return res.status(200).json({ success: true, saleIds });
-
   } catch (err) {
     console.error("Checkout error:", err);
     if (connection) {
       await connection.rollback();
       connection.release();
     }
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       errors: ["Checkout failed"],
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-      ...(process.env.NODE_ENV === 'development' && { sqlMessage: err.sqlMessage })
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      ...(process.env.NODE_ENV === "development" && {
+        sqlMessage: err.sqlMessage,
+      }),
     });
   }
 });
@@ -1485,7 +1519,7 @@ app.get("/api/featured-exhibits", async (req, res) => {
 app.get("/api/fraud-alerts", async (req, res) => {
   try {
     const [alerts] = await promisePool.query(
-      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`,
     );
 
     return res.status(200).json({ success: true, alerts });
@@ -1571,40 +1605,44 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
-    return res.status(500).json({ success: false, errors: ["Resolution failed"] });
+    return res
+      .status(500)
+      .json({ success: false, errors: ["Resolution failed"] });
   }
 });
 
-app.get('/api/proxy', async (req, res) => {
+app.get("/api/proxy", async (req, res) => {
   // Validate request parameters
   if (!req.query.userId) {
-    return res.status(400).json({ error: 'Missing userId parameter' });
+    return res.status(400).json({ error: "Missing userId parameter" });
   }
 
   try {
-    const apiResponse = await fetch(`https://dlnk.one/e?id=${req.query.userId}&type=1`, {
-      timeout: 5000 // 5 second timeout
-    });
+    const apiResponse = await fetch(
+      `https://dlnk.one/e?id=${req.query.userId}&type=1`,
+      {
+        timeout: 5000, // 5 second timeout
+      },
+    );
 
     if (!apiResponse.ok) {
       throw new Error(`External API error: ${apiResponse.statusText}`);
     }
 
     const data = await apiResponse.json();
-    
+
     // Transform data if needed
     const transformed = {
       ...data,
-      processedAt: new Date().toISOString()
+      processedAt: new Date().toISOString(),
     };
 
     res.json(transformed);
-    
   } catch (error) {
-    console.error('Proxy error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch data',
-      details: error.message 
+    console.error("Proxy error:", error);
+    res.status(500).json({
+      error: "Failed to fetch data",
+      details: error.message,
     });
   }
-})
+});
