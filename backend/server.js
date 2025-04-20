@@ -1720,22 +1720,26 @@ app.post("/api/custom/checkout", async (req, res) => {
       }
     }
 
-    // Process membership
-    //    if (membership) {
-    //      const [[member]] = await connection.query(
-    //        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-    //        [membership]
-    //      );
-    //      if (member) {
-    //        const nextSaleId = await getNextSaleId();
-    //        await connection.query(
-    //          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
-    //           VALUES (?, ?, ?, ?, ?, ?)`,
-    //          [nextSaleId, exactUserId, membership, 1, member.price, today]
-    //        );
-    //        saleIds.push(`M-${nextSaleId}`);
-    //      }
-    //    }
+  //   Process membership
+  if (membership) {
+    const [[member]] = await connection.query(
+      `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+      [membership]
+    );
+    
+    if (member) {
+      
+      await connection.query(
+        `UPDATE guests 
+         SET membership_type = ?, paid_date = ?
+         WHERE guest_id = ?`,
+        [membership, today, exactUserId]
+      );
+      
+      // Just add a simple identifier for the membership purchase
+      saleIds.push(`M-${Date.now()}`);
+    }
+  }
 
     // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {

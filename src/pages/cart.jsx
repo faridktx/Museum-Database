@@ -4,6 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useLocation } from "wouter";
 import { capitalize } from "../components/utils.custom";
 
+
 export function Cart() {
   const { user } = useUser();
   const [, navigate] = useLocation();
@@ -17,6 +18,7 @@ export function Cart() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(() => () => {});
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const userId = user.id;
 
   const [totals, setTotals] = useState({
@@ -148,30 +150,6 @@ export function Cart() {
     return data.saleIds;
   };
 
-  const handleTicketMembershipCheckout = async (userId) => {
-    const res = await fetch("/api/custom/tickets/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        guestId,
-        tickets,
-        exhibits,
-        membership,
-      }),
-    });
-
-    const text = await res.text();
-    const data = text ? JSON.parse(text) : {};
-    if (!res.ok || !data.success) {
-      const message = Array.isArray(data.errors)
-        ? data.errors[0]
-        : data.message || "Unknown error.";
-      throw new Error(message);
-    }
-
-    return data.saleIds;
-  };
-
   const handleCheckout = async (e) => {
     e.preventDefault();
     const form = e.target;
@@ -240,12 +218,22 @@ export function Cart() {
       }
 
       localStorage.removeItem("museum_cart");
-      navigate(`/dashboard/receipt?ids=${orderData.saleIds.join(",")}`);
+    
+      // Show success popup
+      setShowSuccessPopup(true);
+      
+      // Hide popup and navigate after 3 seconds
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+        navigate(`/dashboard`);
+      }, 3000);
+  
     } catch (err) {
       console.error("Checkout error:", err);
-      alert(`Checkout failed: ${err.message}`);
+      alert("Checkout failed: " + err.message);
     }
   };
+      
 
   return (
     <div className="page-layout">
@@ -315,6 +303,7 @@ export function Cart() {
             Clear Cart
           </button>
         </div>
+
       </div>
       <form className="checkout-form" onSubmit={(e) => handleCheckout(e)}>
         <h3>Checkout</h3>
@@ -433,7 +422,19 @@ export function Cart() {
             terms and conditions.
           </label>
         </section>
-
+                  
+            {/* Add the success popup here */}
+            {showSuccessPopup && (
+        <div className="success-popup">
+          <div className="popup-content">
+            <div className="popup-icon">✓</div>
+            <div>
+              <h3>Purchase Successful!</h3>
+              <p>Your order has been completed. You'll be redirected shortly.</p>
+            </div>
+          </div>
+        </div>
+      )}
         <button className="checkout-button" type="submit" disabled={!formValid}>
           Place Order
         </button>
