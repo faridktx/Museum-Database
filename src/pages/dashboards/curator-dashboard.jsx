@@ -21,6 +21,7 @@ import {
   NATIONALITIES,
   CONDITIONS,
 } from "../../components/constants.js";
+import { ErrorModal } from "../../components/modal";
 
 const ART_MOVEMENT_COLORS = [
   "#8da0cb", // muted blue
@@ -513,13 +514,6 @@ export function CuratorDashboard() {
 
   // Function to save edited artist data
   const handleSaveArtist = async () => {
-    // Update the artists array with edited data
-    setArtists(
-      artists.map((artist) =>
-        artist.id === editingArtist ? { ...artist, ...editFormData } : artist,
-      ),
-    );
-
     const url = new URL("/api/setartist/", process.env.REACT_APP_BACKEND_URL);
     url.searchParams.append("id", user.id);
     try {
@@ -528,6 +522,20 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editFormData, id: editingArtist }),
       });
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+      } else {
+        // Update the artists array with edited data
+        setArtists(
+          artists.map((artist) =>
+            artist.id === editingArtist
+              ? { ...artist, ...editFormData }
+              : artist,
+          ),
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -554,30 +562,28 @@ export function CuratorDashboard() {
 
   // Function to handle deleting an artist
   const handleDeleteArtist = async (artistId) => {
-    if (window.confirm("Are you sure you want to delete this artist?")) {
-      // Add this artist to the deleting list (for animation)
-      setDeletingArtists([...deletingArtists, artistId]);
+    // Add this artist to the deleting list (for animation)
+    setDeletingArtists([...deletingArtists, artistId]);
 
-      // Wait for animation to complete before removing from the array
-      setTimeout(() => {
-        setArtists(artists.filter((artist) => artist.id !== artistId));
-        setDeletingArtists(deletingArtists.filter((id) => id !== artistId));
-      }, 300);
+    // Wait for animation to complete before removing from the array
+    setTimeout(() => {
+      setArtists(artists.filter((artist) => artist.id !== artistId));
+      setDeletingArtists(deletingArtists.filter((id) => id !== artistId));
+    }, 300);
 
-      const url = new URL(
-        "/api/deleteartist/",
-        process.env.REACT_APP_BACKEND_URL,
-      );
-      url.searchParams.append("id", user.id);
-      try {
-        const response = await fetch(url.toString(), {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ artistId: artistId }),
-        });
-      } catch (err) {
-        console.log(err);
-      }
+    const url = new URL(
+      "/api/deleteartist/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      await fetch(url.toString(), {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artistId: artistId }),
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -599,15 +605,6 @@ export function CuratorDashboard() {
 
   // Function to save edited artifact data
   const handleSaveArtifact = async () => {
-    // Update the artifacts array with edited data
-    setArtifacts(
-      artifacts.map((artifact) =>
-        artifact.id === editingArtifact
-          ? { ...artifact, ...editFormData }
-          : artifact,
-      ),
-    );
-
     const url = new URL("/api/setartifact/", process.env.REACT_APP_BACKEND_URL);
     url.searchParams.append("id", user.id);
     try {
@@ -616,6 +613,20 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editFormData, id: editingArtifact }),
       });
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+      } else {
+        // Update the artifacts array with edited data
+        setArtifacts(
+          artifacts.map((artifact) =>
+            artifact.id === editingArtifact
+              ? { ...artifact, ...editFormData }
+              : artifact,
+          ),
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -652,7 +663,7 @@ export function CuratorDashboard() {
       );
       url.searchParams.append("id", user.id);
       try {
-        const response = await fetch(url.toString(), {
+        await fetch(url.toString(), {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ artifactId: artifactId }),
@@ -663,6 +674,8 @@ export function CuratorDashboard() {
     }
   };
 
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   // Function to handle toggling restoration status
   const handleToggleRestoration = async (artifactId) => {
     const targetArtifact = artifacts.find(
@@ -677,7 +690,7 @@ export function CuratorDashboard() {
       );
       url.searchParams.append("id", user.id);
       try {
-        const response = await fetch(url.toString(), {
+        await fetch(url.toString(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -695,7 +708,7 @@ export function CuratorDashboard() {
       );
       url.searchParams.append("id", user.id);
       try {
-        const response = await fetch(url.toString(), {
+        await fetch(url.toString(), {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -727,7 +740,7 @@ export function CuratorDashboard() {
     );
     url.searchParams.append("id", user.id);
     try {
-      const response = await fetch(url.toString(), {
+      await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -780,8 +793,13 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArtistData),
       });
-      const json = await response.json();
-      newArtistData.id = parseInt(json.insertedId);
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+        return;
+      }
+      newArtistData.id = parseInt(data.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -851,8 +869,13 @@ export function CuratorDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newArtifactData),
       });
-      const json = await response.json();
-      newArtifactData.id = parseInt(json.insertedId);
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+        return;
+      }
+      newArtifactData.id = parseInt(data.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -2419,6 +2442,11 @@ export function CuratorDashboard() {
           )}
         </div>
       </div>
+      <ErrorModal
+        show={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </div>
   );
 }

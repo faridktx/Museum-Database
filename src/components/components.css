@@ -4729,6 +4729,25 @@ select.rounded-input {
   animation: shake 0.4s ease-in-out;
 }
 
+.not-found {
+  margin-top: 10em;
+  min-height: 51vh;
+}
+
+.not-found h1 {
+  font-size: 5em;
+}
+
+.not-found .container {
+  display: block;
+  align-items: left;
+  text-align: left;
+}
+
+.not-found p {
+  font-size: 1.2em;
+}
+
 .notification-icon {
   position: relative;
   margin-right: 1rem;

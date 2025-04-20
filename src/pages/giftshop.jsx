@@ -24,9 +24,9 @@ export function GiftShop() {
       try {
         const [itemsRes, membershipsRes] = await Promise.all([
           apiFetch("/api/custom/giftshop-items", "GET", user?.id),
-          apiFetch("/api/custom/memberships", "GET", user?.id)
+          apiFetch("/api/custom/memberships", "GET", user?.id),
         ]);
-        
+
         setShopItems(itemsRes.data || []);
         setFilteredItems(itemsRes.data || []);
         setUniqueMemberships(membershipsRes.data || []);
@@ -34,7 +34,7 @@ export function GiftShop() {
         console.error("Failed to load data:", error);
       }
     };
-    
+
     if (user?.id) loadData();
   }, [user]);
 
@@ -72,7 +72,7 @@ export function GiftShop() {
   };
 
   const handleMembershipSelect = (membership) => {
-    setSelectedMembership(prev => {
+    setSelectedMembership((prev) => {
       // If clicking the same membership, deselect it
       if (prev?.membership_type === membership.membership_type) {
         return null;
@@ -82,13 +82,15 @@ export function GiftShop() {
   };
 
   const calculateCartTotal = () => {
-    const itemsTotal = Object.entries(cart)
-      .reduce((total, [itemId, { count, price }]) => {
+    const itemsTotal = Object.entries(cart).reduce(
+      (total, [itemId, { count, price }]) => {
         return total + count * price;
-      }, 0);
-    
+      },
+      0,
+    );
+
     const membershipTotal = selectedMembership ? selectedMembership.price : 0;
-    
+
     return (itemsTotal + membershipTotal).toFixed(2);
   };
 
@@ -109,18 +111,20 @@ export function GiftShop() {
 
     const existing = localStorage.getItem("museum_cart");
     const parsed = existing ? JSON.parse(existing) : {};
-    
-    // Prepare membership data if selected
-    const membershipCart = selectedMembership ? {
-      membership: selectedMembership.membership_type,
-      membershipData: selectedMembership
-    } : {};
 
-    const merged = { 
-      ...parsed, 
-      giftshop: cart, 
+    // Prepare membership data if selected
+    const membershipCart = selectedMembership
+      ? {
+          membership: selectedMembership.membership_type,
+          membershipData: selectedMembership,
+        }
+      : {};
+
+    const merged = {
+      ...parsed,
+      giftshop: cart,
       ...membershipCart,
-      guestId: user.id 
+      guestId: user.id,
     };
 
     localStorage.setItem("museum_cart", JSON.stringify(merged));
@@ -222,11 +226,14 @@ export function GiftShop() {
 
         <div className="membership-section">
           <h3>Memberships</h3>
-          {uniqueMemberships.map(membership => (
-            <div 
+          {uniqueMemberships.map((membership) => (
+            <div
               key={membership.membership_type}
               className={`membership-card ${
-                selectedMembership?.membership_type === membership.membership_type ? 'selected' : ''
+                selectedMembership?.membership_type ===
+                membership.membership_type
+                  ? "selected"
+                  : ""
               }`}
               onClick={() => handleMembershipSelect(membership)}
             >
