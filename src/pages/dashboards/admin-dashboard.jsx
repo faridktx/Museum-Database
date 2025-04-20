@@ -16,6 +16,7 @@ import { Bar } from "react-chartjs-2";
 import { useUser } from "@clerk/clerk-react";
 import "../../components/components.css";
 import { ROLES, ROLECOLORS } from "../../components/constants.js";
+import { ErrorModal } from "../../components/modal";
 
 function addStatusToExhibit(exhibit) {
   const today = new Date();
@@ -335,15 +336,6 @@ export function AdminDashboard() {
 
   // Function to save edited employee data
   const handleSaveEmployee = async () => {
-    // Update the employees array with edited data
-    setEmployees(
-      employees.map((employee) =>
-        employee.id === editingEmployee
-          ? { ...employee, ...editFormData }
-          : employee,
-      ),
-    );
-
     const url = new URL("/api/setemployee/", process.env.REACT_APP_BACKEND_URL);
     url.searchParams.append("id", user.id);
     try {
@@ -352,6 +344,20 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editFormData, id: editingEmployee }),
       });
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+      } else {
+        // Update the employees array with edited data
+        setEmployees(
+          employees.map((employee) =>
+            employee.id === editingEmployee
+              ? { ...employee, ...editFormData }
+              : employee,
+          ),
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -378,33 +384,27 @@ export function AdminDashboard() {
 
   // Function to handle deleting an employee
   const handleDeleteEmployee = async (employeeId) => {
-    if (window.confirm("Are you sure you want to delete this employee?")) {
-      // Add this employee to the deleting list (for animation)
-      setDeletingEmployees([...deletingEmployees, employeeId]);
+    // Add this employee to the deleting list (for animation)
+    setDeletingEmployees([...deletingEmployees, employeeId]);
 
-      // Wait for animation to complete before removing from the array
-      setTimeout(() => {
-        setEmployees(
-          employees.filter((employee) => employee.id !== employeeId),
-        );
-        setDeletingEmployees(
-          deletingEmployees.filter((id) => id !== employeeId),
-        );
-      }, 300);
-      const url = new URL(
-        "/api/deleteemployee/",
-        process.env.REACT_APP_BACKEND_URL,
-      );
-      url.searchParams.append("id", user.id);
-      try {
-        const response = await fetch(url.toString(), {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ employeeId: employeeId }),
-        });
-      } catch (err) {
-        console.log(err);
-      }
+    // Wait for animation to complete before removing from the array
+    setTimeout(() => {
+      setEmployees(employees.filter((employee) => employee.id !== employeeId));
+      setDeletingEmployees(deletingEmployees.filter((id) => id !== employeeId));
+    }, 300);
+    const url = new URL(
+      "/api/deleteemployee/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      await fetch(url.toString(), {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ employeeId: employeeId }),
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -424,15 +424,6 @@ export function AdminDashboard() {
 
   // Function to save edited exhibit data
   const handleSaveExhibit = async () => {
-    // Update the exhibits array with edited data
-    setExhibits(
-      exhibits.map((exhibit) =>
-        exhibit.id === editingExhibit
-          ? addStatusToExhibit({ ...exhibit, ...editFormData })
-          : exhibit,
-      ),
-    );
-
     const url = new URL("/api/setexhibit/", process.env.REACT_APP_BACKEND_URL);
     url.searchParams.append("id", user.id);
     try {
@@ -441,6 +432,19 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editFormData, id: editingExhibit }),
       });
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+      } else {
+        setExhibits(
+          exhibits.map((exhibit) =>
+            exhibit.id === editingExhibit
+              ? addStatusToExhibit({ ...exhibit, ...editFormData })
+              : exhibit,
+          ),
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -458,29 +462,27 @@ export function AdminDashboard() {
 
   // Function to handle deleting an exhibit
   const handleDeleteExhibit = async (exhibitId) => {
-    if (window.confirm("Are you sure you want to delete this exhibit?")) {
-      // Add this exhibit to the deleting list (for animation)
-      setDeletingExhibits([...deletingExhibits, exhibitId]);
+    // Add this exhibit to the deleting list (for animation)
+    setDeletingExhibits([...deletingExhibits, exhibitId]);
 
-      // Wait for animation to complete before removing from the array
-      setTimeout(() => {
-        setExhibits(exhibits.filter((exhibit) => exhibit.id !== exhibitId));
-        setDeletingExhibits(deletingExhibits.filter((id) => id !== exhibitId));
-      }, 300); // Match the CSS transition time
-      const url = new URL(
-        "/api/deleteexhibit/",
-        process.env.REACT_APP_BACKEND_URL,
-      );
-      url.searchParams.append("id", user.id);
-      try {
-        const response = await fetch(url.toString(), {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ exhibitId: exhibitId }),
-        });
-      } catch (err) {
-        console.log(err);
-      }
+    // Wait for animation to complete before removing from the array
+    setTimeout(() => {
+      setExhibits(exhibits.filter((exhibit) => exhibit.id !== exhibitId));
+      setDeletingExhibits(deletingExhibits.filter((id) => id !== exhibitId));
+    }, 300); // Match the CSS transition time
+    const url = new URL(
+      "/api/deleteexhibit/",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    url.searchParams.append("id", user.id);
+    try {
+      await fetch(url.toString(), {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exhibitId: exhibitId }),
+      });
+    } catch (err) {
+      console.log(err);
     }
   };
 
@@ -508,6 +510,8 @@ export function AdminDashboard() {
   };
 
   // Function to save a new employee
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const handleSaveNewEmployee = async () => {
     const url = new URL("/api/addemployee/", process.env.REACT_APP_BACKEND_URL);
     url.searchParams.append("id", user.id);
@@ -517,8 +521,13 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newEmployeeData),
       });
-      const json = await response.json();
-      newEmployeeData.id = parseInt(json.insertedId);
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+        return;
+      }
+      newEmployeeData.id = parseInt(data.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -563,8 +572,13 @@ export function AdminDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newExhibitData),
       });
-      const json = await response.json();
-      newExhibitData.id = parseInt(json.insertedId);
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+        return;
+      }
+      newExhibitData.id = parseInt(data.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -624,7 +638,7 @@ export function AdminDashboard() {
     );
     url.searchParams.append("id", user.id);
     try {
-      const response = await fetch(url.toString(), {
+      await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2193,6 +2207,11 @@ export function AdminDashboard() {
           )}
         </div>
       </div>
+      <ErrorModal
+        show={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </div>
   );
 }

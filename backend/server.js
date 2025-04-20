@@ -53,11 +53,15 @@ app.get("/api/getrole/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
   const query = `
-    SELECT role FROM users WHERE user_id = ?
+    SELECT role, employee_id AS employeeId FROM users WHERE user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
-    res.status(200).json({ success: true, role: rows[0]?.role });
+    res.status(200).json({
+      success: true,
+      role: rows[0]?.role,
+      employeeId: rows[0]?.employeeId,
+    });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
     console.log("Error retrieving entires...");
@@ -1074,7 +1078,7 @@ app.post(
     body("name")
       .custom((value) => !/\d/.test(value))
       .withMessage("Employee name must not contain digits"),
-    body("exhibitID")
+    body("exhibitId")
       .toInt()
       .isInt()
       .withMessage("Exhibit ID must be an integer"),
@@ -1611,7 +1615,6 @@ app.get("/api/custom/memberships", async (req, res) => {
 });
 
 app.post("/api/custom/checkout", async (req, res) => {
-  res.setHeader("Content-Type", "application/json");
   const {
     name,
     userId,
@@ -1720,26 +1723,25 @@ app.post("/api/custom/checkout", async (req, res) => {
       }
     }
 
-  //   Process membership
-  if (membership) {
-    const [[member]] = await connection.query(
-      `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-      [membership]
-    );
-    
-    if (member) {
-      
-      await connection.query(
-        `UPDATE guests 
+    //   Process membership
+    if (membership) {
+      const [[member]] = await connection.query(
+        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+        [membership],
+      );
+
+      if (member) {
+        await connection.query(
+          `UPDATE guests 
          SET membership_type = ?, paid_date = ?
          WHERE guest_id = ?`,
-        [membership, today, exactUserId]
-      );
-      
-      // Just add a simple identifier for the membership purchase
-      saleIds.push(`M-${Date.now()}`);
+          [membership, today, exactUserId],
+        );
+
+        // Just add a simple identifier for the membership purchase
+        saleIds.push(`M-${Date.now()}`);
+      }
     }
-  }
 
     // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {

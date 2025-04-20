@@ -23,6 +23,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useUser } from "@clerk/clerk-react";
 import { SHOPCATEGORIES } from "../../components/constants.js";
+import { ErrorModal } from "../../components/modal";
 
 // Register Chart.js components
 ChartJS.register(
@@ -54,9 +55,6 @@ function generateSalesChartData(sales) {
 
   const revenueData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].revenue);
   const unitsData = SHOPCATEGORIES.map((cat) => categoryTotals[cat].units);
-
-  console.log(revenueData);
-  console.log(unitsData);
 
   return {
     labels: SHOPCATEGORIES,
@@ -345,7 +343,7 @@ export function GiftShopDashboard() {
     );
     url.searchParams.append("id", user.id);
     try {
-      const response = await fetch(url.toString(), {
+      await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -367,6 +365,8 @@ export function GiftShopDashboard() {
     });
   };
 
+  const [showError, setShowError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   // Handle save new product
   const handleSaveNewProduct = async () => {
     // Create new product with ID
@@ -387,8 +387,13 @@ export function GiftShopDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProductData),
       });
-      const json = await response.json();
-      newProduct.id = parseInt(json.insertedId);
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+        return;
+      }
+      newProduct.id = parseInt(data.insertedId);
     } catch (err) {
       console.log(err);
     }
@@ -453,24 +458,6 @@ export function GiftShopDashboard() {
 
   // Handle save product edit
   const handleSaveProduct = async () => {
-    // Update inventory with edited data
-    setInventory(
-      inventory.map((item) => {
-        if (item.id === editingProduct) {
-          return {
-            ...item,
-            name: editFormData.name,
-            category: editFormData.category,
-            description: editFormData.description,
-            price: parseFloat(editFormData.price),
-            inStock: parseInt(editFormData.inStock),
-            supplier: editFormData.supplier,
-          };
-        }
-        return item;
-      }),
-    );
-
     const url = new URL(
       "/api/setinventory/",
       process.env.REACT_APP_BACKEND_URL,
@@ -482,6 +469,29 @@ export function GiftShopDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...editFormData, id: editingProduct }),
       });
+      const data = await response.json();
+      if (!data.success) {
+        setErrorMessage(data.errors);
+        setShowError(true);
+      } else {
+        // Update inventory with edited data
+        setInventory(
+          inventory.map((item) => {
+            if (item.id === editingProduct) {
+              return {
+                ...item,
+                name: editFormData.name,
+                category: editFormData.category,
+                description: editFormData.description,
+                price: parseFloat(editFormData.price),
+                inStock: parseInt(editFormData.inStock),
+                supplier: editFormData.supplier,
+              };
+            }
+            return item;
+          }),
+        );
+      }
     } catch (err) {
       console.log(err);
     }
@@ -514,7 +524,7 @@ export function GiftShopDashboard() {
     );
     url.searchParams.append("id", user.id);
     try {
-      const response = await fetch(url.toString(), {
+      await fetch(url.toString(), {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ itemId: productId }),
@@ -1735,6 +1745,11 @@ export function GiftShopDashboard() {
           )}
         </div>
       </div>
+      <ErrorModal
+        show={showError}
+        message={errorMessage}
+        onClose={() => setShowError(false)}
+      />
     </div>
   );
 }
