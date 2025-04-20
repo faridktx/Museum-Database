@@ -1615,9 +1615,9 @@ app.get("/api/custom/memberships", async (req, res) => {
 });
 
 app.post("/api/custom/checkout", async (req, res) => {
+  const userId = req.query.id;
   const {
     name,
-    userId,
     email,
     tickets = {},
     exhibits = {},

@@ -160,7 +160,6 @@ export function Cart() {
     try {
       const payload = {
         name,
-        userId,
         email,
         tickets: Object.fromEntries(
           Object.entries(tickets).map(([t, val]) => [t, val.count]),
@@ -173,10 +172,14 @@ export function Cart() {
         ),
         membership,
       };
-
       console.log("Sending checkout:", payload);
 
-      const orderRes = await fetch("/api/custom/checkout", {
+      const url = new URL(
+        "/api/custom/checkout",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      const orderRes = await fetch(url.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
