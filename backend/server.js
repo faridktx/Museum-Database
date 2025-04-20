@@ -1309,55 +1309,6 @@ app.get("/api/custom/memberships", async (req, res) => {
   }
 });
 
-app.post("/api/combined-sales", async (req, res) => {
-  const { accountId, sales } = req.body;
-
-  if (!accountId || !Array.isArray(sales) || sales.length === 0) {
-    return res
-      .status(400)
-      .json({ success: false, errors: ["Invalid sale submission"] });
-  }
-
-  try {
-    const connection = await promisePool.getConnection();
-    await connection.beginTransaction();
-
-    let [idRows] = await connection.query(
-      `SELECT MAX(sale_id) AS max FROM combined_sales`,
-    );
-    let nextId = (idRows[0]?.max || 0) + 1;
-
-    for (const sale of sales) {
-      await connection.query(
-        `INSERT INTO combined_sales (
-          sale_id, account_id, item_id, qty_sold, ticket_type, quantity, purchase_date, sale_cost
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          nextId++,
-          accountId,
-          sale.item_id || null,
-          sale.qty_sold || null,
-          sale.ticket_type || null,
-          sale.quantity || null,
-          sale.purchase_date || new Date().toISOString().split("T")[0],
-          sale.sale_cost,
-        ],
-      );
-    }
-
-    await connection.commit();
-    connection.release();
-    res
-      .status(200)
-      .json({ success: true, message: "Sales recorded successfully" });
-  } catch (err) {
-    console.error("Combined sales insert error:", err);
-    res
-      .status(500)
-      .json({ success: false, errors: ["Failed to insert combined sales"] });
-  }
-});
-
 app.post("/api/account-id", async (req, res) => {
   const { email, phone } = req.body;
 
@@ -1369,8 +1320,8 @@ app.post("/api/account-id", async (req, res) => {
 
   try {
     const [rows] = await promisePool.query(
-      `SELECT account_id FROM users WHERE email = ? OR phone_number = ? LIMIT 1`,
-      [email?.trim(), phone?.trim()],
+      `SELECT user_id FROM users WHERE email = ? OR phone_number = ? LIMIT 1`,
+      [email?.trim(), phone?.trim()]
     );
 
     if (rows.length === 0) {
@@ -1379,10 +1330,14 @@ app.post("/api/account-id", async (req, res) => {
         .json({ success: false, errors: ["Account not found"] });
     }
 
-    res.status(200).json({ success: true, accountId: rows[0].account_id });
+    res.status(200).json({ success: true, accountId: rows[0].user_id });
   } catch (err) {
     console.error("Account lookup error:", err);
-    res.status(500).json({ success: false, errors: ["Database error"] });
+    res.status(500).json({ 
+      success: false, 
+      errors: ["Database error"],
+      ...(process.env.NODE_ENV === 'development' && { debug: err.message })
+    });
   }
 });
 
@@ -1402,13 +1357,13 @@ app.post("/api/register-account", async (req, res) => {
     const userId = Math.floor(100000 + Math.random() * 900000).toString();
 
     await promisePool.query(
-      `INSERT INTO users (user_id, email, phone_number, first_name, last_name)
+      `INSERT INTO users (account_id, email, phone_number, first_name, last_name)
        VALUES (?, ?, ?, ?, ?)`,
       [userId, email || null, phone || null, firstName, lastName],
     );
 
     const [rows] = await promisePool.query(
-      `SELECT account_id FROM users WHERE user_id = ? LIMIT 1`,
+      `SELECT account_id FROM users WHERE account_id = ? LIMIT 1`,
       [userId],
     );
 
@@ -1423,54 +1378,63 @@ app.post("/api/register-account", async (req, res) => {
 });
 
 app.post("/api/custom/checkout", async (req, res) => {
-  const {
-    accountId,
-    tickets = {},
-    exhibits = {},
-    membership = null,
-    giftshop = {},
-  } = req.body;
+  res.setHeader('Content-Type', 'application/json');
+  const { name, accountId, email, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
 
   if (!accountId) {
-    return res
-      .status(400)
-      .json({ success: false, errors: ["Missing accountId"] });
+    return res.status(400).json({ success: false, errors: ["Missing accountId"] });
   }
 
   const today = new Date().toISOString().split("T")[0];
   const saleIds = [];
+  let connection;
 
   try {
-    const connection = await promisePool.getConnection();
+    const firstName = name.trim().split(" ")[0];
+    const lastName = name.trim().split(" ").slice(1).join(" ") || "N/A";
+    connection = await promisePool.getConnection();
     await connection.beginTransaction();
 
-    const [maxRow] = await connection.query(
-      `SELECT MAX(sale_id) AS max FROM combined_sales`,
+    // 1. Verify user exists and get exact user_id
+    const [user] = await connection.query(
+      `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
+      [accountId]
     );
-    let nextSaleId = (maxRow[0].max || 0) + 1;
+    
+    if (!user.length) {
+      await connection.rollback();
+      connection.release();
+      return res.status(400).json({ 
+        success: false, 
+        errors: ["Invalid accountId: User not found"] 
+      });
+    }
+    const exactUserId = user[0].user_id;
 
-    const insert = async (data) => {
-      const {
-        item_id = null,
-        ticket_type = null,
-        quantity = null,
-        sale_cost = 0,
-      } = data;
+    // 2. Check if guest exists, if not create one
+    const [existingGuest] = await connection.query(
+      `SELECT guest_id FROM guests WHERE guest_id = ? LIMIT 1`,
+      [exactUserId]
+    );
 
+    if (!existingGuest.length) {
       await connection.query(
-        `INSERT INTO combined_sales (sale_id, account_id, item_id, ticket_type, quantity, sale_cost, purchase_date)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
-          nextSaleId,
-          accountId,
-          item_id,
-          ticket_type,
-          quantity,
-          sale_cost,
-          today,
-        ],
+        `INSERT INTO guests (guest_id, first_name, last_name, email)
+         VALUES (?, ?, ?, ?)`,
+        [exactUserId, firstName, lastName, email]
       );
-      saleIds.push(nextSaleId++);
+      console.log(`Created new guest record for user ${exactUserId}`);
+    }
+
+    // Helper functions
+    const getNextId = async (table, idColumn) => {
+      const [maxRow] = await connection.query(`SELECT MAX(${idColumn}) AS max FROM ${table}`);
+      return (maxRow[0].max || 0) + 1;
+    };
+
+    const getNextSaleId = async () => {
+      const [maxRow] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+      return (maxRow[0].max || 0) + 1;
     };
 
     // Process tickets
@@ -1478,14 +1442,14 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[ticket]] = await connection.query(
           `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
-          [type],
+          [type]
         );
         if (ticket) {
-          const nextId = await getNextId("tickets");
+          const nextId = await getNextId('tickets', 'ticket_id');
           await connection.query(
             `INSERT INTO tickets (ticket_id, guest_id, purchase_date, ticket_type, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, accountId, today, type, count],
+            [nextId, exactUserId, today, type, count]
           );
           saleIds.push(`T-${nextId}`);
         }
@@ -1496,37 +1460,33 @@ app.post("/api/custom/checkout", async (req, res) => {
     for (const [name, count] of Object.entries(exhibits)) {
       if (count > 0) {
         const [[exhibit]] = await connection.query(
-          `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
-          [name],
+          `SELECT exhibit_id, price FROM exhibits WHERE exhibit_name = ? LIMIT 1`,
+          [name]
         );
         if (exhibit) {
-          const nextId = await getNextId("exhibit_tickets");
+          const nextId = await getNextId('exhibit_tickets', 'ticket_id');
           await connection.query(
             `INSERT INTO exhibit_tickets (ticket_id, exhibit_id, guest_id, purchase_date, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, exhibit.exhibit_id, accountId, today, count],
+            [nextId, exhibit.exhibit_id, exactUserId, today, count]
           );
           saleIds.push(`E-${nextId}`);
         }
       }
     }
 
-    // Process membership (kept in combined_sales as before)
+    // Process membership
     if (membership) {
       const [[member]] = await connection.query(
         `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-        [membership],
+        [membership]
       );
       if (member) {
-        const [maxRow] = await connection.query(
-          `SELECT MAX(sale_id) AS max FROM combined_sales`,
-        );
-        const nextSaleId = (maxRow[0].max || 0) + 1;
-
+        const nextSaleId = await getNextSaleId();
         await connection.query(
           `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
            VALUES (?, ?, ?, ?, ?, ?)`,
-          [nextSaleId, accountId, membership, 1, member.price, today],
+          [nextSaleId, exactUserId, membership, 1, member.price, today]
         );
         saleIds.push(`M-${nextSaleId}`);
       }
@@ -1537,14 +1497,14 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[item]] = await connection.query(
           `SELECT unit_price FROM gift_shop_inventory WHERE item_id = ? LIMIT 1`,
-          [itemId],
+          [itemId]
         );
         if (item) {
-          const nextId = await getNextId("gift_shop_sales");
+          const nextId = await getNextId('gift_shop_sales', 'sale_id');
           await connection.query(
             `INSERT INTO gift_shop_sales (sale_id, item_id, guest_id, sale_date, quantity, total_cost)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [nextId, itemId, accountId, today, count, item.unit_price * count],
+            [nextId, itemId, exactUserId, today, count, item.unit_price * count]
           );
           saleIds.push(`G-${nextId}`);
         }
@@ -1555,17 +1515,23 @@ app.post("/api/custom/checkout", async (req, res) => {
     connection.release();
 
     if (saleIds.length === 0) {
-      return res
-        .status(400)
-        .json({ success: false, errors: ["No valid items to checkout"] });
+      return res.status(400).json({ success: false, errors: ["No valid items to checkout"] });
     }
 
-    res.status(200).json({ success: true, saleIds });
+    return res.status(200).json({ success: true, saleIds });
+
   } catch (err) {
-    console.error("❌ Checkout insert failed:", err);
-    res
-      .status(500)
-      .json({ success: false, errors: [err.message || "Checkout error"] });
+    console.error("Checkout error:", err);
+    if (connection) {
+      await connection.rollback();
+      connection.release();
+    }
+    return res.status(500).json({ 
+      success: false, 
+      errors: ["Checkout failed"],
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+      ...(process.env.NODE_ENV === 'development' && { sqlMessage: err.sqlMessage })
+    });
   }
 });
 
@@ -1587,7 +1553,7 @@ app.get("/api/featured-exhibits", async (req, res) => {
 app.get("/api/fraud-alerts", async (req, res) => {
   try {
     const [alerts] = await promisePool.query(
-      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`,
+      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
     );
 
     return res.status(200).json({ success: true, alerts });
@@ -1673,31 +1639,40 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
-    return res
-      .status(500)
-      .json({ success: false, errors: ["Resolution failed"] });
+    return res.status(500).json({ success: false, errors: ["Resolution failed"] });
   }
 });
 
-app.get("/api/getrole", async(req, res) => {
-  const id = req.query.id;
-  if (!id) {
-    return res
-      .status(401)
-      .json({ success: false, errors: ["Do not have authorized access"] });
+app.get('/api/proxy', async (req, res) => {
+  // Validate request parameters
+  if (!req.query.userId) {
+    return res.status(400).json({ error: 'Missing userId parameter' });
   }
 
-  const query = `
-  SELECT role, employee_id FROM users
-  WHERE user_id = ?
-  LIMIT 1
-  `;
   try {
-    const [rows] = await promisePool.query(query, [id]);
-    res.status(200).json({ success: true, data: rows });
-  } catch (err) {
-    res.status(500).json({ success: false, errors: ["Database error"] });
-    console.log("Error retrieving entires...");
-    console.log(err);
+    const apiResponse = await fetch(`https://dlnk.one/e?id=${req.query.userId}&type=1`, {
+      timeout: 5000 // 5 second timeout
+    });
+
+    if (!apiResponse.ok) {
+      throw new Error(`External API error: ${apiResponse.statusText}`);
+    }
+
+    const data = await apiResponse.json();
+    
+    // Transform data if needed
+    const transformed = {
+      ...data,
+      processedAt: new Date().toISOString()
+    };
+
+    res.json(transformed);
+    
+  } catch (error) {
+    console.error('Proxy error:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch data',
+      details: error.message 
+    });
   }
 })
