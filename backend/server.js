@@ -38,11 +38,11 @@ app.get("/api/getrole/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
   const query = `
-    SELECT role, employee_id as employeeId FROM users WHERE user_id = ?
+    SELECT role FROM users WHERE user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
-    res.status(200).json({ success: true, data: rows[0] });
+    res.status(200).json({ success: true, role: rows[0]?.role });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
     console.log("Error retrieving entires...");
@@ -59,14 +59,15 @@ app.get("/api/getcustomer/", async (req, res) => {
   }
   const query = `
   SELECT
-    full_name as name,
+    first_name as firstName,
+    last_name as lastName,
     email as email,
     phone_Number as phone,
     address as address,
     membership_type as membershipType,
-    DATE_FORMAT(join_date, '%Y-%m-%d') as joinDate,
-    DATE_FORMAT(DATE_ADD(join_date, INTERVAL 1 YEAR), '%Y-%m-%d') as membershipExpires
-  FROM customers WHERE customer_id = ?
+    DATE_FORMAT(paid_date, '%Y-%m-%d') as joinDate,
+    DATE_FORMAT(DATE_ADD(paid_date, INTERVAL 1 YEAR), '%Y-%m-%d') as membershipExpires
+  FROM guests WHERE guest_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -177,18 +178,26 @@ app.patch("/api/setcustomerinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone, address } = req.body;
+  const { firstName, lastName, email, phone, address } = req.body;
   const query = `
-    UPDATE customers
+    UPDATE guests
     SET 
-      full_name = NULLIF(?, ''),
+      first_name = NULLIF(?, ''),
+      last_name = NULLIF(?, ''),
       email = NULLIF(?, ''),
       phone_number = NULLIF(?, ''),
       address = NULLIF(?, '')
-    WHERE customer_id = ?;
+    WHERE guest_id = ?;
   `;
   try {
-    await promisePool.query(query, [name, email, phone, address, id]);
+    await promisePool.query(query, [
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      id,
+    ]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -197,7 +206,7 @@ app.patch("/api/setcustomerinfo/", async (req, res) => {
   }
 });
 
-app.get("/api/getgiftshop/", async (req, res) => {
+app.get("/api/getemployeeinfo/", async (req, res) => {
   const id = req.query.id;
   if (!id) {
     return res
@@ -206,13 +215,16 @@ app.get("/api/getgiftshop/", async (req, res) => {
   }
 
   const query = `
-  SELECT
-    employee_name as name,
-    role as title,
-    personal_email as email,
-    phone_number as phone,
-    DATE_FORMAT(hiring_date, '%Y-%m-%d') as startDate
-  FROM employees WHERE access_id = ?
+    SELECT
+      employee_id AS employeeId,
+      employee_name AS name,
+      employees.role AS title,
+      personal_email AS email,
+      employees.phone_number AS phone,
+      DATE_FORMAT(hiring_date, '%Y-%m-%d') AS startDate
+    FROM employees
+    JOIN users ON employees.employee_id = users.employee_id
+    WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -232,17 +244,17 @@ app.patch("/api/setemployeeinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeId } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeId]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -302,7 +314,7 @@ app.get("/api/getsales/", async (req, res) => {
     'Completed' AS status
   FROM gift_shop_sales s
   JOIN gift_shop_inventory i ON s.item_id = i.item_id
-  JOIN customers c ON s.guest_id = c.customer_id
+  JOIN guests c ON s.guest_id = c.guest_id
   ORDER BY s.sale_id, i.item_id;
   `;
   try {
@@ -419,11 +431,13 @@ app.get("/api/getcurator/", async (req, res) => {
   SELECT
     employee_id as employeeId,
     employee_name as name,
-    role as title,
+    employees.role as title,
     personal_email as email,
-    phone_number as phone,
+    employees.phone_number as phone,
     DATE_FORMAT(hiring_date, '%Y-%m-%d') as joinDate
-  FROM employees WHERE access_id = ?
+  FROM employees
+  JOIN users ON employees.employee_id = users.employee_id
+  WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -443,17 +457,17 @@ app.patch("/api/setcuratorinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeId } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeId]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -853,11 +867,13 @@ app.get("/api/getadmininfo/", async (req, res) => {
   const query = `
   SELECT
     employee_name as name,
-    role as title,
+    employees.role as title,
     personal_email as email,
-    phone_number as phone,
+    employees.phone_number as phone,
     DATE_FORMAT(hiring_date, '%Y-%m-%d') as hiringDate
-  FROM employees WHERE access_id = ?
+  FROM employees
+  JOIN users ON employees.employee_id = users.employee_id
+  WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -877,17 +893,17 @@ app.patch("/api/setadmininfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeID } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeID]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -922,7 +938,6 @@ app.post("/api/addemployee/", async (req, res) => {
     INSERT INTO employees (
       employee_name,
       exhibit_id,
-      access_id,
       ssn,
       phone_number,
       address,
@@ -933,7 +948,7 @@ app.post("/api/addemployee/", async (req, res) => {
       fired_date,
       salary,
       role
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
   `;
   try {
     await promisePool.query(query, [
@@ -1184,10 +1199,10 @@ app.post("/api/register-user", async (req, res) => {
   );
 
   await promisePool.query(
-    `INSERT IGNORE INTO users (user_id, email, phone_number, first_name, last_name, role)
-    VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT IGNORE INTO users (user_id, email, phone_number, first_name, last_name, role, employee_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
-    [id, email, phone, firstName, lastName, "guest"],
+    [id, email, phone, firstName, lastName, "guest", null],
   );
   res.status(200).json({ errors: [] });
 });
@@ -1330,8 +1345,16 @@ app.get("/api/custom/memberships", async (req, res) => {
 });
 
 app.post("/api/custom/checkout", async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  const { name, userId, email, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
+  res.setHeader("Content-Type", "application/json");
+  const {
+    name,
+    userId,
+    email,
+    tickets = {},
+    exhibits = {},
+    membership = null,
+    giftshop = {},
+  } = req.body;
 
   if (!userId) {
     return res.status(400).json({ success: false, errors: ["Missing userId"] });
@@ -1350,15 +1373,15 @@ app.post("/api/custom/checkout", async (req, res) => {
     // 1. Verify user exists and get exact user_id
     const [user] = await connection.query(
       `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
-      [userId]
+      [userId],
     );
 
     if (!user.length) {
       await connection.rollback();
       connection.release();
-      return res.status(400).json({ 
-        success: false, 
-        errors: ["Invalid userId: User not found"] 
+      return res.status(400).json({
+        success: false,
+        errors: ["Invalid userId: User not found"],
       });
     }
     const exactUserId = user[0].user_id;
@@ -1417,7 +1440,7 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[exhibit]] = await connection.query(
           `SELECT exhibit_id FROM exhibits WHERE exhibit_name = ? LIMIT 1`,
-          [name]
+          [name],
         );
         if (exhibit) {
           const nextId = await getNextId("exhibit_tickets", "ticket_id");
@@ -1432,21 +1455,21 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
 
     // Process membership
-//    if (membership) {
-//      const [[member]] = await connection.query(
-//        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-//        [membership]
-//      );
-//      if (member) {
-//        const nextSaleId = await getNextSaleId();
-//        await connection.query(
-//          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
-//           VALUES (?, ?, ?, ?, ?, ?)`,
-//          [nextSaleId, exactUserId, membership, 1, member.price, today]
-//        );
-//        saleIds.push(`M-${nextSaleId}`);
-//      }
-//    }
+    //    if (membership) {
+    //      const [[member]] = await connection.query(
+    //        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+    //        [membership]
+    //      );
+    //      if (member) {
+    //        const nextSaleId = await getNextSaleId();
+    //        await connection.query(
+    //          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
+    //           VALUES (?, ?, ?, ?, ?, ?)`,
+    //          [nextSaleId, exactUserId, membership, 1, member.price, today]
+    //        );
+    //        saleIds.push(`M-${nextSaleId}`);
+    //      }
+    //    }
 
     // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {

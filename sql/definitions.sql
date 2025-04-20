@@ -49,7 +49,6 @@ CREATE TABLE railway.employees (
     employee_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
     employee_name VARCHAR(25) NOT NULL,
     exhibit_id INT UNSIGNED NOT NULL,
-    access_id VARCHAR(250),
     ssn CHAR(11) NOT NULL,
     phone_number CHAR(12) NOT NULL,
     address VARCHAR(100) NOT NULL,
@@ -62,16 +61,6 @@ CREATE TABLE railway.employees (
     role VARCHAR(15) NOT NULL,
 
     FOREIGN KEY (exhibit_id) REFERENCES exhibits(exhibit_id) ON DELETE CASCADE
-);
-
-CREATE TABLE railway.customers (
-    customer_id VARCHAR(250) NOT NULL PRIMARY KEY,
-    full_name VARCHAR(50),
-    email VARCHAR(100),
-    phone_number CHAR(12),
-    address VARCHAR(100),
-    membership_type VARCHAR(30),
-    join_date DATE
 );
 CREATE TABLE railway.exhibit_tickets (
     ticket_id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -99,6 +88,7 @@ CREATE TABLE railway.guests (
     last_name VARCHAR(30),
     email VARCHAR(100),
     phone_number CHAR(12),
+    address VARCHAR(255),
     membership_type VARCHAR(30),
     paid_date DATE
 );
@@ -124,6 +114,7 @@ CREATE TABLE railway.gift_shop_sales (
 );
 CREATE TABLE railway.users (
     user_id VARCHAR(250) NOT NULL PRIMARY KEY,
+    employee_id INT UNSIGNED,
     email VARCHAR(100),
     phone_number CHAR(12),
     first_name VARCHAR(30),

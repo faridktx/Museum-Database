@@ -256,6 +256,7 @@ export function AdminDashboard() {
   });
 
   const [adminData, setAdminData] = useState({
+    employeeID: "",
     name: "",
     title: "",
     email: "",
@@ -624,7 +625,10 @@ export function AdminDashboard() {
       const response = await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          employeeID: adminData.employeeID,
+        }),
       });
     } catch (err) {
       console.log(err);

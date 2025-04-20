@@ -181,7 +181,6 @@ export function Cart() {
     const phone = form.phone.value;
 
     try {
-
       const payload = {
         name,
         userId,
@@ -217,8 +216,8 @@ export function Cart() {
           responseText.substring(0, 200),
         );
         throw new Error("Server error occurred. Please try again later.");
-      };
-  
+      }
+
       // Try to parse as JSON
       let orderData;
       try {
@@ -227,25 +226,25 @@ export function Cart() {
         console.error("❌ JSON parse error:", err);
         console.log("🪵 Raw response body:", responseText.substring(0, 200));
         throw new Error("Invalid server response format");
-      };
-  
+      }
+
       if (!orderRes.ok || !orderData.success) {
         const errorMessage = Array.isArray(orderData.errors)
           ? orderData.errors[0]
           : orderData.message || "Checkout failed";
         throw new Error(errorMessage);
-      };
-  
+      }
+
       if (!Array.isArray(orderData.saleIds)) {
         throw new Error("Invalid order data received");
-      };
-  
+      }
+
       localStorage.removeItem("museum_cart");
       navigate(`/dashboard/receipt?ids=${orderData.saleIds.join(",")}`);
     } catch (err) {
       console.error("Checkout error:", err);
       alert(`Checkout failed: ${err.message}`);
-    };
+    }
   };
 
   return (

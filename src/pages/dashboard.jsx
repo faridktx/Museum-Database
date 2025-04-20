@@ -4,20 +4,21 @@ import { CuratorDashboard } from "./dashboards/curator-dashboard";
 import { GiftShopDashboard } from "./dashboards/giftshop-dashboard";
 import { CustomerDashboard } from "./dashboards/customer-dashboard";
 import { useUser } from "@clerk/clerk-react";
+import { Unauthorized } from "./unauthorized";
 
 // In-memory cache for user roles
 const roleCache = new Map();
 
-export function DashboardRouter({ userId }) {
+export function DashboardRouter() {
   const [role, setRole] = useState({});
   const { user } = useUser();
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user.id) return;
 
     // Check if we already have the role cached
-    if (roleCache.has(userId)) {
-      setRole(roleCache.get(userId));
+    if (roleCache.has(user.id)) {
+      setRole(roleCache.get(user.id));
       return;
     }
 
@@ -29,7 +30,7 @@ export function DashboardRouter({ userId }) {
           method: "GET",
         });
         const data = await response.json();
-        roleCache.set(userId, data.data);
+        roleCache.set(user.id, data.role);
         setRole(data.role);
       } catch (err) {
         console.log(err);
@@ -37,7 +38,7 @@ export function DashboardRouter({ userId }) {
     }
 
     fetchRole();
-  }, [userId]);
+  }, [user.id]);
 
   if (!role) return <div>Loading dashboard...</div>;
 
@@ -48,9 +49,9 @@ export function DashboardRouter({ userId }) {
       return <CuratorDashboard />;
     case "giftshop":
       return <GiftShopDashboard />;
-    case "customer":
+    case "guest":
       return <CustomerDashboard />;
     default:
-      return <div>Unauthorized or unknown role</div>;
+      return <Unauthorized />;
   }
 }
