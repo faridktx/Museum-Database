@@ -17,6 +17,7 @@ export function Cart() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(() => () => {});
+  const userId = user.id;
 
   const [totals, setTotals] = useState({
     subtotal: "0.00",
@@ -124,7 +125,7 @@ export function Cart() {
     );
   };
 
-  const handleGiftshopCheckout = async (guestId, giftshopCart) => {
+  const handleGiftshopCheckout = async (userId, giftshopCart) => {
     const simplifiedCart = {};
     for (const [itemId, item] of Object.entries(giftshopCart)) {
       simplifiedCart[itemId] = parseInt(item.count || 0);
@@ -133,7 +134,7 @@ export function Cart() {
     const res = await fetch("/api/custom/giftshop/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cart: simplifiedCart, guestId }),
+      body: JSON.stringify({ cart: simplifiedCart, userId }),
     });
 
     const text = await res.text();
@@ -147,7 +148,7 @@ export function Cart() {
     return data.saleIds;
   };
 
-  const handleTicketMembershipCheckout = async (guestId) => {
+  const handleTicketMembershipCheckout = async (userId) => {
     const res = await fetch("/api/custom/tickets/checkout", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -180,50 +181,10 @@ export function Cart() {
     const phone = form.phone.value;
   
     try {
-      let accountId;
-  
-      // Try to find the account - with improved error handling
-      const lookupRes = await fetch("/api/account-id", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, phone }),
-      });
-  
-      // Check if response is JSON first
-      const lookupContentType = lookupRes.headers.get('content-type');
-      if (!lookupContentType?.includes('application/json')) {
-        const text = await lookupRes.text();
-        throw new Error(`Account lookup failed: ${text.substring(0, 100)}`);
-      }
-  
-      const lookupData = await lookupRes.json();
-      if (lookupData.success) {
-        accountId = lookupData.accountId;
-      } else {
-        // Account registration with improved error handling
-        const regRes = await fetch("/api/register-account", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, phone }),
-        });
-  
-        // Check if response is JSON first
-        const regContentType = regRes.headers.get('content-type');
-        if (!regContentType?.includes('application/json')) {
-          const text = await regRes.text();
-          throw new Error(`Account registration failed: ${text.substring(0, 100)}`);
-        }
-  
-        const regData = await regRes.json();
-        if (!regData.success) {
-          throw new Error(regData.errors?.[0] || "Account creation failed");
-        }
-        accountId = regData.accountId;
-      }
-  
+
       const payload = {
         name,
-        accountId, // Make sure accountId is included in the payload
+        userId,
         email,
         tickets: Object.fromEntries(
           Object.entries(tickets).map(([t, val]) => [t, val.count]),
@@ -253,7 +214,7 @@ export function Cart() {
       if (contentType?.includes('text/html')) {
         console.error("Server returned HTML error page:", responseText.substring(0, 200));
         throw new Error("Server error occurred. Please try again later.");
-      }
+      };
   
       // Try to parse as JSON
       let orderData;
@@ -263,25 +224,25 @@ export function Cart() {
         console.error("❌ JSON parse error:", err);
         console.log("🪵 Raw response body:", responseText.substring(0, 200));
         throw new Error("Invalid server response format");
-      }
+      };
   
       if (!orderRes.ok || !orderData.success) {
         const errorMessage = Array.isArray(orderData.errors) 
           ? orderData.errors[0] 
           : orderData.message || "Checkout failed";
         throw new Error(errorMessage);
-      }
+      };
   
       if (!Array.isArray(orderData.saleIds)) {
         throw new Error("Invalid order data received");
-      }
+      };
   
       localStorage.removeItem("museum_cart");
       navigate(`/dashboard/receipt?ids=${orderData.saleIds.join(",")}`);
     } catch (err) {
       console.error("Checkout error:", err);
       alert(`Checkout failed: ${err.message}`);
-    }
+    };
   };
 
   return (

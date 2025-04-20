@@ -1309,80 +1309,12 @@ app.get("/api/custom/memberships", async (req, res) => {
   }
 });
 
-app.post("/api/account-id", async (req, res) => {
-  const { email, phone } = req.body;
-
-  if (!email && !phone) {
-    return res
-      .status(400)
-      .json({ success: false, errors: ["Missing email or phone"] });
-  }
-
-  try {
-    const [rows] = await promisePool.query(
-      `SELECT user_id FROM users WHERE email = ? OR phone_number = ? LIMIT 1`,
-      [email?.trim(), phone?.trim()]
-    );
-
-    if (rows.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, errors: ["Account not found"] });
-    }
-
-    res.status(200).json({ success: true, accountId: rows[0].user_id });
-  } catch (err) {
-    console.error("Account lookup error:", err);
-    res.status(500).json({ 
-      success: false, 
-      errors: ["Database error"],
-      ...(process.env.NODE_ENV === 'development' && { debug: err.message })
-    });
-  }
-});
-
-app.post("/api/register-account", async (req, res) => {
-  const { name, email, phone } = req.body;
-
-  if (!name || (!email && !phone)) {
-    return res
-      .status(400)
-      .json({ success: false, errors: ["Missing name and email or phone"] });
-  }
-
-  try {
-    const firstName = name.trim().split(" ")[0];
-    const lastName = name.trim().split(" ").slice(1).join(" ") || "N/A";
-
-    const userId = Math.floor(100000 + Math.random() * 900000).toString();
-
-    await promisePool.query(
-      `INSERT INTO users (account_id, email, phone_number, first_name, last_name)
-       VALUES (?, ?, ?, ?, ?)`,
-      [userId, email || null, phone || null, firstName, lastName],
-    );
-
-    const [rows] = await promisePool.query(
-      `SELECT account_id FROM users WHERE account_id = ? LIMIT 1`,
-      [userId],
-    );
-
-    const accountId = rows[0]?.account_id;
-    res.status(201).json({ success: true, accountId });
-  } catch (err) {
-    console.error("Register account error:", err);
-    res
-      .status(500)
-      .json({ success: false, errors: ["Failed to register account"] });
-  }
-});
-
 app.post("/api/custom/checkout", async (req, res) => {
   res.setHeader('Content-Type', 'application/json');
-  const { name, accountId, email, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
+  const { name, userId, email, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
 
-  if (!accountId) {
-    return res.status(400).json({ success: false, errors: ["Missing accountId"] });
+  if (!userId) {
+    return res.status(400).json({ success: false, errors: ["Missing userId"] });
   }
 
   const today = new Date().toISOString().split("T")[0];
@@ -1398,7 +1330,7 @@ app.post("/api/custom/checkout", async (req, res) => {
     // 1. Verify user exists and get exact user_id
     const [user] = await connection.query(
       `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
-      [accountId]
+      [userId]
     );
     
     if (!user.length) {
@@ -1406,7 +1338,7 @@ app.post("/api/custom/checkout", async (req, res) => {
       connection.release();
       return res.status(400).json({ 
         success: false, 
-        errors: ["Invalid accountId: User not found"] 
+        errors: ["Invalid userId: User not found"] 
       });
     }
     const exactUserId = user[0].user_id;
@@ -1460,7 +1392,7 @@ app.post("/api/custom/checkout", async (req, res) => {
     for (const [name, count] of Object.entries(exhibits)) {
       if (count > 0) {
         const [[exhibit]] = await connection.query(
-          `SELECT exhibit_id, price FROM exhibits WHERE exhibit_name = ? LIMIT 1`,
+          `SELECT exhibit_id FROM exhibits WHERE exhibit_name = ? LIMIT 1`,
           [name]
         );
         if (exhibit) {
@@ -1476,21 +1408,21 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
 
     // Process membership
-    if (membership) {
-      const [[member]] = await connection.query(
-        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-        [membership]
-      );
-      if (member) {
-        const nextSaleId = await getNextSaleId();
-        await connection.query(
-          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [nextSaleId, exactUserId, membership, 1, member.price, today]
-        );
-        saleIds.push(`M-${nextSaleId}`);
-      }
-    }
+//    if (membership) {
+//      const [[member]] = await connection.query(
+//        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+//        [membership]
+//      );
+//      if (member) {
+//        const nextSaleId = await getNextSaleId();
+//        await connection.query(
+//          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
+//           VALUES (?, ?, ?, ?, ?, ?)`,
+//          [nextSaleId, exactUserId, membership, 1, member.price, today]
+//        );
+//        saleIds.push(`M-${nextSaleId}`);
+//      }
+//    }
 
     // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {
