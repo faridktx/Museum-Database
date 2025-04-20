@@ -216,7 +216,7 @@ app.get("/api/getemployeeinfo/", async (req, res) => {
 
   const query = `
     SELECT
-      employee_id AS employeeId,
+      employees.employee_id AS employeeId,
       employee_name AS name,
       employees.role AS title,
       personal_email AS email,
@@ -304,11 +304,11 @@ app.get("/api/getsales/", async (req, res) => {
   SELECT 
     s.sale_id AS id,
     DATE_FORMAT(s.sale_date, '%Y-%m-%d') AS date,
-    i.item_id AS product_id,
-    i.item_name AS product_name,
+    i.item_id AS productId,
+    i.item_name AS productName,
     s.quantity,
     i.unit_price AS price,
-    c.full_name AS customer,
+    COALESCE(NULLIF(CONCAT_WS(' ', c.first_name, c.last_name), ''), '') AS customer,
     s.total_cost AS total,
     'Credit Card' AS paymentMethod,
     'Completed' AS status
@@ -429,7 +429,7 @@ app.get("/api/getcurator/", async (req, res) => {
 
   const query = `
   SELECT
-    employee_id as employeeId,
+    employees.employee_id as employeeId,
     employee_name as name,
     employees.role as title,
     personal_email as email,
