@@ -64,7 +64,7 @@ export function DashboardHeader() {
           <SignedIn>
             <OnSignUp />
             <span style={{ marginRight: "1rem" }}>
-              Welcome, {" "}
+              Welcome,{" "}
               {user?.fullName ||
                 user?.username ||
                 user?.emailAddresses[0]?.emailAddress}

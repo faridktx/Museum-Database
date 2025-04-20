@@ -15,7 +15,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useUser } from "@clerk/clerk-react";
 import "../../components/components.css";
-import { ROLES } from "../../components/constants.js";
+import { ROLES, ROLECOLORS } from "../../components/constants.js";
 
 function addStatusToExhibit(exhibit) {
   const today = new Date();
@@ -278,10 +278,10 @@ export function AdminDashboard() {
         });
         const data = await response.json();
         setEmployees(
-          data.data.map(emp => ({
+          data.data.map((emp) => ({
             ...emp,
-            status: emp.firedDate === null ? 'active' : 'inactive',
-          }))
+            status: emp.firedDate === null ? "active" : "inactive",
+          })),
         );
       } catch (err) {
         console.log(err);
@@ -520,11 +520,16 @@ export function AdminDashboard() {
     }
 
     // Add the new employee to the employees array
-    setEmployees([...employees, {
-      ...newEmployeeData, status: newEmployeeData.firedDate === null ? 'active' : 'inactive',
-    }]);
+    setEmployees([
+      ...employees,
+      {
+        ...newEmployeeData,
+        status: newEmployeeData.firedDate === null ? "active" : "inactive",
+      },
+    ]);
     console.log({
-      ...newEmployeeData, status: newEmployeeData.firedDate === null ? 'active' : 'inactive',
+      ...newEmployeeData,
+      status: newEmployeeData.firedDate === null ? "active" : "inactive",
     });
 
     // Reset the form
@@ -568,7 +573,7 @@ export function AdminDashboard() {
       startDate: "",
       endDate: "",
       description: "",
-      status: ""
+      status: "",
     });
 
     // Hide the new exhibit form
@@ -1121,7 +1126,7 @@ export function AdminDashboard() {
                       </div>
                       <div className="form-group">
                         <label className="required" htmlFor="new-exhibitId">
-                            Exhibit
+                          Exhibit
                         </label>
                         <select
                           id="new-exhibitId"
@@ -1571,7 +1576,9 @@ export function AdminDashboard() {
                       </div>
                     </div>
                     <div className="form-group full-width">
-                      <label className="required" htmlFor="description">Description</label>
+                      <label className="required" htmlFor="description">
+                        Description
+                      </label>
                       <textarea
                         id="description"
                         name="description"
@@ -1640,12 +1647,15 @@ export function AdminDashboard() {
                                   required
                                 />
                               </td>
-                              <td>                                <span
+                              <td>
+                                {" "}
+                                <span
                                   className={`status-badge ${exhibit.status}`}
                                 >
                                   {exhibit.status.charAt(0).toUpperCase() +
                                     exhibit.status.slice(1)}
-                                </span></td>
+                                </span>
+                              </td>
                               <td>
                                 <input
                                   type="date"
@@ -1904,111 +1914,108 @@ export function AdminDashboard() {
                     <div className="summary-item">
                       <h4>Most Tickets Sold</h4>
                       <p>
-                        {exhibits.sort(
-                          (a, b) => b.ticketsSold - a.ticketsSold,
-                        )[0]?.title || "No data"}
+                        {(() => {
+                          const maxTickets = Math.max(
+                            ...exhibits.map((ex) => ex.ticketsSold || 0),
+                          );
+                          const topExhibits = exhibits.filter(
+                            (ex) => parseInt(ex.ticketsSold) === maxTickets,
+                          );
+                          return topExhibits.length > 1
+                            ? "Multiple"
+                            : topExhibits[0]?.title || "No data";
+                        })()}
                       </p>
                     </div>
                     <div className="summary-item">
                       <h4>Highest Revenue</h4>
                       <p>
-                        {exhibits.sort((a, b) => b.revenue - a.revenue)[0]
-                          ?.title || "No data"}
-                        ($
-                        {exhibits
-                          .sort((a, b) => b.revenue - a.revenue)[0]
-                          ?.revenue.toLocaleString() || "0"}
-                        )
+                        {(() => {
+                          const maxRevenue = Math.max(
+                            ...exhibits.map((ex) => ex.revenue || 0),
+                          );
+                          const topExhibits = exhibits.filter(
+                            (ex) => parseInt(ex.revenue) === maxRevenue,
+                          );
+                          return topExhibits.length > 1
+                            ? "Multiple"
+                            : topExhibits[0]?.title || "No data";
+                        })()}
                       </p>
                     </div>
                     <div className="summary-item">
                       <h4>Total Tickets</h4>
                       <p>
                         {exhibits
-                          .reduce((sum, ex) => sum + ex.ticketsSold, 0)
+                          .reduce(
+                            (sum, ex) => sum + (parseInt(ex.ticketsSold) || 0),
+                            0,
+                          )
                           .toLocaleString()}
                       </p>
                     </div>
                   </div>
-
-                  <div className="data-summary" style={{ marginTop: "1rem" }}>
-                    <h4>Detailed Exhibit Metrics</h4>
-                    <div
-                      className="data-table-container"
-                      style={{ maxHeight: "250px", overflow: "auto" }}
-                    >
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Exhibit Title</th>
-                            <th>Status</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
-                            <th>Visitors</th>
-                            <th>Tickets Sold</th>
-                            <th>Ticket Price</th>
-                            <th>Revenue</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {exhibits.map((exhibit, index) => (
-                            <tr key={index}>
-                              <td>{exhibit.title}</td>
-                              <td>
-                                <span
-                                  className={`status-badge ${exhibit.status}`}
-                                >
-                                  {exhibit.status}
-                                </span>
-                              </td>
-                              <td>{exhibit.startDate}</td>
-                              <td>{exhibit.endDate}</td>
-                              <td>
-                                {parseInt(
-                                  exhibit.visitorCount,
-                                ).toLocaleString()}
-                              </td>
-                              <td>
-                                {parseInt(exhibit.ticketsSold).toLocaleString()}
-                              </td>
-                              <td>
-                                ${parseInt(exhibit.ticketPrice).toFixed(2)}
-                              </td>
-                              <td>
-                                ${parseInt(exhibit.revenue).toLocaleString()}
-                              </td>
+                  <div className="data-table-container">
+                    <table className="data-table artists-table">
+                      <thead>
+                        <tr>
+                          <th>Title</th>
+                          <th>Status</th>
+                          <th>Start Date</th>
+                          <th>End Date</th>
+                          <th>Visitors</th>
+                          <th>Tickets Sold</th>
+                          <th>Ticket Price</th>
+                          <th>Revenue</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {exhibits.map((exhibit) => {
+                          return (
+                            <tr key={exhibit.id}>
+                              {
+                                // Normal view fields
+                                <>
+                                  <td>{exhibit.title}</td>
+                                  <td>
+                                    <span
+                                      className={`status-badge ${exhibit.status}`}
+                                    >
+                                      {exhibit.status.charAt(0).toUpperCase() +
+                                        exhibit.status.slice(1)}
+                                    </span>
+                                  </td>
+                                  <td>{exhibit.startDate}</td>
+                                  <td>{exhibit.endDate}</td>
+                                  <td>
+                                    {(
+                                      parseInt(exhibit.visitorCount) || 0
+                                    ).toLocaleString()}
+                                  </td>
+                                  <td>
+                                    {(
+                                      parseInt(exhibit.ticketsSold) || 0
+                                    ).toLocaleString()}
+                                  </td>
+                                  <td>
+                                    $
+                                    {(
+                                      parseFloat(exhibit.ticketPrice) || 0
+                                    ).toFixed(2)}
+                                  </td>
+                                  <td>
+                                    $
+                                    {(
+                                      parseInt(exhibit.revenue) || 0
+                                    ).toLocaleString()}
+                                  </td>
+                                </>
+                              }
                             </tr>
-                          ))}
-                        </tbody>
-                        <tfoot>
-                          <tr>
-                            <td
-                              colSpan="5"
-                              style={{ textAlign: "right", fontWeight: "bold" }}
-                            >
-                              Totals:
-                            </td>
-                            <td style={{ fontWeight: "bold" }}>
-                              {exhibits
-                                .reduce((sum, ex) => sum + ex.visitorCount, 0)
-                                .toLocaleString()}
-                            </td>
-                            <td style={{ fontWeight: "bold" }}>
-                              {exhibits
-                                .reduce((sum, ex) => sum + ex.ticketsSold, 0)
-                                .toLocaleString()}
-                            </td>
-                            <td></td>
-                            <td style={{ fontWeight: "bold" }}>
-                              $
-                              {exhibits
-                                .reduce((sum, ex) => sum + ex.revenue, 0)
-                                .toLocaleString()}
-                            </td>
-                          </tr>
-                        </tfoot>
-                      </table>
-                    </div>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
@@ -2021,43 +2028,21 @@ export function AdminDashboard() {
                   <div className="chart-container" style={{ height: "350px" }}>
                     <Bar
                       data={{
-                        labels: [
-                          "Curator",
-                          "Guide",
-                          "Conservator",
-                          "Manager",
-                          "Educator",
-                        ],
+                        labels: ROLES,
                         datasets: [
                           {
                             label: "Number of Employees",
-                            data: [
-                              employees.filter((emp) => emp.role === "Curator")
-                                .length,
-                              employees.filter((emp) => emp.role === "Guide")
-                                .length,
-                              employees.filter(
-                                (emp) => emp.role === "Conservator",
-                              ).length,
-                              employees.filter((emp) => emp.role === "Manager")
-                                .length,
-                              employees.filter((emp) => emp.role === "Educator")
-                                .length,
-                            ],
-                            backgroundColor: [
-                              "rgba(59, 130, 246, 0.7)", // Blue
-                              "rgba(220, 38, 38, 0.7)", // Red
-                              "rgba(16, 185, 129, 0.7)", // Green
-                              "rgba(245, 158, 11, 0.7)", // Amber
-                              "rgba(139, 92, 246, 0.7)", // Purple
-                            ],
-                            borderColor: [
-                              "rgba(59, 130, 246, 1)",
-                              "rgba(220, 38, 38, 1)",
-                              "rgba(16, 185, 129, 1)",
-                              "rgba(245, 158, 11, 1)",
-                              "rgba(139, 92, 246, 1)",
-                            ],
+                            data: ROLES.map(
+                              (role) =>
+                                employees.filter((emp) => emp.role === role)
+                                  .length,
+                            ),
+                            backgroundColor: ROLES.map(
+                              (role) => ROLECOLORS[role].bg,
+                            ),
+                            borderColor: ROLES.map(
+                              (role) => ROLECOLORS[role].border,
+                            ),
                             borderWidth: 1,
                           },
                         ],
@@ -2067,7 +2052,7 @@ export function AdminDashboard() {
                         maintainAspectRatio: false,
                         plugins: {
                           legend: {
-                            display: false, // Hide legend since role is on x-axis
+                            display: false,
                           },
                           tooltip: {
                             callbacks: {
@@ -2103,19 +2088,24 @@ export function AdminDashboard() {
                     <div className="summary-item">
                       <h4>Largest Role Group</h4>
                       <p>
-                        {
-                          [
-                            "Curator",
-                            "Guide",
-                            "Conservator",
-                            "Manager",
-                            "Educator",
-                          ].sort(
-                            (a, b) =>
-                              employees.filter((emp) => emp.role === b).length -
-                              employees.filter((emp) => emp.role === a).length,
-                          )[0]
-                        }
+                        {(() => {
+                          const roleCounts = ROLES.map((role) => ({
+                            role,
+                            count: employees.filter((emp) => emp.role === role)
+                              .length,
+                          }));
+
+                          const maxCount = Math.max(
+                            ...roleCounts.map((rc) => rc.count),
+                          );
+                          const topRoles = roleCounts.filter(
+                            (rc) => rc.count === maxCount,
+                          );
+
+                          return topRoles.length > 1
+                            ? "Multiple"
+                            : topRoles[0]?.role || "No data";
+                        })()}
                       </p>
                     </div>
                     <div className="summary-item">
@@ -2128,58 +2118,68 @@ export function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="data-summary" style={{ marginTop: "1rem" }}>
-                    <h4>Role Distribution Data</h4>
-                    <div
-                      className="data-table-container"
-                      style={{ maxHeight: "200px", overflow: "auto" }}
-                    >
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Role</th>
-                            <th>Number of Employees</th>
-                            <th>Percentage</th>
-                            <th>Avg. Salary</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[
-                            "Curator",
-                            "Guide",
-                            "Conservator",
-                            "Manager",
-                            "Educator",
-                          ].map((role) => {
-                            const roleEmployees = employees.filter(
-                              (emp) => emp.role === role,
-                            );
-                            const count = roleEmployees.length;
-                            const percentage = (
-                              (count / employees.length) *
-                              100
-                            ).toFixed(1);
-                            const avgSalary = roleEmployees.length
-                              ? (
-                                  roleEmployees.reduce(
-                                    (sum, emp) => sum + emp.salary,
-                                    0,
-                                  ) / count
-                                ).toFixed(2)
-                              : "0.00";
-
-                            return (
-                              <tr key={role}>
-                                <td>{role}</td>
-                                <td>{count}</td>
-                                <td>{percentage}%</td>
-                                <td>${avgSalary}</td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+                  {/* Employees Table */}
+                  <div className="data-table-container">
+                    <table className="data-table artists-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Role</th>
+                          <th>Phone Number</th>
+                          <th>Start Date</th>
+                          <th>Status</th>
+                          <th>Work Email</th>
+                          <th>Salary</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {employees.map((employee) => {
+                          return (
+                            <tr key={employee.id}>
+                              {
+                                // Normal view fields
+                                <>
+                                  <td>
+                                    <div className="employee-name-cell">
+                                      <span>{employee.name}</span>
+                                    </div>
+                                  </td>
+                                  <td>{employee.role}</td>
+                                  <td>{employee.phone}</td>
+                                  <td>{employee.hiringDate}</td>
+                                  <td>
+                                    <span
+                                      className={`status-badge ${employee.status}`}
+                                    >
+                                      {employee.status.charAt(0).toUpperCase() +
+                                        employee.status.slice(1)}
+                                    </span>
+                                  </td>
+                                  <td
+                                    style={{
+                                      maxWidth: "200px",
+                                      overflow: "hidden",
+                                      textOverflow: "ellipsis",
+                                    }}
+                                  >
+                                    {employee.workEmail}
+                                  </td>
+                                  <td>
+                                    $
+                                    {parseInt(employee.salary).toLocaleString()}
+                                  </td>
+                                </>
+                              }
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    {employees.length === 0 && (
+                      <div className="empty-state">
+                        <p>No museum employees found.</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
