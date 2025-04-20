@@ -731,7 +731,10 @@ export function CuratorDashboard() {
       const response = await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          employeeId: curatorData.employeeId,
+        }),
       });
     } catch (err) {
       console.log(err);

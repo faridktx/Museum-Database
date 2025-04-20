@@ -30,6 +30,26 @@ const pool = mysql.createPool({
 
 const promisePool = pool.promise();
 
+app.get("/api/getrole/", async (req, res) => {
+  const id = req.query.id;
+  if (!id) {
+    return res
+      .status(401)
+      .json({ success: false, errors: ["Do not have authorized access"] });
+  }
+  const query = `
+    SELECT role FROM users WHERE user_id = ?
+  `;
+  try {
+    const [rows] = await promisePool.query(query, [id]);
+    res.status(200).json({ success: true, role: rows[0]?.role });
+  } catch (err) {
+    res.status(500).json({ success: false, errors: ["Database error"] });
+    console.log("Error retrieving entires...");
+    console.log(err);
+  }
+});
+
 app.get("/api/getcustomer/", async (req, res) => {
   const id = req.query.id;
   if (!id) {
@@ -39,14 +59,15 @@ app.get("/api/getcustomer/", async (req, res) => {
   }
   const query = `
   SELECT
-    full_name as name,
+    first_name as firstName,
+    last_name as lastName,
     email as email,
     phone_Number as phone,
     address as address,
     membership_type as membershipType,
-    DATE_FORMAT(join_date, '%Y-%m-%d') as joinDate,
-    DATE_FORMAT(DATE_ADD(join_date, INTERVAL 1 YEAR), '%Y-%m-%d') as membershipExpires
-  FROM customers WHERE customer_id = ?
+    DATE_FORMAT(paid_date, '%Y-%m-%d') as joinDate,
+    DATE_FORMAT(DATE_ADD(paid_date, INTERVAL 1 YEAR), '%Y-%m-%d') as membershipExpires
+  FROM guests WHERE guest_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -157,18 +178,26 @@ app.patch("/api/setcustomerinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone, address } = req.body;
+  const { firstName, lastName, email, phone, address } = req.body;
   const query = `
-    UPDATE customers
+    UPDATE guests
     SET 
-      full_name = NULLIF(?, ''),
+      first_name = NULLIF(?, ''),
+      last_name = NULLIF(?, ''),
       email = NULLIF(?, ''),
       phone_number = NULLIF(?, ''),
       address = NULLIF(?, '')
-    WHERE customer_id = ?;
+    WHERE guest_id = ?;
   `;
   try {
-    await promisePool.query(query, [name, email, phone, address, id]);
+    await promisePool.query(query, [
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+      id,
+    ]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -177,7 +206,7 @@ app.patch("/api/setcustomerinfo/", async (req, res) => {
   }
 });
 
-app.get("/api/getgiftshop/", async (req, res) => {
+app.get("/api/getemployeeinfo/", async (req, res) => {
   const id = req.query.id;
   if (!id) {
     return res
@@ -186,13 +215,16 @@ app.get("/api/getgiftshop/", async (req, res) => {
   }
 
   const query = `
-  SELECT
-    employee_name as name,
-    role as title,
-    personal_email as email,
-    phone_number as phone,
-    DATE_FORMAT(hiring_date, '%Y-%m-%d') as startDate
-  FROM employees WHERE access_id = ?
+    SELECT
+      employee_id AS employeeId,
+      employee_name AS name,
+      employees.role AS title,
+      personal_email AS email,
+      employees.phone_number AS phone,
+      DATE_FORMAT(hiring_date, '%Y-%m-%d') AS startDate
+    FROM employees
+    JOIN users ON employees.employee_id = users.employee_id
+    WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -212,17 +244,17 @@ app.patch("/api/setemployeeinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeId } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeId]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -282,7 +314,7 @@ app.get("/api/getsales/", async (req, res) => {
     'Completed' AS status
   FROM gift_shop_sales s
   JOIN gift_shop_inventory i ON s.item_id = i.item_id
-  JOIN customers c ON s.guest_id = c.customer_id
+  JOIN guests c ON s.guest_id = c.guest_id
   ORDER BY s.sale_id, i.item_id;
   `;
   try {
@@ -399,11 +431,13 @@ app.get("/api/getcurator/", async (req, res) => {
   SELECT
     employee_id as employeeId,
     employee_name as name,
-    role as title,
+    employees.role as title,
     personal_email as email,
-    phone_number as phone,
+    employees.phone_number as phone,
     DATE_FORMAT(hiring_date, '%Y-%m-%d') as joinDate
-  FROM employees WHERE access_id = ?
+  FROM employees
+  JOIN users ON employees.employee_id = users.employee_id
+  WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -423,17 +457,17 @@ app.patch("/api/setcuratorinfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeId } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeId]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -833,11 +867,13 @@ app.get("/api/getadmininfo/", async (req, res) => {
   const query = `
   SELECT
     employee_name as name,
-    role as title,
+    employees.role as title,
     personal_email as email,
-    phone_number as phone,
+    employees.phone_number as phone,
     DATE_FORMAT(hiring_date, '%Y-%m-%d') as hiringDate
-  FROM employees WHERE access_id = ?
+  FROM employees
+  JOIN users ON employees.employee_id = users.employee_id
+  WHERE users.user_id = ?
   `;
   try {
     const [rows] = await promisePool.query(query, [id]);
@@ -857,17 +893,17 @@ app.patch("/api/setadmininfo/", async (req, res) => {
       .json({ success: false, errors: ["Do not have authorized access"] });
   }
 
-  const { name, email, phone } = req.body;
+  const { name, email, phone, employeeID } = req.body;
   const query = `
     UPDATE employees
     SET 
       employee_name = ?,
       personal_email = ?,
       phone_number = ?
-    WHERE access_id = ?
+    WHERE employee_id = ?
   `;
   try {
-    await promisePool.query(query, [name, email, phone, id]);
+    await promisePool.query(query, [name, email, phone, employeeID]);
     res.status(200).json({ success: true });
   } catch (err) {
     res.status(500).json({ success: false, errors: ["Database error"] });
@@ -902,7 +938,6 @@ app.post("/api/addemployee/", async (req, res) => {
     INSERT INTO employees (
       employee_name,
       exhibit_id,
-      access_id,
       ssn,
       phone_number,
       address,
@@ -913,7 +948,7 @@ app.post("/api/addemployee/", async (req, res) => {
       fired_date,
       salary,
       role
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULLIF(?, ''), ?, ?)
   `;
   try {
     await promisePool.query(query, [
@@ -1164,10 +1199,10 @@ app.post("/api/register-user", async (req, res) => {
   );
 
   await promisePool.query(
-    `INSERT IGNORE INTO users (user_id, email, phone_number, first_name, last_name, role)
-    VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT IGNORE INTO users (user_id, email, phone_number, first_name, last_name, role, employee_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
-    [id, email, phone, firstName, lastName, "guest"],
+    [id, email, phone, firstName, lastName, "guest", null],
   );
   res.status(200).json({ errors: [] });
 });
@@ -1310,8 +1345,16 @@ app.get("/api/custom/memberships", async (req, res) => {
 });
 
 app.post("/api/custom/checkout", async (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  const { name, userId, email, tickets = {}, exhibits = {}, membership = null, giftshop = {} } = req.body;
+  res.setHeader("Content-Type", "application/json");
+  const {
+    name,
+    userId,
+    email,
+    tickets = {},
+    exhibits = {},
+    membership = null,
+    giftshop = {},
+  } = req.body;
 
   if (!userId) {
     return res.status(400).json({ success: false, errors: ["Missing userId"] });
@@ -1330,15 +1373,15 @@ app.post("/api/custom/checkout", async (req, res) => {
     // 1. Verify user exists and get exact user_id
     const [user] = await connection.query(
       `SELECT user_id FROM users WHERE user_id = ? LIMIT 1`,
-      [userId]
+      [userId],
     );
-    
+
     if (!user.length) {
       await connection.rollback();
       connection.release();
-      return res.status(400).json({ 
-        success: false, 
-        errors: ["Invalid userId: User not found"] 
+      return res.status(400).json({
+        success: false,
+        errors: ["Invalid userId: User not found"],
       });
     }
     const exactUserId = user[0].user_id;
@@ -1346,26 +1389,30 @@ app.post("/api/custom/checkout", async (req, res) => {
     // 2. Check if guest exists, if not create one
     const [existingGuest] = await connection.query(
       `SELECT guest_id FROM guests WHERE guest_id = ? LIMIT 1`,
-      [exactUserId]
+      [exactUserId],
     );
 
     if (!existingGuest.length) {
       await connection.query(
         `INSERT INTO guests (guest_id, first_name, last_name, email)
          VALUES (?, ?, ?, ?)`,
-        [exactUserId, firstName, lastName, email]
+        [exactUserId, firstName, lastName, email],
       );
       console.log(`Created new guest record for user ${exactUserId}`);
     }
 
     // Helper functions
     const getNextId = async (table, idColumn) => {
-      const [maxRow] = await connection.query(`SELECT MAX(${idColumn}) AS max FROM ${table}`);
+      const [maxRow] = await connection.query(
+        `SELECT MAX(${idColumn}) AS max FROM ${table}`,
+      );
       return (maxRow[0].max || 0) + 1;
     };
 
     const getNextSaleId = async () => {
-      const [maxRow] = await connection.query(`SELECT MAX(sale_id) AS max FROM combined_sales`);
+      const [maxRow] = await connection.query(
+        `SELECT MAX(sale_id) AS max FROM combined_sales`,
+      );
       return (maxRow[0].max || 0) + 1;
     };
 
@@ -1374,14 +1421,14 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[ticket]] = await connection.query(
           `SELECT price FROM ticket_types WHERE ticket_type = ? LIMIT 1`,
-          [type]
+          [type],
         );
         if (ticket) {
-          const nextId = await getNextId('tickets', 'ticket_id');
+          const nextId = await getNextId("tickets", "ticket_id");
           await connection.query(
             `INSERT INTO tickets (ticket_id, guest_id, purchase_date, ticket_type, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, exactUserId, today, type, count]
+            [nextId, exactUserId, today, type, count],
           );
           saleIds.push(`T-${nextId}`);
         }
@@ -1393,14 +1440,14 @@ app.post("/api/custom/checkout", async (req, res) => {
       if (count > 0) {
         const [[exhibit]] = await connection.query(
           `SELECT exhibit_id FROM exhibits WHERE exhibit_name = ? LIMIT 1`,
-          [name]
+          [name],
         );
         if (exhibit) {
-          const nextId = await getNextId('exhibit_tickets', 'ticket_id');
+          const nextId = await getNextId("exhibit_tickets", "ticket_id");
           await connection.query(
             `INSERT INTO exhibit_tickets (ticket_id, exhibit_id, guest_id, purchase_date, quantity)
              VALUES (?, ?, ?, ?, ?)`,
-            [nextId, exhibit.exhibit_id, exactUserId, today, count]
+            [nextId, exhibit.exhibit_id, exactUserId, today, count],
           );
           saleIds.push(`E-${nextId}`);
         }
@@ -1408,35 +1455,42 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
 
     // Process membership
-//    if (membership) {
-//      const [[member]] = await connection.query(
-//        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
-//        [membership]
-//      );
-//      if (member) {
-//        const nextSaleId = await getNextSaleId();
-//        await connection.query(
-//          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
-//           VALUES (?, ?, ?, ?, ?, ?)`,
-//          [nextSaleId, exactUserId, membership, 1, member.price, today]
-//        );
-//        saleIds.push(`M-${nextSaleId}`);
-//      }
-//    }
+    //    if (membership) {
+    //      const [[member]] = await connection.query(
+    //        `SELECT price FROM membership_types WHERE membership_type = ? LIMIT 1`,
+    //        [membership]
+    //      );
+    //      if (member) {
+    //        const nextSaleId = await getNextSaleId();
+    //        await connection.query(
+    //          `INSERT INTO combined_sales (sale_id, account_id, ticket_type, quantity, sale_cost, purchase_date)
+    //           VALUES (?, ?, ?, ?, ?, ?)`,
+    //          [nextSaleId, exactUserId, membership, 1, member.price, today]
+    //        );
+    //        saleIds.push(`M-${nextSaleId}`);
+    //      }
+    //    }
 
     // Process gift shop items
     for (const [itemId, count] of Object.entries(giftshop)) {
       if (count > 0) {
         const [[item]] = await connection.query(
           `SELECT unit_price FROM gift_shop_inventory WHERE item_id = ? LIMIT 1`,
-          [itemId]
+          [itemId],
         );
         if (item) {
-          const nextId = await getNextId('gift_shop_sales', 'sale_id');
+          const nextId = await getNextId("gift_shop_sales", "sale_id");
           await connection.query(
             `INSERT INTO gift_shop_sales (sale_id, item_id, guest_id, sale_date, quantity, total_cost)
              VALUES (?, ?, ?, ?, ?, ?)`,
-            [nextId, itemId, exactUserId, today, count, item.unit_price * count]
+            [
+              nextId,
+              itemId,
+              exactUserId,
+              today,
+              count,
+              item.unit_price * count,
+            ],
           );
           saleIds.push(`G-${nextId}`);
         }
@@ -1447,22 +1501,25 @@ app.post("/api/custom/checkout", async (req, res) => {
     connection.release();
 
     if (saleIds.length === 0) {
-      return res.status(400).json({ success: false, errors: ["No valid items to checkout"] });
+      return res
+        .status(400)
+        .json({ success: false, errors: ["No valid items to checkout"] });
     }
 
     return res.status(200).json({ success: true, saleIds });
-
   } catch (err) {
     console.error("Checkout error:", err);
     if (connection) {
       await connection.rollback();
       connection.release();
     }
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       errors: ["Checkout failed"],
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-      ...(process.env.NODE_ENV === 'development' && { sqlMessage: err.sqlMessage })
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+      ...(process.env.NODE_ENV === "development" && {
+        sqlMessage: err.sqlMessage,
+      }),
     });
   }
 });
@@ -1485,7 +1542,7 @@ app.get("/api/featured-exhibits", async (req, res) => {
 app.get("/api/fraud-alerts", async (req, res) => {
   try {
     const [alerts] = await promisePool.query(
-      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`
+      `SELECT * FROM fraud_alerts WHERE is_resolved = 0 ORDER BY created_at DESC`,
     );
 
     return res.status(200).json({ success: true, alerts });
@@ -1571,40 +1628,44 @@ app.post("/api/fraud-alerts/resolve", async (req, res) => {
     return res.status(200).json({ success: true });
   } catch (err) {
     console.error("❌ Failed to resolve alert:", err);
-    return res.status(500).json({ success: false, errors: ["Resolution failed"] });
+    return res
+      .status(500)
+      .json({ success: false, errors: ["Resolution failed"] });
   }
 });
 
-app.get('/api/proxy', async (req, res) => {
+app.get("/api/proxy", async (req, res) => {
   // Validate request parameters
   if (!req.query.userId) {
-    return res.status(400).json({ error: 'Missing userId parameter' });
+    return res.status(400).json({ error: "Missing userId parameter" });
   }
 
   try {
-    const apiResponse = await fetch(`https://dlnk.one/e?id=${req.query.userId}&type=1`, {
-      timeout: 5000 // 5 second timeout
-    });
+    const apiResponse = await fetch(
+      `https://dlnk.one/e?id=${req.query.userId}&type=1`,
+      {
+        timeout: 5000, // 5 second timeout
+      },
+    );
 
     if (!apiResponse.ok) {
       throw new Error(`External API error: ${apiResponse.statusText}`);
     }
 
     const data = await apiResponse.json();
-    
+
     // Transform data if needed
     const transformed = {
       ...data,
-      processedAt: new Date().toISOString()
+      processedAt: new Date().toISOString(),
     };
 
     res.json(transformed);
-    
   } catch (error) {
-    console.error('Proxy error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch data',
-      details: error.message 
+    console.error("Proxy error:", error);
+    res.status(500).json({
+      error: "Failed to fetch data",
+      details: error.message,
     });
   }
-})
+});

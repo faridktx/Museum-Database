@@ -19,7 +19,8 @@ export function CustomerDashboard() {
 
   // Profile form data
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address: "",
@@ -47,7 +48,8 @@ export function CustomerDashboard() {
   }, []);
 
   const [customerData, setCustomerData] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address: "",
@@ -166,7 +168,8 @@ export function CustomerDashboard() {
   useEffect(() => {
     if (showSettings) {
       setFormData({
-        name: customerData.name,
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
         email: customerData.email,
         phone: customerData.phone,
         address: customerData.address,
@@ -223,14 +226,18 @@ export function CustomerDashboard() {
                   <div className="profile-info-container">
                     <div className="profile-avatar">
                       <div className="profile-initials">
-                        {customerData.name
-                          .split(" ")
+                        {[customerData.firstName, customerData.lastName]
+                          .filter(Boolean)
                           .map((n) => n[0])
                           .join("")}
                       </div>
                     </div>
                     <div className="profile-summary-details">
-                      <h2>{customerData.name}</h2>
+                      <h2>
+                        {[customerData.firstName, customerData.lastName]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </h2>
                       {customerData.joinDate && (
                         <>
                           <p className="curator-title">
@@ -300,12 +307,24 @@ export function CustomerDashboard() {
                         }}
                       >
                         <div className="form-group">
-                          <label htmlFor="name">Full Name</label>
+                          <label htmlFor="firstName">First Name</label>
                           <input
                             type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
+                            id="firstName"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleFormChange}
+                            required
+                          />
+                        </div>
+
+                        <div className="form-group">
+                          <label htmlFor="lastName">Last Name</label>
+                          <input
+                            type="text"
+                            id="lastName"
+                            name="lastName"
+                            value={formData.lastName}
                             onChange={handleFormChange}
                             required
                           />

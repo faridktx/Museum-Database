@@ -3,35 +3,42 @@ import { AdminDashboard } from "./dashboards/admin-dashboard";
 import { CuratorDashboard } from "./dashboards/curator-dashboard";
 import { GiftShopDashboard } from "./dashboards/giftshop-dashboard";
 import { CustomerDashboard } from "./dashboards/customer-dashboard";
+import { useUser } from "@clerk/clerk-react";
+import { Unauthorized } from "./unauthorized";
 
 // In-memory cache for user roles
 const roleCache = new Map();
 
-export function DashboardRouter({ userId }) {
-  const [role, setRole] = useState(null);
+export function DashboardRouter() {
+  const [role, setRole] = useState({});
+  const { user } = useUser();
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user.id) return;
 
     // Check if we already have the role cached
-    if (roleCache.has(userId)) {
-      setRole(roleCache.get(userId));
+    if (roleCache.has(user.id)) {
+      setRole(roleCache.get(user.id));
       return;
     }
 
     async function fetchRole() {
+      const url = new URL("/api/getrole/", process.env.REACT_APP_BACKEND_URL);
+      url.searchParams.append("id", user.id);
       try {
-        const response = await fetch(`/api/user-role?userId=${userId}`);
+        const response = await fetch(url.toString(), {
+          method: "GET",
+        });
         const data = await response.json();
-        roleCache.set(userId, data.role); // Cache the role
+        roleCache.set(user.id, data.role);
         setRole(data.role);
       } catch (err) {
-        console.error("Failed to fetch role", err);
+        console.log(err);
       }
     }
 
     fetchRole();
-  }, [userId]);
+  }, [user.id]);
 
   if (!role) return <div>Loading dashboard...</div>;
 
@@ -42,9 +49,9 @@ export function DashboardRouter({ userId }) {
       return <CuratorDashboard />;
     case "giftshop":
       return <GiftShopDashboard />;
-    case "customer":
+    case "guest":
       return <CustomerDashboard />;
     default:
-      return <div>Unauthorized or unknown role</div>;
+      return <Unauthorized />;
   }
 }

@@ -175,13 +175,12 @@ export function Cart() {
   const handleCheckout = async (e) => {
     e.preventDefault();
     const form = e.target;
-  
+
     const name = form.name.value;
     const email = form.email.value;
     const phone = form.phone.value;
-  
-    try {
 
+    try {
       const payload = {
         name,
         userId,
@@ -197,25 +196,28 @@ export function Cart() {
         ),
         membership,
       };
-  
+
       console.log("Sending checkout:", payload);
-  
+
       const orderRes = await fetch("/api/custom/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-  
+
       // Enhanced response handling
-      const contentType = orderRes.headers.get('content-type');
+      const contentType = orderRes.headers.get("content-type");
       const responseText = await orderRes.text();
-  
+
       // Check if response is HTML (error page)
-      if (contentType?.includes('text/html')) {
-        console.error("Server returned HTML error page:", responseText.substring(0, 200));
+      if (contentType?.includes("text/html")) {
+        console.error(
+          "Server returned HTML error page:",
+          responseText.substring(0, 200),
+        );
         throw new Error("Server error occurred. Please try again later.");
-      };
-  
+      }
+
       // Try to parse as JSON
       let orderData;
       try {
@@ -224,25 +226,25 @@ export function Cart() {
         console.error("❌ JSON parse error:", err);
         console.log("🪵 Raw response body:", responseText.substring(0, 200));
         throw new Error("Invalid server response format");
-      };
-  
+      }
+
       if (!orderRes.ok || !orderData.success) {
-        const errorMessage = Array.isArray(orderData.errors) 
-          ? orderData.errors[0] 
+        const errorMessage = Array.isArray(orderData.errors)
+          ? orderData.errors[0]
           : orderData.message || "Checkout failed";
         throw new Error(errorMessage);
-      };
-  
+      }
+
       if (!Array.isArray(orderData.saleIds)) {
         throw new Error("Invalid order data received");
-      };
-  
+      }
+
       localStorage.removeItem("museum_cart");
       navigate(`/dashboard/receipt?ids=${orderData.saleIds.join(",")}`);
     } catch (err) {
       console.error("Checkout error:", err);
       alert(`Checkout failed: ${err.message}`);
-    };
+    }
   };
 
   return (
@@ -320,13 +322,7 @@ export function Cart() {
         <fieldset>
           <legend>Personal Information</legend>
           <label htmlFor="name">Full Name</label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="name" name="name" type="text" defaultValue="" required />
 
           <label htmlFor="email">Email Address</label>
           <input
@@ -363,31 +359,13 @@ export function Cart() {
           <input id="address2" name="address2" type="text" />
 
           <label htmlFor="city">City</label>
-          <input
-            id="city"
-            name="city"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="city" name="city" type="text" defaultValue="" required />
 
           <label htmlFor="state">State/Province</label>
-          <input
-            id="state"
-            name="state"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="state" name="state" type="text" defaultValue="" required />
 
           <label htmlFor="zip">Postal Code</label>
-          <input
-            id="zip"
-            name="zip"
-            type="text"
-            defaultValue=""
-            required
-          />
+          <input id="zip" name="zip" type="text" defaultValue="" required />
 
           <label htmlFor="country">Country</label>
           <input

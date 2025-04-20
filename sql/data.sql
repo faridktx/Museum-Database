@@ -151,13 +151,13 @@ INSERT INTO railway.artifacts (
 ('Dream of Silence', 3, 6, 'Surreal depiction of imagined worlds.', 2014, 5708305, 'Purchase', '2022-12-23', 'Acrylic on canvas', 'Excellent', '36in x 48in', FALSE);
 
 INSERT INTO railway.employees (
-  employee_name, exhibit_id, access_id, ssn, phone_number, address,
+  employee_name, exhibit_id, ssn, phone_number, address,
   personal_email, work_email, birth_date, hiring_date,
   fired_date, salary, role
 ) VALUES
-('Michael Green', 5, NULL, '330-20-7889', '738-401-1468', '73720 Virginia Ways Apt. 619, West Steven, NJ 07475', 'tcalhoun@gmail.com', 'michael.green@museum.org', '1996-02-01', '2011-06-04', NULL, 40819, 'Administrator'),
-('Bethany Rodriguez', 4, 'user_2un41siF8kB31SRRx2HKcByDRsl', '818-78-7686', '103-229-6874', '838 John Villages, Phillipsbury, VT 74108', 'hawkinstracey@smith.com', 'bethany.rodriguez@museum.org', '1977-03-17', '2022-05-16', '2025-02-26', 44572, 'Educator'),
-('Joseph Adams', 3, NULL, '348-36-6778', '723-607-9758', '630 Nicholas Branch Suite 217, Laurafort, NH 06160', 'dylan25@wilson-webb.info', 'joseph.adams@museum.org', '1986-12-23', '2014-05-14', NULL, 69234, 'Educator'),
-('Lynn Floyd', 2, NULL, '533-49-4081', '264-508-7222', '4017 Erin Gardens Suite 682, East Angelafort, MS 60142', 'vargaskathleen@martinez-smith.biz', 'lynn.floyd@museum.org', '2003-03-16', '2016-11-28', NULL, 41041, 'Curator'),
-('Courtney Pratt', 1, NULL, '403-79-0057', '634-194-8838', '556 Smith Stream, West Matthewmouth, MT 27059', 'tvaughn@johnson-allen.com', 'courtney.pratt@museum.org', '1982-04-29', '2014-07-06', '2021-02-10', 47623, 'Curator'),
-('Jason Holloway', 5, NULL, '587-79-6473', '330-741-9383', '153 Devin Mountain Apt. 672, South Brianshire, ID 10075', 'yrobertson@hotmail.com', 'jason.holloway@museum.org', '1981-06-03', '2022-08-25', '2024-08-31', 61295, 'Security');
+('Michael Green', 5, '330-20-7889', '738-401-1468', '73720 Virginia Ways Apt. 619, West Steven, NJ 07475', 'tcalhoun@gmail.com', 'michael.green@museum.org', '1996-02-01', '2011-06-04', NULL, 40819, 'Administrator'),
+('Bethany Rodriguez', 4,  '818-78-7686', '103-229-6874', '838 John Villages, Phillipsbury, VT 74108', 'hawkinstracey@smith.com', 'bethany.rodriguez@museum.org', '1977-03-17', '2022-05-16', '2025-02-26', 44572, 'Educator'),
+('Joseph Adams', 3, '348-36-6778', '723-607-9758', '630 Nicholas Branch Suite 217, Laurafort, NH 06160', 'dylan25@wilson-webb.info', 'joseph.adams@museum.org', '1986-12-23', '2014-05-14', NULL, 69234, 'Educator'),
+('Lynn Floyd', 2, '533-49-4081', '264-508-7222', '4017 Erin Gardens Suite 682, East Angelafort, MS 60142', 'vargaskathleen@martinez-smith.biz', 'lynn.floyd@museum.org', '2003-03-16', '2016-11-28', NULL, 41041, 'Curator'),
+('Courtney Pratt', 1, '403-79-0057', '634-194-8838', '556 Smith Stream, West Matthewmouth, MT 27059', 'tvaughn@johnson-allen.com', 'courtney.pratt@museum.org', '1982-04-29', '2014-07-06', '2021-02-10', 47623, 'Curator'),
+('Jason Holloway', 5, '587-79-6473', '330-741-9383', '153 Devin Mountain Apt. 672, South Brianshire, ID 10075', 'yrobertson@hotmail.com', 'jason.holloway@museum.org', '1981-06-03', '2022-08-25', '2024-08-31', 61295, 'Security');

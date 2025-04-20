@@ -20,19 +20,13 @@ import { Cart } from "./pages/cart";
 import { AdminNotifications } from "./pages/admin-notifications";
 import { Memberships } from "./pages/memberships";
 import { useEffect } from "react";
-import { CuratorDashboard } from "./pages/dashboards/curator-dashboard";
-import { CustomerDashboard } from "./pages/dashboards/customer-dashboard";
-import { GiftShopDashboard } from "./pages/dashboards/giftshop-dashboard";
-import { AdminDashboard } from "./pages/dashboards/admin-dashboard";
 import { PlanVisit } from "./pages/plan-visit";
 import { GiftShop } from "./pages/giftshop";
+import { DashboardRouter } from "./pages/dashboard";
 
 const routes = [
+  { route: "/dashboard", component: DashboardRouter },
   { route: "/memberships", component: Memberships },
-  { route: "/dashboard/curator", component: CuratorDashboard },
-  { route: "/dashboard/customer", component: CustomerDashboard },
-  { route: "/dashboard/giftshop", component: GiftShopDashboard },
-  { route: "/dashboard/admin", component: AdminDashboard },
   { route: "/gift-shop", component: GiftShop },
   { route: "/plan-your-visit", component: PlanVisit },
   { route: "/support-docs", component: SupportDocumentation },

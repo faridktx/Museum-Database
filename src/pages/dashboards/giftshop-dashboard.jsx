@@ -131,6 +131,7 @@ export function GiftShopDashboard() {
 
   const [editFormData, setEditFormData] = useState({});
   const [employeeData, setEmployeeData] = useState({
+    employeeId: "",
     name: "",
     title: "",
     email: "",
@@ -142,7 +143,7 @@ export function GiftShopDashboard() {
   useEffect(() => {
     const getEmployeeInfo = async () => {
       const url = new URL(
-        "/api/getgiftshop/",
+        "/api/getemployeeinfo/",
         process.env.REACT_APP_BACKEND_URL,
       );
       url.searchParams.append("id", user.id);
@@ -345,7 +346,10 @@ export function GiftShopDashboard() {
       const response = await fetch(url.toString(), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          employeeId: employeeData.employeeId,
+        }),
       });
     } catch (err) {
       console.log(err);
