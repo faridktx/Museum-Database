@@ -5,6 +5,15 @@ Overview
 The Museum Database Web Application is a React-based platform designed to manage and showcase various aspects of a museum’s operations. This includes event listings, membership perks, gift shop items, and more. Developed as part of an academic project, the application emphasizes modular design, responsive UI components, and efficient state management to provide users with an intuitive and seamless experience.
 Installation
 
+Technologies Used
+
+Frontend => React.js
+Backend => Node.js
+Database => MySQLServer
+Hosting => Railway
+
+Setup
+
 To set up and run the project locally, follow these steps:
 
 1. Clone the repository:
