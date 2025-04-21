@@ -43,7 +43,11 @@ export function Cart() {
     async function loadMembershipDetails() {
       if (membership && user?.id) {
         try {
-          const res = await fetch("/api/custom/memberships", { method: "GET" });
+          const url = new URL(
+            "/api/custom/memberships",
+            process.env.REACT_APP_BACKEND_URL,
+          );
+          const res = await fetch(url.toString(), { method: "GET" });
           const text = await res.text();
           const json = text ? JSON.parse(text) : {};
           const match = json.data.find((m) => m.membership_type === membership);
@@ -132,7 +136,11 @@ export function Cart() {
       simplifiedCart[itemId] = parseInt(item.count || 0);
     }
 
-    const res = await fetch("/api/custom/giftshop/checkout", {
+    const url = new URL(
+      "/api/custom/giftshop/checkout",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    const res = await fetch(url.toString(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ cart: simplifiedCart, userId }),

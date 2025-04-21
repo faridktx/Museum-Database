@@ -650,7 +650,11 @@ export function AdminDashboard() {
 
   const [unresolvedCount, setUnresolvedCount] = useState(0);
   useEffect(() => {
-    fetch("/api/fraud-alerts/unresolved-count")
+    const url = new URL(
+      "/api/fraud-alerts/unresolved-count",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    fetch(url.toString())
       .then((res) => res.json())
       .then((data) => setUnresolvedCount(data.count || 0))
       .catch((err) => console.error("Failed to fetch alerts", err));
