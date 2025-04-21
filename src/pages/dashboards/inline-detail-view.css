@@ -120,3 +120,80 @@
 .warning-text {
   font-weight: 500;
 }
+
+/* Advanced Filter Panel Styles */
+.advanced-filter-panel {
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  padding: 1rem;
+  margin: 0 auto 1.5rem; /* Center horizontally with auto margins */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+  width: 100%; /* Full width by default */
+  max-width: 1200px; /* Or your preferred maximum width */
+  box-sizing: border-box;
+}
+
+.advanced-filter-panel.open {
+  opacity: 1;
+  max-height: 500px;
+  overflow: visible;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  justify-content: center; /* Center the filter items */
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px; /* Prevent items from getting too wide */
+}
+
+.filter-item label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+  font-size: 0.9rem;
+  text-align: left; /* Keep label text left-aligned */
+}
+
+.filter-item input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: center; /* Center the reset button */
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .advanced-filter-panel {
+    padding: 1rem 0.5rem; /* Reduce padding on small screens */
+  }
+  
+  .filter-row {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .filter-item {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
