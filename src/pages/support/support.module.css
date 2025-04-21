@@ -1,7 +1,7 @@
 /* support.module.css */
 
 .support-page {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #1e293b;
   padding: 4rem 1.5rem;
   max-width: 900px;
@@ -33,7 +33,9 @@
   padding: 2rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
   margin-bottom: 2rem;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease;
 }
 
 .support-section:hover {
@@ -117,7 +119,7 @@
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.95rem;
   color: #1e293b;
   overflow-x: auto;

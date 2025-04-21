@@ -6,7 +6,9 @@ export function SupportApi() {
   return (
     <div className={styles["support-page"]}>
       <div className={styles["support-header"]}>
-        <p className={styles["breadcrumb"]}>Home / Support / API Documentation</p>
+        <p className={styles["breadcrumb"]}>
+          Home / Support / API Documentation
+        </p>
         <h1>API Documentation</h1>
         <p className={styles["support-subtitle"]}>
           Learn how to access, authenticate, and use the Curio Collection API to
@@ -43,11 +45,21 @@ export function SupportApi() {
           exhibits. Each accepts standard REST methods.
         </p>
         <ul className={styles["styled-list"]}>
-          <li><code>GET /api/artifacts</code> — Retrieve all artifacts</li>
-          <li><code>POST /api/artifacts</code> — Create a new artifact</li>
-          <li><code>GET /api/artists</code> — List all artists</li>
-          <li><code>PUT /api/exhibits/:id</code> — Update an exhibit by ID</li>
-          <li><code>DELETE /api/employees/:id</code> — Remove an employee record</li>
+          <li>
+            <code>GET /api/artifacts</code> — Retrieve all artifacts
+          </li>
+          <li>
+            <code>POST /api/artifacts</code> — Create a new artifact
+          </li>
+          <li>
+            <code>GET /api/artists</code> — List all artists
+          </li>
+          <li>
+            <code>PUT /api/exhibits/:id</code> — Update an exhibit by ID
+          </li>
+          <li>
+            <code>DELETE /api/employees/:id</code> — Remove an employee record
+          </li>
         </ul>
       </section>
 
@@ -64,7 +76,9 @@ export function SupportApi() {
           <li>🔐 Never expose your API key in front-end/public code.</li>
           <li>🌐 Always use HTTPS for secure transmission.</li>
           <li>♻️ Rotate keys regularly and deactivate unused ones.</li>
-          <li>🎯 Scope access per role to limit exposure of sensitive endpoints.</li>
+          <li>
+            🎯 Scope access per role to limit exposure of sensitive endpoints.
+          </li>
         </ul>
       </section>
 

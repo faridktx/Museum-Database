@@ -35,7 +35,7 @@ export function SupportContact() {
         else alert("Failed to send message. Please try again.");
       })
       .catch(() =>
-        alert("There was an error connecting to the email service.")
+        alert("There was an error connecting to the email service."),
       );
     setSubmitted(true);
   };
@@ -119,7 +119,10 @@ export function SupportContact() {
             ></textarea>
           </div>
 
-          <button type="submit" className={`${styles["button"]} ${styles["primary-button"]}`}>
+          <button
+            type="submit"
+            className={`${styles["button"]} ${styles["primary-button"]}`}
+          >
             Send Message
           </button>
         </form>
