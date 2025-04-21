@@ -15,6 +15,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useUser } from "@clerk/clerk-react";
 import "../../components/components.css";
+import './adminDash.css';
 import { ROLES, ROLECOLORS } from "../../components/constants.js";
 import { ErrorModal } from "../../components/modal";
 

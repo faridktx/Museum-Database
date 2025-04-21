@@ -157,3 +157,36 @@
   font-weight: bold;
   margin-left: 0.3rem;
 }
+
+/* Advanced Filter Panel Container */
+.advanced-filter-panel {
+  width: 100%; /* Ensure panel takes full width */
+}
+
+/* Filter Row - Horizontal Layout */
+.filter-row {
+  display: flex;
+  flex-direction: row; /* Explicit horizontal layout */
+  gap: 16px; /* Space between items */
+  width: 100%; /* Take full width of parent */
+  align-items: flex-end; /* Align input bottoms */
+}
+
+/* Filter Items - Horizontal Behavior */
+.filter-item {
+  flex: 1; /* Each item grows equally */
+  min-width: 0; /* Allow items to shrink */
+}
+
+/* Input Field Styling */
+.filter-item input {
+  width: 100%; /* Take full width of parent */
+  box-sizing: border-box; /* Include padding in width */
+}
+
+/* Label Styling */
+.filter-item label {
+  display: block;
+  margin-bottom: 6px;
+  white-space: nowrap; /* Prevent label wrapping */
+}
