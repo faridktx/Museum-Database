@@ -2063,6 +2063,7 @@ html {
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(155, 133, 121, 0.1);
+  max-width: 95%;
 }
 
 .profile-summary-card::before {
@@ -3279,7 +3280,6 @@ html {
 
 .data-table tbody tr:hover {
   background-color: #f0f4f9;
-  cursor: pointer;
 }
 
 .data-table tbody tr.selected {

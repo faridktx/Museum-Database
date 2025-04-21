@@ -19,7 +19,11 @@ export function AdminNotifications() {
 
   const fetchAlerts = async () => {
     try {
-      const res = await fetch(`/api/fraud-alerts`);
+      const url = new URL(
+        "/api/fraud-alerts",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      const res = await fetch(url.toString());
       const data = await res.json();
       if (data.success) {
         setAlerts(data.alerts);
@@ -35,7 +39,11 @@ export function AdminNotifications() {
 
   const fetchResolvedAlerts = async () => {
     try {
-      const res = await fetch(`/api/fraud-alerts/resolved`);
+      const url = new URL(
+        "/api/fraud-alerts/resolved",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      const res = await fetch(url.toString());
       const data = await res.json();
       if (data.success) setResolvedAlerts(data.alerts);
     } catch (err) {
@@ -69,7 +77,11 @@ export function AdminNotifications() {
 
   const handleResolve = async (alert_id) => {
     try {
-      const res = await fetch("/api/fraud-alerts/resolve", {
+      const url = new URL(
+        "/api/fraud-alerts/resolve",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      const res = await fetch(url.toString(), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ alert_id }),
@@ -93,7 +105,11 @@ export function AdminNotifications() {
     setShowConfirm(true);
     setConfirmAction(() => async () => {
       try {
-        const res = await fetch("/api/fraud-alerts/delete", {
+        const url = new URL(
+          "/api/fraud-alerts/delete",
+          process.env.REACT_APP_BACKEND_URL,
+        );
+        const res = await fetch(url.toString(), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ alert_id }),

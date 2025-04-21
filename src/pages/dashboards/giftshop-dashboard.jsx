@@ -153,6 +153,7 @@ export function GiftShopDashboard() {
         const data = await response.json();
         setEmployeeData({
           ...data.data,
+          department: "Giftshop",
         });
       } catch (err) {
         console.log(err);
@@ -215,19 +216,12 @@ export function GiftShopDashboard() {
       const query = currentSearchQuery.toLowerCase();
 
       if (type === "inventory") {
-        filteredItems = filteredItems.filter(
-          (item) =>
-            item.name.toLowerCase().includes(query) ||
-            item.category.toLowerCase().includes(query) ||
-            item.supplier.toLowerCase().includes(query),
+        filteredItems = filteredItems.filter((item) =>
+          item.name.toLowerCase().includes(query),
         );
       } else if (type === "sales") {
-        filteredItems = filteredItems.filter(
-          (item) =>
-            item.customer.toLowerCase().includes(query) ||
-            item.products.some((p) => p.name.toLowerCase().includes(query)) ||
-            item.paymentMethod.toLowerCase().includes(query) ||
-            item.status.toLowerCase().includes(query),
+        filteredItems = filteredItems.filter((item) =>
+          item.customer.toLowerCase().includes(query),
         );
       }
     }
@@ -592,8 +586,8 @@ export function GiftShopDashboard() {
                 type="text"
                 placeholder={
                   activeTab === "inventory"
-                    ? "Search products..."
-                    : "Search sales..."
+                    ? "Search products names..."
+                    : "Search customer names..."
                 }
                 value={currentSearchQuery}
                 onChange={(e) => updateSearchQuery(e.target.value)}
@@ -882,7 +876,7 @@ export function GiftShopDashboard() {
                     <h2>{employeeData.name}</h2>
                     <p className="curator-title">{employeeData.title}</p>
                     <div className="curator-department">
-                      <span>{employeeData.exhibitName}</span>
+                      <span>{employeeData.department}</span>
                     </div>
                   </div>
                 </div>
@@ -981,7 +975,7 @@ export function GiftShopDashboard() {
                           type="text"
                           id="title"
                           name="title"
-                          value={formData.title}
+                          value={employeeData.title}
                           disabled
                         />
                         <small className="field-note">
@@ -990,16 +984,16 @@ export function GiftShopDashboard() {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="exhibitName">Exhibit</label>
+                        <label htmlFor="department">Department</label>
                         <input
                           type="text"
-                          id="exhibitName"
-                          name="exhibitName"
-                          value={formData.exhibitName}
+                          id="department"
+                          name="department"
+                          value={employeeData.department}
                           disabled
                         />
                         <small className="field-note">
-                          Exhibit cannot be changed.
+                          Department cannot be changed.
                         </small>
                       </div>
 
@@ -1009,7 +1003,7 @@ export function GiftShopDashboard() {
                           type="text"
                           id="startDate"
                           name="startDate"
-                          value={formData.startDate}
+                          value={employeeData.startDate}
                           disabled
                         />
                         <small className="field-note">
@@ -1035,8 +1029,8 @@ export function GiftShopDashboard() {
                   <div className="curator-profile">
                     <div className="profile-details">
                       <div className="detail-section">
-                        <h3>Exhibit</h3>
-                        <p>{employeeData.exhibitName}</p>
+                        <h3>Department</h3>
+                        <p>{employeeData.department}</p>
                       </div>
                       <div className="detail-section">
                         <h3>Position</h3>

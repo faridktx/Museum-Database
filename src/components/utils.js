@@ -29,22 +29,6 @@ export async function apiFetch(path, method, token) {
   return apiResponse;
 }
 
-export async function fetchWithBody(path, method, formData) {
-  let apiResponse = { success: true, errors: [] };
-  const url = new URL(path, process.env.REACT_APP_BACKEND_URL);
-  try {
-    const response = await fetch(url.toString(), {
-      method: method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-    await parseJSON(response, apiResponse);
-  } catch (err) {
-    await parseFetchError(apiResponse);
-  }
-  return apiResponse;
-}
-
 export function capitalize(str) {
   if (str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -54,14 +38,4 @@ export function capitalize(str) {
 
 export function compileErrors(arr) {
   return arr.join("\n");
-}
-
-export async function postGiftShopOrder(data) {
-  const res = await fetch("/api/giftshop", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-
-  return res.json();
 }

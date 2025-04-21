@@ -182,7 +182,7 @@ export function CustomerDashboard() {
     <div className="dashboard">
       <div
         className="container dashboard-content"
-        style={{ marginBottom: "3rem" }}
+        style={{ marginBottom: "3rem", minWidth: "100px" }}
       >
         <h1>Customer Dashboard</h1>
 
@@ -218,7 +218,7 @@ export function CustomerDashboard() {
             </button>
           </div>
 
-          <div className="tab-content">
+          <div className="tab-content" style={{ minWidth: "30px" }}>
             {/* Profile Tab */}
             {activeTab === "profile" && (
               <>
