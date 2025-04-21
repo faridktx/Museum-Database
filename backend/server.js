@@ -111,9 +111,10 @@ app.get("/api/gettransactions/", async (req, res) => {
     s.sale_id AS id,
     DATE_FORMAT(s.sale_date, '%Y-%m-%d') AS date,
     'Gift Shop' AS type,
-    JSON_ARRAYAGG(i.item_name) AS items,
+    i.item_name AS itemName,
     s.total_cost AS total,
-    'Completed' AS status
+    'Completed' AS status,
+    s.quantity
   FROM gift_shop_sales s
   JOIN gift_shop_inventory i ON s.item_id = i.item_id
   WHERE s.guest_id = ?
