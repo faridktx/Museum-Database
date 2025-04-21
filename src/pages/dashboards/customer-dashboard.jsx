@@ -468,7 +468,8 @@ export function CustomerDashboard() {
                       <tr>
                         <th>Transaction ID</th>
                         <th>Date</th>
-                        <th>Items</th>
+                        <th>Item</th>
+                        <th>Quantity</th>
                         <th>Total</th>
                         <th>Status</th>
                       </tr>
@@ -480,13 +481,8 @@ export function CustomerDashboard() {
                           <td>
                             {new Date(transaction.date).toLocaleDateString()}
                           </td>
-                          <td>
-                            <ul className="item-list">
-                              {transaction.items.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
-                          </td>
+                          <td>{transaction.itemName}</td>
+                          <td>{transaction.quantity}</td>
                           <td>${parseFloat(transaction.total).toFixed(2)}</td>
                           <td>
                             <span
