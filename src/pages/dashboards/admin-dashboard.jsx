@@ -186,7 +186,7 @@ export function AdminDashboard() {
           return (
             exhibit.title.toLowerCase().includes(query) ||
             exhibit.status.toLowerCase().includes(query) ||
-            exhibit.description.toLowerCase().includes(query)
+            exhibit.startDate.toLowerCase().includes(query)
           );
         });
       }
@@ -208,15 +208,9 @@ export function AdminDashboard() {
         );
       }
 
-      if (department) {
-        filteredItems = filteredItems.filter((employee) =>
-          employee.department.toLowerCase().includes(department.toLowerCase()),
-        );
-      }
-
       if (status) {
-        filteredItems = filteredItems.filter((employee) =>
-          employee.status.toLowerCase().includes(status.toLowerCase()),
+        filteredItems = filteredItems.filter(
+          (employee) => employee.status.toLowerCase() === status.toLowerCase(),
         );
       }
     } else if (type === "exhibits") {
@@ -229,16 +223,14 @@ export function AdminDashboard() {
       }
 
       if (status) {
-        filteredItems = filteredItems.filter((exhibit) =>
-          exhibit.status.toLowerCase().includes(status.toLowerCase()),
+        filteredItems = filteredItems.filter(
+          (exhibit) => exhibit.status.toLowerCase() === status.toLowerCase(),
         );
       }
 
       if (date) {
-        filteredItems = filteredItems.filter(
-          (exhibit) =>
-            exhibit.startDate.toLowerCase().includes(date.toLowerCase()) ||
-            exhibit.endDate.toLowerCase().includes(date.toLowerCase()),
+        filteredItems = filteredItems.filter((exhibit) =>
+          exhibit.startDate.toLowerCase().includes(date.toLowerCase()),
         );
       }
     }
@@ -694,7 +686,7 @@ export function AdminDashboard() {
   // Return the JSX for the component
   return (
     <div className="curator-dashboard" style={{ marginBottom: "3rem" }}>
-      <div className="dashboard-header">
+      <div className="dashboard-header" style={{ paddingTop: "100px" }}>
         <div className="header-title">
           <h1>MuseoCore Admin Portal</h1>
         </div>
@@ -783,45 +775,44 @@ export function AdminDashboard() {
       <div className="dashboard-content">
         {/* Advanced Filters for Employees */}
         {activeTab === "employees" && showAdvancedFilter && (
-          <div className="advanced-filter-container">
-            <h3>Advanced Filter Options</h3>
-            <div className="filter-form">
-              <div className="filter-row">
-                <div className="filter-field">
-                  <label htmlFor="name-filter">Name</label>
-                  <input
-                    type="text"
-                    id="name-filter"
-                    name="name"
-                    value={filters.employees.name}
-                    onChange={(e) => handleFilterChange(e, "employees")}
-                    placeholder="Filter by name"
-                  />
-                </div>
-                <div className="filter-field">
-                  <label htmlFor="role-filter">Role</label>
-                  <input
-                    type="text"
-                    id="role-filter"
-                    name="role"
-                    value={filters.employees.role}
-                    onChange={(e) => handleFilterChange(e, "employees")}
-                    placeholder="Filter by role"
-                  />
-                </div>
-                <div className="filter-field">
-                  <label htmlFor="status-filter">Status</label>
-                  <select
-                    id="status-filter"
-                    name="status"
-                    value={filters.employees.status}
-                    onChange={(e) => handleFilterChange(e, "employees")}
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                  </select>
-                </div>
+          <div
+            className={`advanced-filter-panel ${showAdvancedFilter ? "open" : ""}`}
+          >
+            <div className="filter-row">
+              <div className="filter-item">
+                <label htmlFor="name-filter">Name</label>
+                <input
+                  type="text"
+                  id="name-filter"
+                  name="name"
+                  value={filters.employees.name}
+                  onChange={(e) => handleFilterChange(e, "employees")}
+                  placeholder="Filter by name"
+                />
+              </div>
+              <div className="filter-item">
+                <label htmlFor="role-filter">Role</label>
+                <input
+                  type="text"
+                  id="role-filter"
+                  name="role"
+                  value={filters.employees.role}
+                  onChange={(e) => handleFilterChange(e, "employees")}
+                  placeholder="Filter by role"
+                />
+              </div>
+              <div className="filter-item">
+                <label htmlFor="status-filter">Status</label>
+                <select
+                  id="status-filter"
+                  name="status"
+                  value={filters.employees.status}
+                  onChange={(e) => handleFilterChange(e, "employees")}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
               </div>
             </div>
           </div>
@@ -829,46 +820,45 @@ export function AdminDashboard() {
 
         {/* Advanced Filters for Exhibits */}
         {activeTab === "exhibits" && showAdvancedFilter && (
-          <div className="advanced-filter-container">
-            <h3>Advanced Filter Options</h3>
-            <div className="filter-form">
-              <div className="filter-row">
-                <div className="filter-field">
-                  <label htmlFor="title-filter">Title</label>
-                  <input
-                    type="text"
-                    id="title-filter"
-                    name="title"
-                    value={filters.exhibits.title}
-                    onChange={(e) => handleFilterChange(e, "exhibits")}
-                    placeholder="Filter by title"
-                  />
-                </div>
-                <div className="filter-field">
-                  <label htmlFor="status-filter">Status</label>
-                  <select
-                    id="status-filter"
-                    name="status"
-                    value={filters.exhibits.status}
-                    onChange={(e) => handleFilterChange(e, "exhibits")}
-                  >
-                    <option value="">All Statuses</option>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="active">Active</option>
-                    <option value="past">Past</option>
-                  </select>
-                </div>
-                <div className="filter-field">
-                  <label htmlFor="date-filter">Date</label>
-                  <input
-                    type="text"
-                    id="date-filter"
-                    name="date"
-                    value={filters.exhibits.date}
-                    onChange={(e) => handleFilterChange(e, "exhibits")}
-                    placeholder="Filter by date"
-                  />
-                </div>
+          <div
+            className={`advanced-filter-panel ${showAdvancedFilter ? "open" : ""}`}
+          >
+            <div className="filter-row">
+              <div className="filter-item">
+                <label htmlFor="title-filter">Title</label>
+                <input
+                  type="text"
+                  id="title-filter"
+                  name="title"
+                  value={filters.exhibits.title}
+                  onChange={(e) => handleFilterChange(e, "exhibits")}
+                  placeholder="Filter by title"
+                />
+              </div>
+              <div className="filter-item">
+                <label htmlFor="status-filter">Status</label>
+                <select
+                  id="status-filter"
+                  name="status"
+                  value={filters.exhibits.status}
+                  onChange={(e) => handleFilterChange(e, "exhibits")}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="active">Active</option>
+                  <option value="past">Past</option>
+                </select>
+              </div>
+              <div className="filter-item">
+                <label htmlFor="date-filter">Start Date</label>
+                <input
+                  type="text"
+                  id="date-filter"
+                  name="date"
+                  value={filters.exhibits.date}
+                  onChange={(e) => handleFilterChange(e, "exhibits")}
+                  placeholder="Filter by date"
+                />
               </div>
             </div>
           </div>
@@ -882,7 +872,7 @@ export function AdminDashboard() {
                 <div className="profile-info-container">
                   <div className="profile-avatar">
                     <div className="profile-initials">
-                      {adminData.name
+                      {(adminData.name || "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -903,14 +893,14 @@ export function AdminDashboard() {
                     <span className="stat-label">Employees</span>
                   </div>
                   <div className="profile-stat-item">
-                    <span className="stat-number">{employees.length}</span>
+                    <span className="stat-number">{exhibits.length}</span>
                     <span className="stat-label">Exhibits</span>
                   </div>
                   <div className="profile-stat-item">
                     <span className="stat-number">
-                      {exhibits.filter((e) => e.status === "active").length}
+                      {exhibits.filter((e) => e.status === "ongoing").length}
                     </span>
-                    <span className="stat-label">Active Exhibits</span>
+                    <span className="stat-label">Ongoing Exhibits</span>
                   </div>
                 </div>
               </div>
@@ -991,7 +981,7 @@ export function AdminDashboard() {
                           type="text"
                           id="title"
                           name="title"
-                          value={formData.title}
+                          value={adminData.title}
                           disabled
                         />
                         <small className="field-note">
@@ -1005,7 +995,7 @@ export function AdminDashboard() {
                           type="text"
                           id="department"
                           name="department"
-                          value={formData.department}
+                          value={adminData.department}
                           disabled
                         />
                         <small className="field-note">
@@ -1019,7 +1009,7 @@ export function AdminDashboard() {
                           type="text"
                           id="hiringDate"
                           name="hiringDate"
-                          value={formData.hiringDate}
+                          value={adminData.hiringDate}
                           disabled
                         />
                         <small className="field-note">

@@ -883,6 +883,11 @@ html {
   }
 }
 
+.dashboard-footer .container {
+  display: flex;
+  flex-direction: column;
+}
+
 /* Dashboard Footer Styles */
 .dashboard-footer {
   background-color: white;
@@ -895,7 +900,7 @@ html {
 .dashboard-footer-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: calc(var(--spacing) * 2);
+  gap: 11rem; /* or try 4rem, 5rem depending on your preference */
   margin-bottom: var(--spacing);
 }
 
@@ -1338,7 +1343,8 @@ html {
 
 /* Full-page Dashboard Styles */
 .curator-dashboard {
-  margin-top: 80px;
+  margin-top: 0;
+  padding-top: 0;
   min-height: calc(100vh - 80px);
   background-color: #f8f9fa;
 }
@@ -1825,15 +1831,15 @@ html {
 }
 
 .filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.7rem;
-  margin-bottom: 0.7rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* flexible */
+  gap: 1rem; /* spacing between inputs */
+  margin-bottom: 1rem;
 }
 
 .filter-item {
-  flex: 1;
-  min-width: 150px;
+  flex: 1 1 calc(33.333% - 0.5rem); /* subtracting gap */
+  min-width: 200px;
 }
 
 .filter-item label {
@@ -3212,6 +3218,8 @@ html {
 .data-table-container {
   margin-top: 1.5rem;
   overflow-x: auto;
+  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 600px; /* Limit height so it scrolls instead of growing */
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -3221,6 +3229,10 @@ html {
   border-collapse: collapse;
   font-size: 0.95rem;
   font-family: "Playfair Display", Georgia, serif;
+}
+
+.data-table thead th {
+  border-bottom: 2px solid #4a6fa5;
 }
 
 .data-table th {
@@ -4171,18 +4183,6 @@ html {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.filter-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.filter-item {
-  flex: 1 1 auto;
-  min-width: 150px;
-}
-
 .rounded-input {
   width: 100%;
   padding: 10px 15px;
@@ -4316,12 +4316,6 @@ select.rounded-input {
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
-}
-
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
 }
 
 .filter-group {

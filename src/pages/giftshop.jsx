@@ -74,7 +74,7 @@ export function GiftShop() {
       },
       0,
     );
-    return (itemsTotal).toFixed(2);
+    return itemsTotal.toFixed(2);
   };
 
   const uniqueValues = (field) => [
