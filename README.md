@@ -6,22 +6,30 @@ The Museum Database Web Application is a React-based platform designed to manage
 Installation
 
 To set up and run the project locally, follow these steps:
-1.	Clone the repository:
- ```bash
+
+1. Clone the repository:
+
+```bash
 git clone https://github.com/yourusername/museum-database.git
 cd museum-database
 ```
+
 2. Install dependencies:
- ```bash
+
+```bash
 npm install
 ```
+
 3. Start the development server:
+
 ```bash
 npm start
 ```
+
 The application will be accessible at http://localhost:3000.
 
 Project Structure
+
 ```
 museum-database/
 ├── public/
@@ -77,6 +85,7 @@ museum-database/
 ├── package.json
 └── README.md
 ```
+
 Key Directories and Files
 
 - public/: Contains the index.html file and other static assets.
@@ -89,4 +98,3 @@ Key Directories and Files
 - support/: Support-related pages.
 - App.jsx: Root component that sets up routing.
 - index.jsx: Entry point of the React application.
-
