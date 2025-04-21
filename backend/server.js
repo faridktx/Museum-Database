@@ -556,6 +556,32 @@ app.get("/api/getartists/", async (req, res) => {
   }
 });
 
+app.patch("/api/setartifactrestored", async (req, res) => {
+  const userId = req.query.id;
+  if (!userId) {
+    return res
+      .status(401)
+      .json({ success: false, errors: ["Do not have authorized access"] });
+  }
+
+  if (validationErrorCheck(req, res)) return;
+  const { id, restored } = req.body;
+  const query = `
+    UPDATE artifact
+    SET 
+      needs_restoration = ?,
+    WHERE artifact_id = ?
+  `;
+  try {
+    await promisePool.query(query, [restored, id]);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, errors: ["Database error"] });
+    console.log("Error retrieving entires...");
+    console.log(err);
+  }
+});
+
 app.patch(
   "/api/setartist/",
   [
@@ -1738,14 +1764,14 @@ app.post("/api/custom/checkout", async (req, res) => {
     for (const [itemId, count] of Object.entries(giftshop)) {
       if (count > 0) {
         // Start transaction for inventory check and deduction
-        await connection.query('SAVEPOINT gift_shop_item');
+        await connection.query("SAVEPOINT gift_shop_item");
 
         try {
           // 1. Verify item exists and has sufficient stock (with row lock)
           const [[item]] = await connection.query(
             `SELECT unit_price, quantity FROM gift_shop_inventory 
              WHERE item_id = ? FOR UPDATE`, // Lock row for update
-            [itemId]
+            [itemId],
           );
 
           if (!item) {
@@ -1761,7 +1787,7 @@ app.post("/api/custom/checkout", async (req, res) => {
             `UPDATE gift_shop_inventory 
              SET quantity = quantity - ?
              WHERE item_id = ?`,
-            [count, itemId]
+            [count, itemId],
           );
 
           // 3. Record sale
@@ -1779,9 +1805,8 @@ app.post("/api/custom/checkout", async (req, res) => {
             ],
           );
           saleIds.push(`G-${nextId}`);
-
         } catch (err) {
-          await connection.query('ROLLBACK TO SAVEPOINT gift_shop_item');
+          await connection.query("ROLLBACK TO SAVEPOINT gift_shop_item");
           console.error(`Gift shop item ${itemId} failed:`, err.message);
           throw err;
         }
@@ -1798,12 +1823,11 @@ app.post("/api/custom/checkout", async (req, res) => {
     }
 
     return res.status(200).json({ success: true, saleIds });
-
   } catch (err) {
     console.error("Checkout error:", {
       message: err.message,
       sqlMessage: err.sqlMessage,
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
 
     if (connection) {
@@ -1814,9 +1838,9 @@ app.post("/api/custom/checkout", async (req, res) => {
     return res.status(500).json({
       success: false,
       errors: ["Checkout failed"],
-      ...(process.env.NODE_ENV === 'development' && {
-        details: err.message
-      })
+      ...(process.env.NODE_ENV === "development" && {
+        details: err.message,
+      }),
     });
   }
 });
