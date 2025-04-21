@@ -17,7 +17,10 @@ export function SupportReport() {
 
   return (
     <div className={styles["support-page"]}>
-      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+      <div
+        className={styles["support-header"]}
+        style={{ marginBottom: "2rem" }}
+      >
         <p className={styles["breadcrumb"]}>Home / Support / Report an Issue</p>
         <h1>Report an Issue</h1>
         <p className={styles["support-subtitle"]}>
@@ -70,7 +73,10 @@ export function SupportReport() {
             ></textarea>
           </div>
 
-          <button type="submit" className={`${styles["button"]} ${styles["primary-button"]}`}>
+          <button
+            type="submit"
+            className={`${styles["button"]} ${styles["primary-button"]}`}
+          >
             Send Report
           </button>
         </form>

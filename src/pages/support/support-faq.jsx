@@ -54,7 +54,10 @@ export function SupportFaq() {
 
   return (
     <div className={styles["support-page"]}>
-      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+      <div
+        className={styles["support-header"]}
+        style={{ marginBottom: "2rem" }}
+      >
         <p className={styles["breadcrumb"]}>Home / Support / FAQ</p>
         <h1>Frequently Asked Questions</h1>
         <p className={styles["support-subtitle"]}>
@@ -78,9 +81,7 @@ export function SupportFaq() {
               onClick={() => toggleFaq(index)}
             >
               <strong>{faq.question}</strong>
-              {openIndex === index && (
-                <p>{faq.answer}</p>
-              )}
+              {openIndex === index && <p>{faq.answer}</p>}
             </div>
           ))}
         </div>

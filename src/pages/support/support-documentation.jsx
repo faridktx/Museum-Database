@@ -21,7 +21,9 @@ export function SupportDocumentation() {
         </div>
         <ul className={styles["styled-list"]}>
           <li>
-            <Link href="/support-tutorials">Installing & Accessing the Platform</Link>
+            <Link href="/support-tutorials">
+              Installing & Accessing the Platform
+            </Link>
           </li>
           <li>
             <Link href="/support-account">Setting Up Your Account</Link>
@@ -38,9 +40,15 @@ export function SupportDocumentation() {
           <h2>Core Concepts</h2>
         </div>
         <ul className={styles["styled-list"]}>
-          <li><Link href="/support-docs">Working with Artifacts</Link></li>
-          <li><Link href="/support-docs">Managing Exhibits and Artists</Link></li>
-          <li><Link href="/support-docs">Permissions & Role-based Access</Link></li>
+          <li>
+            <Link href="/support-docs">Working with Artifacts</Link>
+          </li>
+          <li>
+            <Link href="/support-docs">Managing Exhibits and Artists</Link>
+          </li>
+          <li>
+            <Link href="/support-docs">Permissions & Role-based Access</Link>
+          </li>
         </ul>
       </section>
 
@@ -50,9 +58,15 @@ export function SupportDocumentation() {
           <h2>Advanced Topics</h2>
         </div>
         <ul className={styles["styled-list"]}>
-          <li><Link href="/support-api">API Endpoints Reference</Link></li>
-          <li><Link href="/support-docs">Custom Report Generation</Link></li>
-          <li><Link href="/support-docs">Integrating External Systems</Link></li>
+          <li>
+            <Link href="/support-api">API Endpoints Reference</Link>
+          </li>
+          <li>
+            <Link href="/support-docs">Custom Report Generation</Link>
+          </li>
+          <li>
+            <Link href="/support-docs">Integrating External Systems</Link>
+          </li>
         </ul>
       </section>
 

@@ -31,7 +31,10 @@ export function SupportTutorials() {
 
   return (
     <div className={styles["support-page"]}>
-      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+      <div
+        className={styles["support-header"]}
+        style={{ marginBottom: "2rem" }}
+      >
         <p className={styles["breadcrumb"]}>Home / Support / Tutorials</p>
         <h1>Video Tutorials</h1>
         <p className={styles["support-subtitle"]}>

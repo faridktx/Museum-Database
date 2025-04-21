@@ -5,7 +5,10 @@ import styles from "./support.module.css";
 export function SupportCenter() {
   return (
     <div className={styles["support-page"]}>
-      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+      <div
+        className={styles["support-header"]}
+        style={{ marginBottom: "2rem" }}
+      >
         <p className={styles["breadcrumb"]}>Home / Support / Support Center</p>
         <h1>Support Center</h1>
         <p className={styles["support-subtitle"]}>
@@ -71,7 +74,10 @@ export function SupportCenter() {
         </ul>
       </section>
 
-      <section className={styles["support-section"]} style={{ marginTop: "2rem" }}>
+      <section
+        className={styles["support-section"]}
+        style={{ marginTop: "2rem" }}
+      >
         <div className={styles["icon-header"]}>
           <h2>More Ways to Get Help</h2>
         </div>

@@ -37,7 +37,10 @@ export function SupportKnowledge() {
 
   return (
     <div className={styles["support-page"]}>
-      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+      <div
+        className={styles["support-header"]}
+        style={{ marginBottom: "2rem" }}
+      >
         <p className={styles["breadcrumb"]}>Home / Support / Knowledge Base</p>
         <h1>Knowledge Base</h1>
         <p className={styles["support-subtitle"]}>

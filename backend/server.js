@@ -568,9 +568,9 @@ app.patch("/api/setartifactrestored", async (req, res) => {
   if (validationErrorCheck(req, res)) return;
   const { id, restored } = req.body;
   const query = `
-    UPDATE artifact
+    UPDATE artifacts
     SET 
-      needs_restoration = ?,
+      needs_restoration = ?
     WHERE artifact_id = ?
   `;
   try {
