@@ -9,13 +9,11 @@ import { Link } from "wouter";
 import { useEffect, useState } from "react";
 import "../components.css";
 import { OnSignUp } from "../on-sign-up";
-import { Bell } from "lucide-react";
 
 export function DashboardHeader() {
   const { user } = useUser();
   const [scrollDir, setScrollDir] = useState("up");
   const [lastY, setLastY] = useState(0);
-  const [unresolvedCount, setUnresolvedCount] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -28,13 +26,6 @@ export function DashboardHeader() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastY]);
-
-  useEffect(() => {
-    fetch("/api/fraud-alerts/unresolved-count")
-      .then((res) => res.json())
-      .then((data) => setUnresolvedCount(data.count || 0))
-      .catch((err) => console.error("Failed to fetch alerts", err));
-  }, []);
 
   return (
     <header
@@ -77,17 +68,6 @@ export function DashboardHeader() {
                 user?.username ||
                 user?.emailAddresses[0]?.emailAddress}
             </span>
-            <div className="notification-icon">
-              <Link href="/dashboard/notifications" aria-label="Notifications">
-                <Bell
-                  size={20}
-                  style={{
-                    color: unresolvedCount > 0 ? "red" : "inherit",
-                    transition: "color 0.3s ease"
-                  }}
-                />
-              </Link>
-            </div>
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </nav>
