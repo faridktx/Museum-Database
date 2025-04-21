@@ -18,6 +18,8 @@ import "../../components/components.css";
 import './adminDash.css';
 import { ROLES, ROLECOLORS } from "../../components/constants.js";
 import { ErrorModal } from "../../components/modal";
+import { Bell } from "lucide-react";
+import { Link } from "wouter";
 
 function addStatusToExhibit(exhibit) {
   const today = new Date();
@@ -653,6 +655,14 @@ export function AdminDashboard() {
     });
   };
 
+  const [unresolvedCount, setUnresolvedCount] = useState(0);
+  useEffect(() => {
+    fetch("/api/fraud-alerts/unresolved-count")
+      .then((res) => res.json())
+      .then((data) => setUnresolvedCount(data.count || 0))
+      .catch((err) => console.error("Failed to fetch alerts", err));
+  }, []);
+
   // Initialize form data when entering edit mode
   useEffect(() => {
     if (showSettings) {
@@ -684,12 +694,11 @@ export function AdminDashboard() {
   const filteredEmployees = filterItems(employees, "employees");
   const filteredExhibits = filterItems(exhibits, "exhibits");
 
-  // Return the JSX for the component
   return (
     <div className="curator-dashboard" style={{ marginBottom: "3rem" }}>
       <div className="dashboard-header" style={{ paddingTop: "100px" }}>
         <div className="header-title">
-          <h1>MuseoCore Admin Portal</h1>
+          <h1>Curio Collection - Admin Portal</h1>
         </div>
 
         <div className="horizontal-tabs">
@@ -733,6 +742,14 @@ export function AdminDashboard() {
             <BarChart size={16} />
             <span>Reports</span>
           </button>
+          <div className="tab-button notification-icon">
+            <Link href="/dashboard/notifications" aria-label="Notifications">
+              <Bell size={20} />
+              {unresolvedCount > 0 && (
+                <span className="notification-badge">{unresolvedCount}</span>
+              )}
+            </Link>
+          </div>
         </div>
 
         {/* Only show search on employees and exhibits tabs */}

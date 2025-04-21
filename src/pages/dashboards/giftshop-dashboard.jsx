@@ -537,7 +537,7 @@ export function GiftShopDashboard() {
     <div className="curator-dashboard" style={{ marginBottom: "3rem" }}>
       <div className="dashboard-header" style={{ paddingTop: "100px" }}>
         <div className="header-title">
-          <h1>MuseoCore Gift Shop Portal</h1>
+          <h1>Curio Collection - Gift Shop Portal</h1>
         </div>
 
         <div className="horizontal-tabs">
