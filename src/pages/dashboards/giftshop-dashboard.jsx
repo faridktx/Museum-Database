@@ -92,14 +92,12 @@ export function GiftShopDashboard() {
     inventory: {
       name: "",
       category: "",
-      price: "",
-      inStock: "",
+      supplier: "",
     },
     sales: {
       date: "",
-      product: "",
       customer: "",
-      amount: "",
+      quantity: "",
     },
   });
 
@@ -221,7 +219,6 @@ export function GiftShopDashboard() {
           (item) =>
             item.name.toLowerCase().includes(query) ||
             item.category.toLowerCase().includes(query) ||
-            item.description.toLowerCase().includes(query) ||
             item.supplier.toLowerCase().includes(query),
         );
       } else if (type === "sales") {
@@ -251,11 +248,6 @@ export function GiftShopDashboard() {
               .includes(invFilters.category.toLowerCase()),
           );
         }
-        if (invFilters.price) {
-          filteredItems = filteredItems.filter((item) =>
-            item.price.toString().includes(invFilters.price),
-          );
-        }
         if (invFilters.inStock) {
           filteredItems = filteredItems.filter((item) =>
             item.inStock.toString().includes(invFilters.inStock),
@@ -268,13 +260,6 @@ export function GiftShopDashboard() {
             item.date.includes(salesFilters.date),
           );
         }
-        if (salesFilters.product) {
-          filteredItems = filteredItems.filter((item) =>
-            item.products.some((p) =>
-              p.name.toLowerCase().includes(salesFilters.product.toLowerCase()),
-            ),
-          );
-        }
         if (salesFilters.customer) {
           filteredItems = filteredItems.filter((item) =>
             item.customer
@@ -282,9 +267,9 @@ export function GiftShopDashboard() {
               .includes(salesFilters.customer.toLowerCase()),
           );
         }
-        if (salesFilters.amount) {
+        if (salesFilters.quantity) {
           filteredItems = filteredItems.filter((item) =>
-            item.total.toString().includes(salesFilters.amount),
+            item.quantity.toString().includes(salesFilters.quantity),
           );
         }
       }
@@ -550,7 +535,7 @@ export function GiftShopDashboard() {
 
   return (
     <div className="curator-dashboard" style={{ marginBottom: "3rem" }}>
-      <div className="dashboard-header">
+      <div className="dashboard-header" style={{ paddingTop: "100px" }}>
         <div className="header-title">
           <h1>MuseoCore Gift Shop Portal</h1>
         </div>
@@ -758,24 +743,6 @@ export function GiftShopDashboard() {
                     />
                   </div>
                   <div className="filter-item">
-                    <label htmlFor="product-price">Price</label>
-                    <input
-                      type="text"
-                      id="product-price"
-                      placeholder="Filter by price"
-                      value={filters.inventory.price}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          inventory: {
-                            ...filters.inventory,
-                            price: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="filter-item">
                     <label htmlFor="product-stock">Stock Quantity</label>
                     <input
                       type="text"
@@ -837,24 +804,6 @@ export function GiftShopDashboard() {
                     />
                   </div>
                   <div className="filter-item">
-                    <label htmlFor="sale-product">Product</label>
-                    <input
-                      type="text"
-                      id="sale-product"
-                      placeholder="Filter by product"
-                      value={filters.sales.product}
-                      onChange={(e) =>
-                        setFilters({
-                          ...filters,
-                          sales: {
-                            ...filters.sales,
-                            product: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="filter-item">
                     <label htmlFor="sale-customer">Customer</label>
                     <input
                       type="text"
@@ -873,18 +822,18 @@ export function GiftShopDashboard() {
                     />
                   </div>
                   <div className="filter-item">
-                    <label htmlFor="sale-amount">Amount</label>
+                    <label htmlFor="sale-quantity">Quantity</label>
                     <input
                       type="text"
-                      id="sale-amount"
-                      placeholder="Filter by amount"
-                      value={filters.sales.amount}
+                      id="sale-quantity"
+                      placeholder="Filter by quantity"
+                      value={filters.sales.quantity}
                       onChange={(e) =>
                         setFilters({
                           ...filters,
                           sales: {
                             ...filters.sales,
-                            amount: e.target.value,
+                            quantity: e.target.value,
                           },
                         })
                       }
@@ -923,7 +872,7 @@ export function GiftShopDashboard() {
                 <div className="profile-info-container">
                   <div className="profile-avatar">
                     <div className="profile-initials">
-                      {employeeData.name
+                      {(employeeData.name || "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}

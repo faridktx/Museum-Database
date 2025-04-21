@@ -79,10 +79,13 @@ export function DashboardHeader() {
             </span>
             <div className="notification-icon">
               <Link href="/dashboard/notifications" aria-label="Notifications">
-                <Bell size={20} />
-                {unresolvedCount > 0 && (
-                  <span className="notification-badge">{unresolvedCount}</span>
-                )}
+                <Bell
+                  size={20}
+                  style={{
+                    color: unresolvedCount > 0 ? "red" : "inherit",
+                    transition: "color 0.3s ease"
+                  }}
+                />
               </Link>
             </div>
             <UserButton afterSignOutUrl="/" />

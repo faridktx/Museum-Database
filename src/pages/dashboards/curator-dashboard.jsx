@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import "../../components/components.css";
-import "./curator.css";
 import { useUser } from "@clerk/clerk-react";
 import {
   ACQUISITIONTYPES,
@@ -21,6 +20,8 @@ import {
   NATIONALITIES,
   CONDITIONS,
 } from "../../components/constants.js";
+import "./restoration-legend.css";
+import "./inline-detail-view.css";
 import { ErrorModal } from "../../components/modal";
 
 const ART_MOVEMENT_COLORS = [
@@ -238,7 +239,9 @@ export function CuratorDashboard() {
           method: "GET",
         });
         const data = await response.json();
-        setCuratorData(data.data);
+        if (data.data) {
+          setCuratorData(data.data);
+        }
       } catch (err) {
         console.log(err);
       }
@@ -361,14 +364,12 @@ export function CuratorDashboard() {
       name: "",
       nationality: "",
       movement: "",
-      notableWorks: "",
     },
     artifacts: {
       title: "",
       artist: "",
       year: "",
       medium: "",
-      exhibitName: "",
       condition: "",
     },
   });
@@ -392,8 +393,7 @@ export function CuratorDashboard() {
           (artist) =>
             artist.name.toLowerCase().includes(query) ||
             artist.nationality.toLowerCase().includes(query) ||
-            artist.movement.toLowerCase().includes(query) ||
-            artist.notableWorks.toLowerCase().includes(query),
+            artist.movement.toLowerCase().includes(query),
         );
       } else if (type === "artifacts") {
         filteredItems = filteredItems.filter((artifact) => {
@@ -402,7 +402,6 @@ export function CuratorDashboard() {
             artifact.title.toLowerCase().includes(query) ||
             artistName.toLowerCase().includes(query) ||
             artifact.medium.toLowerCase().includes(query) ||
-            artifact.exhibitName.toLowerCase().includes(query) ||
             artifact.condition.toLowerCase().includes(query)
           );
         });
@@ -721,6 +720,22 @@ export function CuratorDashboard() {
       }
     }
 
+    if (targetArtifact) {
+      const url = new URL(
+        "/api/setartifactrestored/",
+        process.env.REACT_APP_BACKEND_URL,
+      );
+      url.searchParams.append("id", user.id);
+      await fetch(url.toString(), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: targetArtifact.id,
+          restored: !targetArtifact.needsRestoration,
+        }),
+      });
+    }
+
     setArtifacts(
       artifacts.map((artifact) =>
         artifact.id === artifactId
@@ -928,7 +943,7 @@ export function CuratorDashboard() {
 
   return (
     <div className="curator-dashboard" style={{ marginBottom: "3rem" }}>
-      <div className="dashboard-header">
+      <div className="dashboard-header" style={{ paddingTop: "100px" }}>
         <div className="header-title">
           <h1>MuseoCore Curator Portal</h1>
         </div>
@@ -1244,7 +1259,7 @@ export function CuratorDashboard() {
                 <div className="profile-info-container">
                   <div className="profile-avatar">
                     <div className="profile-initials">
-                      {curatorData.name
+                      {(curatorData.name || "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
