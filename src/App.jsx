@@ -1,9 +1,8 @@
 import { Switch, Route, useLocation } from "wouter";
 import { useUser } from "@clerk/clerk-react";
 import { Home } from "./pages/home";
-import { Header } from "./components/home/header";
 import { Footer } from "./components/home/footer";
-import { DashboardHeader } from "./components/dashboard/header";
+import { DashboardHeader } from "./components/home/header";
 import { NotFound } from "./pages/not-found";
 import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { SupportDocumentation } from "./pages/support/support-documentation";
@@ -54,7 +53,7 @@ export function App() {
     <div
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
     >
-      {isLoggedIn ? <DashboardHeader /> : <Header />}
+      <DashboardHeader />
 
       <main style={{ flex: 1 }}>
         <Switch>
