@@ -36,46 +36,10 @@ export async function apiFetch(path, method = "GET") {
   return apiResponse;
 }
 
-/**
- * Basic fetch for POST/PUT/DELETE with JSON body
- */
-export async function fetchWithBody(path, method = "POST", formData = {}) {
-  const apiResponse = { success: true, errors: [] };
-
-  try {
-    const res = await fetch(path, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    await parseJSON(res, apiResponse);
-  } catch (err) {
-    console.error("fetchWithBody failed:", err);
-    await parseFetchError(apiResponse);
-  }
-
-  return apiResponse;
-}
-
 export function capitalize(str) {
   return str ? str.charAt(0).toUpperCase() + str.slice(1) : str;
 }
 
 export function compileErrors(arr) {
   return arr.join("\n");
-}
-
-/**
- * Used for direct gift shop checkout (bypasses temp cart)
- */
-export async function postGiftShopOrder(data) {
-  const res = await fetch("/api/custom/giftshop/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-
-  const text = await res.text();
-  return text ? JSON.parse(text) : {};
 }

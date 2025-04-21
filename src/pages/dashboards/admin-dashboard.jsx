@@ -15,7 +15,7 @@ import {
 import { Bar } from "react-chartjs-2";
 import { useUser } from "@clerk/clerk-react";
 import "../../components/components.css";
-import './adminDash.css';
+import "./adminDash.css";
 import { ROLES, ROLECOLORS } from "../../components/constants.js";
 import { ErrorModal } from "../../components/modal";
 import { Bell } from "lucide-react";
@@ -178,26 +178,19 @@ export function AdminDashboard() {
       const query = tabSearchQuery.toLowerCase().trim();
 
       if (type === "employees") {
-        filteredItems = filteredItems.filter(
-          (employee) =>
-            employee.name.toLowerCase().includes(query) ||
-            employee.role.toLowerCase().includes(query) ||
-            employee.status.toLowerCase().includes(query),
+        filteredItems = filteredItems.filter((employee) =>
+          employee.name.toLowerCase().includes(query),
         );
       } else if (type === "exhibits") {
         filteredItems = filteredItems.filter((exhibit) => {
-          return (
-            exhibit.title.toLowerCase().includes(query) ||
-            exhibit.status.toLowerCase().includes(query) ||
-            exhibit.startDate.toLowerCase().includes(query)
-          );
+          return exhibit.title.toLowerCase().includes(query);
         });
       }
     }
 
     // Then apply advanced filters
     if (type === "employees") {
-      const { name, role, department, status } = filters.employees;
+      const { name, role, status } = filters.employees;
 
       if (name) {
         filteredItems = filteredItems.filter((employee) =>
@@ -657,7 +650,11 @@ export function AdminDashboard() {
 
   const [unresolvedCount, setUnresolvedCount] = useState(0);
   useEffect(() => {
-    fetch("/api/fraud-alerts/unresolved-count")
+    const url = new URL(
+      "/api/fraud-alerts/unresolved-count",
+      process.env.REACT_APP_BACKEND_URL,
+    );
+    fetch(url.toString())
       .then((res) => res.json())
       .then((data) => setUnresolvedCount(data.count || 0))
       .catch((err) => console.error("Failed to fetch alerts", err));

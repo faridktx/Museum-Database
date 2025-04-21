@@ -240,7 +240,10 @@ export function CuratorDashboard() {
         });
         const data = await response.json();
         if (data.data) {
-          setCuratorData(data.data);
+          setCuratorData({
+            ...data.data,
+            department: "Curation",
+          });
         }
       } catch (err) {
         console.log(err);
@@ -389,21 +392,13 @@ export function CuratorDashboard() {
       const query = tabSearchQuery.toLowerCase().trim();
 
       if (type === "artists") {
-        filteredItems = filteredItems.filter(
-          (artist) =>
-            artist.name.toLowerCase().includes(query) ||
-            artist.nationality.toLowerCase().includes(query) ||
-            artist.movement.toLowerCase().includes(query),
+        filteredItems = filteredItems.filter((artist) =>
+          artist.name.toLowerCase().includes(query),
         );
       } else if (type === "artifacts") {
         filteredItems = filteredItems.filter((artifact) => {
           const artistName = artifact?.name || "";
-          return (
-            artifact.title.toLowerCase().includes(query) ||
-            artistName.toLowerCase().includes(query) ||
-            artifact.medium.toLowerCase().includes(query) ||
-            artifact.condition.toLowerCase().includes(query)
-          );
+          return artifact.title.toLowerCase().includes(query);
         });
       }
     }
@@ -430,8 +425,7 @@ export function CuratorDashboard() {
         );
       }
     } else if (type === "artifacts") {
-      const { title, artist, year, medium, exhibitName, condition } =
-        filters.artifacts;
+      const { title, artist, year, medium, condition } = filters.artifacts;
 
       if (title) {
         filteredItems = filteredItems.filter((artifact) =>
@@ -455,14 +449,6 @@ export function CuratorDashboard() {
       if (medium) {
         filteredItems = filteredItems.filter((artifact) =>
           artifact.medium.toLowerCase().includes(medium.toLowerCase()),
-        );
-      }
-
-      if (exhibitName) {
-        filteredItems = filteredItems.filter((artifact) =>
-          artifact.exhibitName
-            .toLowerCase()
-            .includes(exhibitName.toLowerCase()),
         );
       }
 
@@ -1364,6 +1350,48 @@ export function CuratorDashboard() {
                         />
                       </div>
 
+                      <div className="form-group">
+                        <label htmlFor="title">Job Title</label>
+                        <input
+                          type="text"
+                          id="title"
+                          name="title"
+                          value={curatorData.title}
+                          disabled
+                        />
+                        <small className="field-note">
+                          Job title cannot be changed.
+                        </small>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="department">Department</label>
+                        <input
+                          type="text"
+                          id="department"
+                          name="department"
+                          value={curatorData.department}
+                          disabled
+                        />
+                        <small className="field-note">
+                          Department cannot be changed.
+                        </small>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="joinDate">Start Date</label>
+                        <input
+                          type="text"
+                          id="joinDate"
+                          name="joinDate"
+                          value={curatorData.joinDate}
+                          disabled
+                        />
+                        <small className="field-note">
+                          Start date cannot be changed.
+                        </small>
+                      </div>
+
                       <div className="form-buttons">
                         <button
                           type="button"
@@ -1386,8 +1414,8 @@ export function CuratorDashboard() {
                         <p>{curatorData.department}</p>
                       </div>
                       <div className="detail-section">
-                        <h3>Specialization</h3>
-                        <p>{curatorData.specialization}</p>
+                        <h3>Position</h3>
+                        <p>{curatorData.title}</p>
                       </div>
                       <div className="detail-section">
                         <h3>Join Date</h3>
