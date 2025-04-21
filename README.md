@@ -7,10 +7,10 @@ Installation
 
 Technologies Used
 
-Frontend => React.js
-Backend => Node.js
-Database => MySQLServer
-Hosting => Railway
+- Frontend: React.js  
+- Backend: Node.js  
+- Database: MySQLServer  
+- Hosting: Railway  
 
 Setup
 
