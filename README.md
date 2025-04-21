@@ -17,5 +17,5 @@ npm install
 Then run the website locally.
 
 ```bash
-npm run dev
+npm start
 ```
