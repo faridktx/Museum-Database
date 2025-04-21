@@ -1,0 +1,149 @@
+/* support.module.css */
+
+.support-page {
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+  padding: 4rem 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.breadcrumb {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 0.25rem;
+}
+
+.support-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #0f172a;
+}
+
+.support-subtitle {
+  font-size: 1.05rem;
+  color: #64748b;
+  max-width: 720px;
+}
+
+.support-section {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+  margin-bottom: 2rem;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.support-section:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+}
+
+.icon-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.styled-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.styled-list li {
+  margin-bottom: 0.4rem;
+  color: #334155;
+  font-size: 0.975rem;
+}
+
+.knowledge-article,
+.faq-item,
+.tutorial-card {
+  background-color: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-bottom: 1.2rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.knowledge-article:hover,
+.faq-item:hover,
+.tutorial-card:hover {
+  background-color: #f1f5f9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
+.button.primary-button {
+  background-color: #3b82f6;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.button.primary-button:hover {
+  background-color: #2563eb;
+}
+
+.code-block {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: #1e293b;
+  overflow-x: auto;
+}
+
+.warning {
+  color: #b91c1c;
+  background-color: #fef2f2;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+
+.support-footer {
+  margin-top: 3rem;
+  font-size: 0.95rem;
+  color: #64748b;
+}
+
+.custom-link {
+  color: #3b82f6;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.custom-link:hover {
+  text-decoration: underline;
+}

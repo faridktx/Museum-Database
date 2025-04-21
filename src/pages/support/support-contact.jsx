@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
 import { FaPaperPlane } from "react-icons/fa";
+import styles from "./support.module.css";
 
 export function SupportContact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
@@ -34,52 +35,52 @@ export function SupportContact() {
         else alert("Failed to send message. Please try again.");
       })
       .catch(() =>
-        alert("There was an error connecting to the email service."),
+        alert("There was an error connecting to the email service.")
       );
     setSubmitted(true);
   };
 
   return (
-    <div
-      className="support-page container"
-      style={{ paddingTop: "120px", maxWidth: "760px", margin: "0 auto" }}
-    >
-      <div className="support-header">
-        <p className="breadcrumb">Home / Support / Contact Support</p>
+    <div className={styles["support-page"]}>
+      <div className={styles["support-header"]}>
+        <p className={styles["breadcrumb"]}>Home / Support / Contact Support</p>
         <h1>Contact Support</h1>
-        <p className="support-subtitle">
+        <p className={styles["support-subtitle"]}>
           Reach out to our team for personalized assistance. We're here to help
           resolve your issue.
         </p>
       </div>
 
       {submitted ? (
-        <div className="support-section card">
+        <div className={styles["support-section"]}>
           <h2>✅ Message Sent</h2>
           <p>
             Thank you for contacting us. Our team will get back to you shortly.
           </p>
           <p>
             In the meantime, check out the{" "}
-            <Link href="/support-knowledge">Knowledge Base</Link> or return to
-            the <Link href="/support-center">Support Center</Link>.
+            <Link href="/support-knowledge" className={styles["custom-link"]}>
+              Knowledge Base
+            </Link>{" "}
+            or return to the{" "}
+            <Link href="/support-center" className={styles["custom-link"]}>
+              Support Center
+            </Link>
+            .
           </p>
         </div>
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="support-section card hover-card contact-form"
+          className={`${styles["support-section"]} ${styles["contact-form"]}`}
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          <div
-            className="icon-header"
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-          >
+          <div className={styles["icon-header"]}>
             <FaPaperPlane size={24} />
-            <h2 style={{ margin: 0 }}>Send Us a Message</h2>
+            <h2>Send Us a Message</h2>
           </div>
 
-          <div className="form-group">
+          <div className={styles["form-group"]}>
             <label htmlFor="name">Full Name</label>
             <input
               type="text"
@@ -88,11 +89,11 @@ export function SupportContact() {
               required
               value={form.name}
               onChange={handleChange}
-              className="input"
+              className={styles["input"]}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles["form-group"]}>
             <label htmlFor="email">Email Address</label>
             <input
               type="email"
@@ -101,11 +102,11 @@ export function SupportContact() {
               required
               value={form.email}
               onChange={handleChange}
-              className="input"
+              className={styles["input"]}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles["form-group"]}>
             <label htmlFor="message">Your Message</label>
             <textarea
               name="message"
@@ -114,21 +115,27 @@ export function SupportContact() {
               required
               value={form.message}
               onChange={handleChange}
-              className="textarea"
+              className={styles["textarea"]}
             ></textarea>
           </div>
 
-          <button type="submit" className="button primary-button">
+          <button type="submit" className={`${styles["button"]} ${styles["primary-button"]}`}>
             Send Message
           </button>
         </form>
       )}
 
-      <footer className="support-footer" style={{ marginTop: "2rem" }}>
+      <footer className={styles["support-footer"]}>
         <p>
           Prefer self-service? Visit our{" "}
-          <Link href="/support-knowledge">Knowledge Base</Link> or return to the{" "}
-          <Link href="/support-docs">Documentation</Link>.
+          <Link href="/support-knowledge" className={styles["custom-link"]}>
+            Knowledge Base
+          </Link>{" "}
+          or return to the{" "}
+          <Link href="/support-docs" className={styles["custom-link"]}>
+            Documentation
+          </Link>
+          .
         </p>
       </footer>
     </div>

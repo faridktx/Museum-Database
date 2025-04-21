@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from "./support.module.css";
 
 export function SupportReport() {
   const [form, setForm] = useState({ subject: "", details: "" });
@@ -15,32 +16,18 @@ export function SupportReport() {
   };
 
   return (
-    <div
-      className="support-page container"
-      style={{
-        paddingTop: "120px",
-        maxWidth: "720px",
-        margin: "0 auto",
-        flex: "1",
-        flexDirection: "column",
-      }}
-    >
-      <div className="support-header" style={{ marginBottom: "2rem" }}>
-        <p className="breadcrumb">Home / Support / Report an Issue</p>
-        <h1 style={{ fontSize: "2.2rem", fontWeight: "700" }}>
-          Report an Issue
-        </h1>
-        <p
-          className="support-subtitle"
-          style={{ fontSize: "1.1rem", color: "#555" }}
-        >
+    <div className={styles["support-page"]}>
+      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+        <p className={styles["breadcrumb"]}>Home / Support / Report an Issue</p>
+        <h1>Report an Issue</h1>
+        <p className={styles["support-subtitle"]}>
           Found a bug or error? Help us improve the platform by reporting any
           issues you’ve encountered.
         </p>
       </div>
 
       {submitted ? (
-        <div className="support-section card" style={{ padding: "2rem" }}>
+        <div className={styles["support-section"]}>
           <h2>✅ Report Submitted</h2>
           <p>
             Thank you for your feedback. Our team will investigate the issue as
@@ -50,22 +37,14 @@ export function SupportReport() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="support-section card hover-card"
-          style={{
-            padding: "2rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1.25rem",
-          }}
+          className={styles["support-section"]}
+          style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}
         >
-          <div
-            className="icon-header"
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-          >
-            <h2 style={{ margin: 0 }}>Submit a Report</h2>
+          <div className={styles["icon-header"]}>
+            <h2>Submit a Report</h2>
           </div>
 
-          <div className="form-group">
+          <div className={styles["form-group"]}>
             <label htmlFor="subject">Issue Subject</label>
             <input
               type="text"
@@ -74,11 +53,11 @@ export function SupportReport() {
               required
               value={form.subject}
               onChange={handleChange}
-              className="input"
+              className={styles["input"]}
             />
           </div>
 
-          <div className="form-group">
+          <div className={styles["form-group"]}>
             <label htmlFor="details">Details / Steps to Reproduce</label>
             <textarea
               name="details"
@@ -87,11 +66,11 @@ export function SupportReport() {
               required
               value={form.details}
               onChange={handleChange}
-              className="textarea"
+              className={styles["textarea"]}
             ></textarea>
           </div>
 
-          <button type="submit" className="button primary-button">
+          <button type="submit" className={`${styles["button"]} ${styles["primary-button"]}`}>
             Send Report
           </button>
         </form>

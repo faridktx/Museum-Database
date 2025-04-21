@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaQuestionCircle } from "react-icons/fa";
+import styles from "./support.module.css";
 
 export function SupportFaq() {
   const [openIndex, setOpenIndex] = useState(null);
@@ -52,68 +53,33 @@ export function SupportFaq() {
   };
 
   return (
-    <div
-      className="support-page container"
-      style={{ paddingTop: "120px", maxWidth: "860px", margin: "0 auto" }}
-    >
-      <div className="support-header" style={{ marginBottom: "2rem" }}>
-        <p className="breadcrumb">Home / Support / FAQ</p>
-        <h1 style={{ fontSize: "2.2rem", fontWeight: "700" }}>
-          Frequently Asked Questions
-        </h1>
-        <p
-          className="support-subtitle"
-          style={{ fontSize: "1.1rem", color: "#555" }}
-        >
+    <div className={styles["support-page"]}>
+      <div className={styles["support-header"]} style={{ marginBottom: "2rem" }}>
+        <p className={styles["breadcrumb"]}>Home / Support / FAQ</p>
+        <h1>Frequently Asked Questions</h1>
+        <p className={styles["support-subtitle"]}>
           Find answers to the most commonly asked questions about using the
           Curio Collection platform. Browse categories, expand questions, and
           learn more instantly.
         </p>
       </div>
 
-      <section
-        className="support-section card hover-card"
-        style={{ padding: "2rem" }}
-      >
-        <div
-          className="icon-header"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.5rem",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: "1.5rem" }}>Help Topics</h2>
+      <section className={styles["support-section"]}>
+        <div className={styles["icon-header"]}>
+          <FaQuestionCircle size={20} />
+          <h2>Help Topics</h2>
         </div>
 
-        <div className="faq-list">
+        <div className={styles["faq-list"]}>
           {faqs.map((faq, index) => (
             <div
               key={index}
-              className="faq-item"
-              style={{
-                marginBottom: "1rem",
-                cursor: "pointer",
-                backgroundColor: "#fdfdfd",
-                borderRadius: "10px",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                padding: "1.2rem 1.5rem",
-                transition: "all 0.25s ease",
-              }}
+              className={styles["faq-item"]}
               onClick={() => toggleFaq(index)}
             >
-              <strong style={{ fontSize: "1.05rem" }}>{faq.question}</strong>
+              <strong>{faq.question}</strong>
               {openIndex === index && (
-                <p
-                  style={{
-                    marginTop: "0.75rem",
-                    fontSize: "0.95rem",
-                    color: "#333",
-                  }}
-                >
-                  {faq.answer}
-                </p>
+                <p>{faq.answer}</p>
               )}
             </div>
           ))}

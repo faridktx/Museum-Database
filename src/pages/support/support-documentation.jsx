@@ -1,34 +1,27 @@
 import { Link } from "wouter";
 import { FaBookOpen, FaCompass, FaLightbulb } from "react-icons/fa";
+import styles from "./support.module.css";
 
 export function SupportDocumentation() {
   return (
-    <div
-      className="support-page container"
-      style={{ paddingTop: "120px", maxWidth: "760px", margin: "0 auto" }}
-    >
-      <div className="support-header">
-        <p className="breadcrumb">Home / Support / Documentation</p>
+    <div className={styles["support-page"]}>
+      <div className={styles["support-header"]}>
+        <p className={styles["breadcrumb"]}>Home / Support / Documentation</p>
         <h1>Documentation</h1>
-        <p className="support-subtitle">
+        <p className={styles["support-subtitle"]}>
           Your central source for understanding features, functions, and
           technical capabilities of the Curio Collection platform.
         </p>
       </div>
 
-      <section className="support-section card hover-card">
-        <div
-          className="icon-header"
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-        >
+      <section className={styles["support-section"]}>
+        <div className={styles["icon-header"]}>
           <FaCompass size={24} />
-          <h2 style={{ margin: 0 }}>Getting Started</h2>
+          <h2>Getting Started</h2>
         </div>
-        <ul className="styled-list">
+        <ul className={styles["styled-list"]}>
           <li>
-            <Link href="/support-tutorials">
-              Installing & Accessing the Platform
-            </Link>
+            <Link href="/support-tutorials">Installing & Accessing the Platform</Link>
           </li>
           <li>
             <Link href="/support-account">Setting Up Your Account</Link>
@@ -39,49 +32,31 @@ export function SupportDocumentation() {
         </ul>
       </section>
 
-      <section className="support-section card hover-card">
-        <div
-          className="icon-header"
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-        >
+      <section className={styles["support-section"]}>
+        <div className={styles["icon-header"]}>
           <FaBookOpen size={24} />
-          <h2 style={{ margin: 0 }}>Core Concepts</h2>
+          <h2>Core Concepts</h2>
         </div>
-        <ul className="styled-list">
-          <li>
-            <Link href="/support-docs">Working with Artifacts</Link>
-          </li>
-          <li>
-            <Link href="/support-docs">Managing Exhibits and Artists</Link>
-          </li>
-          <li>
-            <Link href="/support-docs">Permissions & Role-based Access</Link>
-          </li>
+        <ul className={styles["styled-list"]}>
+          <li><Link href="/support-docs">Working with Artifacts</Link></li>
+          <li><Link href="/support-docs">Managing Exhibits and Artists</Link></li>
+          <li><Link href="/support-docs">Permissions & Role-based Access</Link></li>
         </ul>
       </section>
 
-      <section className="support-section card hover-card">
-        <div
-          className="icon-header"
-          style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-        >
+      <section className={styles["support-section"]}>
+        <div className={styles["icon-header"]}>
           <FaLightbulb size={24} />
-          <h2 style={{ margin: 0 }}>Advanced Topics</h2>
+          <h2>Advanced Topics</h2>
         </div>
-        <ul className="styled-list">
-          <li>
-            <Link href="/support-api">API Endpoints Reference</Link>
-          </li>
-          <li>
-            <Link href="/support-docs">Custom Report Generation</Link>
-          </li>
-          <li>
-            <Link href="/support-docs">Integrating External Systems</Link>
-          </li>
+        <ul className={styles["styled-list"]}>
+          <li><Link href="/support-api">API Endpoints Reference</Link></li>
+          <li><Link href="/support-docs">Custom Report Generation</Link></li>
+          <li><Link href="/support-docs">Integrating External Systems</Link></li>
         </ul>
       </section>
 
-      <footer className="support-footer" style={{ marginTop: "2rem" }}>
+      <footer className={styles["support-footer"]}>
         <p>
           Still need help? Visit our{" "}
           <Link href="/support-knowledge">Knowledge Base</Link> or{" "}
